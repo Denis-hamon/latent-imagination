@@ -1,0 +1,92 @@
+{
+  "schema_version": "ATIF-v1.7",
+  "session_id": "golden-0001",
+  "agent": {
+    "name": "claude-code",
+    "version": "2.1.0",
+    "model_name": "claude-sonnet-4-6",
+    "tool_definitions": [
+      {
+        "function_name": "bash",
+        "description": "Run a shell command"
+      }
+    ],
+    "extra": {}
+  },
+  "steps": [
+    {
+      "step_id": 1,
+      "timestamp": "2026-08-05T10:00:00Z",
+      "source": "user",
+      "message": "Fix the failing test in django/db/models/query.py",
+      "extra": {}
+    },
+    {
+      "step_id": 2,
+      "timestamp": "2026-08-05T10:00:12",
+      "source": "agent",
+      "model_name": "claude-sonnet-4-6",
+      "llm_call_count": 1,
+      "message": "Applying the patch, then running the F2P test.",
+      "reasoning_content": "The queryset filter needs the negation.",
+      "tool_calls": [
+        {
+          "tool_call_id": "call_1",
+          "function_name": "bash",
+          "arguments": {
+            "command": "git apply patch.diff && pytest tests/x.py::test_y -q"
+          },
+          "extra": {}
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "call_1",
+            "content": "1 passed in 0.42s",
+            "extra": {}
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 5200,
+        "completion_tokens": 410,
+        "cached_tokens": 3000,
+        "cost_usd": 0.0031
+      },
+      "extra": {}
+    },
+    {
+      "step_id": 3,
+      "timestamp": "2026-08-05T10:00:30Z",
+      "source": "agent",
+      "model_name": "claude-sonnet-4-6",
+      "llm_call_count": 1,
+      "message": "The F2P test now passes.",
+      "metrics": {
+        "prompt_tokens": 6100,
+        "completion_tokens": 120,
+        "cost_usd": 0.0029
+      },
+      "extra": {}
+    }
+  ],
+  "final_metrics": {
+    "total_prompt_tokens": 11300,
+    "total_completion_tokens": 530,
+    "total_cached_tokens": 3000,
+    "total_cost_usd": 0.006,
+    "total_steps": 3
+  },
+  "extra": {
+    "attempt": {
+      "task_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "patch_ref": "blob://patches/0001.diff",
+      "env_fingerprint_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "raw_test_output_ref": "blob://runs/0001/pytest.txt",
+      "f2p_tests": [
+        "tests/x.py::test_y"
+      ]
+    }
+  }
+}

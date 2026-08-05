@@ -3,7 +3,7 @@ name = "li-core-schema"
 version = "0.1.0"
 requires-python = ">=3.14"
 description = "Latent Imagination — core schema (skeleton, Story 1.1)"
-dependencies = []
+dependencies = ["pydantic==2.13.4"]
 
 
 [build-system]
