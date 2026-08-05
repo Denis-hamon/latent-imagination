@@ -1,0 +1,17 @@
+# Claim/context taxonomy (data, not code). editor = measurement lead; change = memlog row.
+
+[[claim]]
+family = "claude-code"
+generation = "2025"
+
+[[claim]]
+family = "codex"
+generation = "2025"
+
+[[claim]]
+family = "openhands"
+generation = "2025"
+
+[[context]]
+family = "archive"
+generation = "2023"
