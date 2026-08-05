@@ -38,6 +38,7 @@ class NormalizedAttempt:
     source_id: str
     source_class: str
     sanitized: bool = False
+    raw_test_output: str | None = None  # inline when the deposit embeds it; None when blob-referenced
 
 
 @dataclass
@@ -87,6 +88,7 @@ def _attempt_from_record(rec: dict[str, Any], sanitized_provenance: dict[str, An
         source_id=rec["source_id"],
         source_class=source_class,
         sanitized=sanitized,
+        raw_test_output=rec.get("raw_test_output"),
     )
 
 
