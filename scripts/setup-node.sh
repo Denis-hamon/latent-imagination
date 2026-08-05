@@ -12,13 +12,20 @@ echo "==> APT baseline"
 sudo apt-get update -y
 sudo apt-get install -y ca-certificates curl gnupg git jq
 
-echo "==> Docker Engine ${DOCKER_WANT} from the OFFICIAL Docker repo (apt docker.io ships 26/27.x)"
+echo "==> Docker Engine from the OFFICIAL Docker repo (apt docker.io ships old versions)"
+CODENAME="$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")"
+# Docker's repo may lag brand-new Ubuntu codenames; fall back to the last LTS branch.
+case "$CODENAME" in
+  noble|jammy|focal) DOCKER_DIST="$CODENAME" ;;
+  *) DOCKER_DIST="noble" ;;
+esac
+echo "    (OS codename: $CODENAME → docker repo branch: $DOCKER_DIST)"
 if ! docker --version 2>/dev/null | grep -q "$DOCKER_WANT"; then
   sudo install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
   echo \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    $DOCKER_DIST stable" | \
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
   sudo apt-get update -y
   sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
@@ -34,7 +41,7 @@ if ! command -v nvidia-smi >/dev/null 2>&1; then
   sudo ubuntu-drivers install nvidia:560
   echo "NOTE: reboot required after driver install — re-run this script after reboot."
 fi
-if nvidia-smi >/dev/null 2>&1 && ! dpkg -l | grep -q nvidia-container-toolkit; then
+if ! dpkg -l | grep -q nvidia-container-toolkit; then
   curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | \
     sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
   curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
