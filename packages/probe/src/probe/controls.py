@@ -38,11 +38,11 @@ def stratified_precision(labels_rows_pred):
                 book[3] += 1
 
     def p(t):
-        tp, fp, fn, tn = t
+        tp, fp, _fn, _tn = t
         return tp / (tp + fp) if (tp + fp) else None
 
     def tnr(t):
-        tp, fp, fn, tn = t
+        _tp, fp, _fn, tn = t
         return tn / (tn + fp) if (tn + fp) else None
 
     return {

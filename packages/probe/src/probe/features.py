@@ -44,7 +44,6 @@ def render_all(items: list[dict[str, Any]]) -> list[dict[str, str]]:
 
 def write_rendered(items: list[dict[str, Any]], out_path: Path) -> list[dict[str, str]]:
     rows = render_all(items)
-    out = [{"k": "rendered-documents", "n": len(rows)}]
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(rows, indent=1, sort_keys=True) + "\n")
