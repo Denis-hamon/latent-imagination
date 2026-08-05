@@ -47,7 +47,7 @@ def test_validity_path_has_no_judge_call_references():
         src = PACKAGES / pkg / "src"
         if not src.exists():
             continue
-        for f in src.rglob("*.py"):
+        for f in list(src.rglob("*.py")) + list(src.rglob("*.pyi")):
             marker = TEXT_MARKERS.search(f.read_text())
             if marker:
                 hits.append(f"{f.relative_to(REPO_ROOT)}: mentions '{marker.group(0)}'")

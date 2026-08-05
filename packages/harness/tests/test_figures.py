@@ -53,7 +53,7 @@ def test_context_never_enters_claim_line():
     fig = _curve()
     # claim series only: claude (2/3) + codex (1.0) → macro ≈ 0.833
     expected = (2 / 3 + 1.0) / 2
-    assert abs(fig["claim_line"]["macro_rate"] - expected) < 1e-12
+    assert abs(fig["claim_line"]["macro_per_task"] - expected) < 1e-12
     # if context leaked in, macro would be (2/3+1+1)/3 ≈ 0.888
 
 
@@ -68,5 +68,8 @@ def test_no_data_is_not_perfect_zero():
         [], task_of_attempt=lambda a: None, start_of_attempt=lambda a: "",
         series_of_attempt=lambda a: ("x", "y"), taxonomy=TAX,
     )
-    assert fig["claim_line"]["macro_rate"] is None
-    assert headline(fig) == "0 attempts out of 0 failed to pass the task's tests before a valid execution ran."
+    assert fig["claim_line"]["macro_per_task"] is None
+    import pytest
+
+    with pytest.raises(ValueError, match="no claim series"):
+        headline(fig)  # a vacuous figure must refuse a claim-shaped sentence

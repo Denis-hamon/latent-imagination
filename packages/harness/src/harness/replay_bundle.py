@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from harness.replay_export import export_bundle
@@ -20,11 +19,11 @@ def assemble_replay_bundle(
     figure_id: str,
     ladder: str = "small",
 ) -> Path:
-    """Bundle with the ladder level recorded; 'small' must always be runnable."""
+    """Bundle with the ladder level recorded in inputs BEFORE the bundle hash is
+    computed — the sealed hash always covers the final manifest (C2 fix)."""
     if ladder not in LADDER:
         raise ValueError(f"ladder must be one of {LADDER}")
 
-    # pipeline gets the stranger entrypoint appended by convention
     bundle = export_bundle(
         out_dir / figure_id / ladder,
         slice_files=slice_files,
@@ -32,11 +31,6 @@ def assemble_replay_bundle(
         pipeline_files=pipeline_files,
         inputs={**inputs, "ladder": ladder, "figure_id": figure_id},
     )
-    manifest_path = bundle.path / "manifest.json"
-    man = json.loads(manifest_path.read_text())
-    man["ladder"] = ladder
-    man["bundle_purpose"] = "tier1-replay"
-    manifest_path.write_text(json.dumps(man, indent=2, sort_keys=True) + "\n")
     return bundle.path
 
 

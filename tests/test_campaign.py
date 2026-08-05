@@ -11,10 +11,12 @@ from scripts.act1.campaign import (
     mark_done,
     next_batch,
     plan_batches,
+    plan_fingerprint,
     resume_state,
 )
 
 TASKS = [{"instance_id": f"t{i}"} for i in range(10)]
+FP = plan_fingerprint(TASKS, 3)
 
 
 def _batches():
@@ -34,6 +36,15 @@ def test_resume_skips_done(tmp_path):
     assert nxt.index == 2
 
 
+def test_resume_refuses_plan_drift(tmp_path):
+    p = tmp_path / "progress.json"
+    state = CampaignState([], 0.0, [])
+    mark_done(state, _batches()[0], 0.031, p, FP, cap_usd=10.0)
+    shifted = [{"instance_id": "NEW"}] + TASKS[:-1]
+    with pytest.raises(Exception, match="plan"):
+        resume_state(p, plan_fingerprint(shifted, 3))
+
+
 def test_budget_preflight_refuses(tmp_path):
     state = CampaignState([], 0.09, [])
     with pytest.raises(BudgetRefusedError, match="exceed cap"):
@@ -43,7 +54,7 @@ def test_budget_preflight_refuses(tmp_path):
 def test_mark_done_persists_progress(tmp_path):
     p = tmp_path / "progress.json"
     state = CampaignState([], 0.0, [])
-    mark_done(state, _batches()[0], 0.031, p)
-    back = resume_state(p)
+    mark_done(state, _batches()[0], 0.031, p, FP, cap_usd=10.0)
+    back = resume_state(p, FP)
     assert back.done_batches == [0]
     assert back.spent_usd == pytest.approx(0.031)

@@ -8,6 +8,7 @@ Pushers (S3/Zenodo/HF) are adapter calls made BY the ceremony, not here.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -26,13 +27,26 @@ class ArtifactRef:
     inputs: dict[str, Any]
 
 
+REQUIRED_CITED_KEYS = ("store_snapshot", "ruleset_version", "code_commit")
+_HASH = re.compile(r"^[0-9a-f]{64}$")
+
+
 def verify_inputs(artifacts: list[ArtifactRef], cited_versions: dict[str, str]) -> None:
-    """Every artifact's inputs must match the versions the release cites."""
+    """Every artifact's inputs must match the versions the release cites —
+    and the release must cite them. A release that omits a required key is
+    itself invalid (fail-closed, not check-skipped)."""
+    if not artifacts:
+        raise ReleaseError("a release must reference at least one artifact")
+    missing = [k for k in REQUIRED_CITED_KEYS if k not in cited_versions]
+    if missing:
+        raise ReleaseError(f"release omits required cited_versions keys: {missing}")
     for art in artifacts:
-        for key in ("store_snapshot", "ruleset_version", "code_commit"):
-            cited = cited_versions.get(key)
+        if not art.hash or not _HASH.match(art.hash):
+            raise ReleaseError(f"{art.artifact_id}: declared hash is not 64-hex sha256")
+        for key in REQUIRED_CITED_KEYS:
+            cited = cited_versions[key]
             carried = art.inputs.get(key)
-            if cited is not None and carried != cited:
+            if carried != cited:
                 raise ReleaseError(
                     f"{art.artifact_id}: inputs.{key}={carried!r} != cited {cited!r} (AD-13)"
                 )

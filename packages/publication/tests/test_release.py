@@ -12,7 +12,7 @@ def _ref(i: str, key: str = "ruleset_version", val: str = "rules-v1") -> Artifac
     return ArtifactRef(
         artifact_id=i,
         artifact_type="figure",
-        hash="h" * 64,
+        hash="b" * 64,
         inputs={**CITED, key: val},
     )
 

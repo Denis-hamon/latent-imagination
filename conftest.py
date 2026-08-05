@@ -23,7 +23,8 @@ _REPO = Path(__file__).resolve().parent
 
 def _is_adapter_test(path: Path) -> bool:
     try:
-        rel = path.relative_to(_REPO / "packages")
+        # resolve() defuses symlink prefixes (/var vs /private/var on macOS)
+        rel = path.resolve().relative_to((_REPO / "packages").resolve())
         return rel.parts[0] == "adapters"
     except ValueError:
         return True  # non-package tests (top tests/): not core-code suites → exempt. The guards' own proof tests carry their own sandboxing.

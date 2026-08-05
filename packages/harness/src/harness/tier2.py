@@ -33,14 +33,22 @@ def compare_within_tolerance(
     tolerance_pp: float = 2.0,
     first_diverging_artifact: str | None = None,
 ) -> DivergenceReport:
-    """±2.0 pp INCLUSIVE (OQ-5 answer pre-registered in TIER2.md)."""
+    """±2.0 pp INCLUSIVE. Refuses NaN/Inf and negative tolerances — a comparator
+    that prints nonsense is worse than one that refuses."""
+    import math
+
+    if not math.isfinite(published) or not math.isfinite(reproduced):
+        raise ValueError(f"non-finite comparison input: {published=} {reproduced=}")
+    if tolerance_pp < 0:
+        raise ValueError(f"negative tolerance {tolerance_pp} is meaningless")
     delta = abs(reproduced - published) * 100.0
-    # Inclusive boundary with float-noise guard: ±1e-9 pp around the edge.
+    delta_r = round(delta, 4)
+    # decide on the ROUNDED display value so report and re-computation agree
     return DivergenceReport(
         claim=claim,
         published=published,
         reproduced=reproduced,
-        delta_pp=round(delta, 4),
-        within=(delta <= tolerance_pp + 1e-9),
+        delta_pp=delta_r,
+        within=(delta_r <= tolerance_pp),
         first_diverging_artifact=first_diverging_artifact,
     )
