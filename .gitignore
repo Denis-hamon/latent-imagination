@@ -4,4 +4,10 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 dist/
+build/
+*.egg-info/
+.coverage
+htmlcov/
+.idea/
+.vscode/
 .DS_Store
