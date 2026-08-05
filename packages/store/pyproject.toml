@@ -3,12 +3,15 @@ name = "li-store"
 version = "0.1.0"
 requires-python = ">=3.14"
 description = "Latent Imagination — store (skeleton, Story 1.1)"
-dependencies = []
+dependencies = ["pyarrow==25.0.0", "duckdb==1.5.5", "li-core-schema"]
 
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13"]
 build-backend = "uv_build"
+
+[tool.uv.sources]
+li-core-schema = { workspace = true }
 
 [tool.uv.build-backend]
 module-name = "store"
