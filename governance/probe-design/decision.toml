@@ -1,0 +1,28 @@
+# Probe DECISION — metric, bar, margin, strictness, branches.
+# Anchored BEFORE outputs seen. No manual override exists: verdict = f(metrics, design).
+
+[metric]
+name = "precision_at_recall_floor"
+definition = "P(patch flips F2P | predicted flip) computed at the lowest recall point where ANY arm reports."
+ci_method = "wilson score interval, 95% two-sided"
+delta_method = "percentile bootstrap, 10k replicates"
+
+[bar]
+cost_exec_usd = 0.0025
+cost_regen_usd = 0.0200
+net_positive_precision_formula = "cost_regen / (cost_regen + cost_exec)"
+registered_bar = 0.8889
+
+[margin]
+min_margin = 0.05
+note = "[ASSUMPTION: 5pp — interpretable round number; tightening is an amendment.]"
+
+[strictness]
+cross = "precision >= registered_bar (inclusive)"
+margin_met = "jepa_precision - baseline_precision >= min_margin (inclusive)"
+tie_at_margin = "branch (ii) — baseline ships"
+
+[branches]
+branch_i = "JEPA arm precision >= bar AND margin_met vs baseline → SHIP JEPA"
+branch_ii = "some arm >= bar but margin unmet → SHIP BASELINE, publish honest comparison"
+branch_iii = "no arm >= bar → NO GATE PRODUCT this cycle; measurement artifacts stand alone"

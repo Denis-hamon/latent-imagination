@@ -1,0 +1,19 @@
+# Probe DESIGN — data, encoding, budgets. Anchored alongside decision.toml.
+
+[data_basis]
+choice = "clean-slice-only"
+note = "FR-11: exactly ONE basis, pre-registered once, never varied per arm. The noisy-augmented path stays OUT for this arbitration; flipping it pulls a mini-noisy slice into MVP scope and would be recorded as an amendment."
+
+[encoding] # OQ-2 resolved
+what_the_encoder_sees = "rendered patch diff + task statement + failed-test tail"
+alternatives_rejected = "full repo slice (budget), test-file embeddings (leakage at flip prediction)"
+
+[arms]
+per_arm_rule = "verdict computed per JEPA arm; best JEPA arm reported alongside the baseline"
+baseline = "logistic regression on frozen embeddings (sklearn; class_weight=balanced; fixed seed)"
+jepa_arms = ["jepa-main"]
+
+[hyperparameter_envelopes]
+baseline = "C in {0.1, 1, 10}; max_iter fixed 2000; lbfgs; seed fixed"
+jepa = "lr in {1e-4, 1e-3}; epochs <= 10; hidden 768; batch 128; dropout 0.1"
+budgets = "baseline: wall <= 30min CPU / steps <= 5k; jepa: wall <= 2h on the node / steps <= 20k"

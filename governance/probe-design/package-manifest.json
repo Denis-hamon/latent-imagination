@@ -1,0 +1,15 @@
+{
+  "files": {
+    "CONTROLS.md": "5b75699fbb6bafbae587b8b02c3f81078ee8f138d579baaf5ecb64b6a9e717f2",
+    "RATIONALE.md": "7c1b680e63321d7e6ac97fa70e89b8de192687cacf3044596b793d8042c97cd0",
+    "clean-slice/DISCLOSURE.md": "1bfff2ffad0c00acc9cf9d6b9a70a8f1af3e25bb6d1019a34cbbe74803365151",
+    "clean-slice/items.json": "e51255abf30c9ceb4c1f2a75b5924067baa6797f6a293dd890d0d7616966518e",
+    "decision.toml": "262c70d3c6ed2c91bf1b4c7b60922a0b1fe0528568e8ccefcb4727fba750f0c2",
+    "design.toml": "8eeb5c69afbd49f27d3d544669da3506653971de00d0e40a94ec8a0d859b2084",
+    "verdict-templates/measurement-only.md": "a68b5c9f24af3efcd36c419c35947a33e495050e9c60c085a5667247c439c7ef",
+    "verdict-templates/null.md": "e08d7a84ae231caab4e33648b07ace871a715052772568551b9251c11f9f0f89",
+    "verdict-templates/win.md": "d07f4c8a35cbb8f6f38f51abca13da1268b0e4146f1d35772b92acd259b661d0"
+  },
+  "package": "probe-design",
+  "package_hash": "3ebb4bcd62f67301c0ecf2bafdacb994361533eaf42b3f3a7f88661cf05fbc73"
+}
