@@ -244,11 +244,29 @@ source = { editable = "packages/adapters/harbor-runner" }
 name = "li-harness"
 version = "0.1.0"
 source = { editable = "packages/harness" }
+dependencies = [
+    { name = "li-core-schema" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "li-core-schema", editable = "packages/core-schema" }]
 
 [[package]]
 name = "li-labeling"
 version = "0.1.0"
 source = { editable = "packages/labeling" }
+dependencies = [
+    { name = "li-core-schema" },
+    { name = "li-prereg" },
+    { name = "li-store" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "li-core-schema", editable = "packages/core-schema" },
+    { name = "li-prereg", editable = "packages/prereg" },
+    { name = "li-store", editable = "packages/store" },
+]
 
 [[package]]
 name = "li-ots-anchor"

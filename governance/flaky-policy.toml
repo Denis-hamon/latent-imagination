@@ -1,0 +1,4 @@
+# Frozen flaky policy (FR-4)
+identity_criterion = "same task_id + patch_sha256 + env_fingerprint_sha256, regardless of attempt_start"
+persistence_rule = "2+ identical attempts with divergent outcomes => flaky flag"
+counting = "exclude_from_rate_with_published_share"  # disclosed, not silently dropped

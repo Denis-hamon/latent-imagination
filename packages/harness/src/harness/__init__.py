@@ -1,1 +1,5 @@
-"""Latent Imagination — harness (skeleton, Story 1.1)."""
+"""Latent Imagination — harness (core stage)."""
+
+from harness.metrics import ERBVEReport, TaskERBVE, compute_erbve
+
+__all__ = ["ERBVEReport", "TaskERBVE", "compute_erbve"]
