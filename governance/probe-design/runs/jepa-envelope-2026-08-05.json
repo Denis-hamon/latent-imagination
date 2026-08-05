@@ -1,0 +1,42 @@
+{
+  "jepa-lr0.001": {
+    "config": {
+      "seed": 20260805,
+      "hidden": 512,
+      "epochs": 10,
+      "batch": 64,
+      "lr": 0.001,
+      "lam": 0.05,
+      "steps_cap": 20000,
+      "wall_cap_s": 7200.0
+    },
+    "steps": 60,
+    "truncated": false,
+    "precision": 0.0,
+    "recall": 0.0,
+    "n_eval": 116,
+    "loss_curve_last": 1.0063410997390747,
+    "artifact_hash": "40d8ed427e995e1a4c88cc2d65e8317fae56d2efc3a6eceb833891249f8d4e6d",
+    "wall_s": 0.47
+  },
+  "jepa-lr0.0001": {
+    "config": {
+      "seed": 20260805,
+      "hidden": 512,
+      "epochs": 10,
+      "batch": 64,
+      "lr": 0.0001,
+      "lam": 0.05,
+      "steps_cap": 20000,
+      "wall_cap_s": 7200.0
+    },
+    "steps": 60,
+    "truncated": false,
+    "precision": 0.0,
+    "recall": 0.0,
+    "n_eval": 116,
+    "loss_curve_last": 5.226393222808838,
+    "artifact_hash": "ecb64275ed0c4593d47403e66665a799b98ff1960c0053aa9ff963af0c03b785",
+    "wall_s": 0.46
+  }
+}

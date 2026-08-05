@@ -1,0 +1,8 @@
+{
+  "joined": 461,
+  "negatives": 258,
+  "positives": 203,
+  "repos": 19,
+  "rows": 461,
+  "rule": "same corpus, same models, one patch per (instance, resolved)"
+}

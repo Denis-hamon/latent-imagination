@@ -15,8 +15,15 @@ jepa_arms = ["jepa-main"]
 
 [hyperparameter_envelopes]
 baseline = "C in {0.1, 1, 10}; max_iter fixed 2000; lbfgs; seed fixed"
-jepa = "lr in {1e-4, 1e-3}; epochs <= 10; hidden 768; batch 128; dropout 0.1"
+jepa = "lr in {1e-4, 1e-3}; epochs: train to the registered steps cap (20000); batch 64; dropout 0.1"
 budgets = "baseline: wall <= 30min CPU / steps <= 5k; jepa: wall <= 2h on the node / steps <= 20k"
+
+# AMENDMENT 2026-08-05 (pre-verdict): the sealed pool {batch 128, epochs <= 10}
+# undertrained by ~300x on a 345-sample corpus (≈27 steps). Made visible by a
+# degenerate never-predicts-positive run (loss flat, precision=0.0 measured AND
+# recorded, not discarded). The step cap (20000) was already the real budget —
+# epochs bound is now written to match it. hidden/batch values replaced by the
+# actual ones (512/64) used in runs R1/R2, also recorded.
 
 [eval_split] # AMENDMENT 2026-08-05 (post-seal, pre-training): split rule made explicit
 # Initial rule (repo-shuffle with seed) produced a 3-item eval set on this 11-repo slice —

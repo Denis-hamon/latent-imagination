@@ -1,0 +1,22 @@
+{
+  "arm": "jepa-main",
+  "date": "2026-08-05",
+  "config": {
+    "seed": 20260805,
+    "hidden": 512,
+    "epochs": 10,
+    "batch": 64,
+    "lr": 0.001,
+    "lam": 0.05,
+    "steps_cap": 20000,
+    "wall_cap_s": 7200.0
+  },
+  "steps": 60,
+  "truncated": false,
+  "precision": 0.0,
+  "recall": 0.0,
+  "n_eval": 116,
+  "loss_curve_last": 1.0063410997390747,
+  "artifact_hash": "40d8ed427e995e1a4c88cc2d65e8317fae56d2efc3a6eceb833891249f8d4e6d",
+  "wall_s": 0.42
+}

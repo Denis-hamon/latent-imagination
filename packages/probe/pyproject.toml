@@ -6,7 +6,7 @@ description = "Latent Imagination — probe (skeleton, Story 1.1)"
 dependencies = ["li-core-schema"]
 [project.optional-dependencies]
 # Populated at Epic 3/4 — Replay-Tier-1 must install with zero ML deps (AD-11).
-ml = ["scikit-learn==1.9.0", "numpy==2.5.1"]
+ml = ["scikit-learn==1.9.0", "numpy==2.5.1", "torch==2.13.0"]
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13"]
