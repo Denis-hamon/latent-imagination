@@ -239,6 +239,12 @@ source = { editable = "packages/gate-adapters" }
 name = "li-harbor-runner"
 version = "0.1.0"
 source = { editable = "packages/adapters/harbor-runner" }
+dependencies = [
+    { name = "li-core-schema" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "li-core-schema", editable = "packages/core-schema" }]
 
 [[package]]
 name = "li-harness"
