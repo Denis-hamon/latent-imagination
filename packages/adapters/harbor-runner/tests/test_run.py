@@ -3,12 +3,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
-import pytest
 
 from core_schema.trace import ExecutionTrace
-from harbor_runner.run import AgentSpec, Budget, BudgetCapExceeded, run_batch
+from harbor_runner.run import AgentSpec, Budget, run_batch
 
 TASKS = [
     {
