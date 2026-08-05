@@ -54,17 +54,27 @@ class BatchResult:
 def _simulated_trace(task: dict[str, Any], agent: AgentSpec, seed: int) -> dict[str, Any]:
     task_id = task_fingerprint(task["repo_full_name"], task["commit_sha"], task["f2p_tests"])
     flip = seed % 3 == 0  # deterministic pseudo-behavior
+    # EC-3 fix: the attempt start varies by (task, agent, seed) so different
+    # families never mint the same attempt_id at dedup time. Sim stays
+    # byte-deterministic per (task, agent, seed).
+    from datetime import UTC, datetime, timedelta
+
+    base_minute = int(sha256(f"{task_id}:{agent.name}:{seed}".encode()).hexdigest()[:4], 16) % 1440
+    start = datetime(2026, 8, 5, tzinfo=UTC) + timedelta(minutes=base_minute)
+    ts1 = start.isoformat().replace("+00:00", "Z")
+    ts2 = (start + timedelta(seconds=12)).isoformat().replace("+00:00", "Z")
+    ts3 = (start + timedelta(seconds=30)).isoformat().replace("+00:00", "Z")
     steps = [
         {
             "step_id": 1,
-            "timestamp": "2026-08-05T10:00:00Z",
+            "timestamp": ts1,
             "source": "user",
             "message": f"Fix the failing tests in {task['repo_full_name']}",
             "extra": {},
         },
         {
             "step_id": 2,
-            "timestamp": "2026-08-05T10:00:12Z",
+            "timestamp": ts2,
             "source": "agent",
             "model_name": agent.model_name,
             "llm_call_count": 1,
@@ -87,6 +97,16 @@ def _simulated_trace(task: dict[str, Any], agent: AgentSpec, seed: int) -> dict[
                 ]
             },
             "metrics": {"prompt_tokens": 500, "completion_tokens": 100, "cost_usd": 0.002},
+            "extra": {},
+        },
+        {
+            "step_id": 3,
+            "timestamp": ts3,
+            "source": "agent",
+            "model_name": agent.model_name,
+            "llm_call_count": 1,
+            "message": "The F2P test now passes.",
+            "metrics": {"prompt_tokens": 600, "completion_tokens": 80, "cost_usd": 0.0024},
             "extra": {},
         },
     ]
@@ -140,7 +160,7 @@ def run_batch(
 ) -> BatchResult:
     """Runs (or simulates) a batch. Budget cap = hard stop with remaining-batch report."""
     assert simulate, "live mode requires the provisioned OVH host; pass simulate=True in tests/dev"
-    batch_id = f"{agent.name}-{sha256(agent.name.encode()).hexdigest()[:8]}"
+    batch_id = f"{agent.name}-{sha256(json.dumps({'agent': agent.name, 'n_tasks': len(tasks), 'first': tasks[0].get('instance_id', '')}, sort_keys=True).encode()).hexdigest()[:12]}"
     deposited = 0
     for i, task in enumerate(tasks):
         body = _simulated_trace(task, agent, seed=i)
@@ -152,7 +172,9 @@ def run_batch(
             return BatchResult(deposited=deposited, stopped_by_budget=True, trajectories_root=landing_root)
         dest = landing_root / source_id / batch_id
         dest.mkdir(parents=True, exist_ok=True)
-        (dest / f"sim-{i:04d}.json").write_text(json.dumps(body, indent=2, sort_keys=True))
+        tmp = dest / f"sim-{i:04d}.json.tmp"
+        tmp.write_text(json.dumps(body, indent=2, sort_keys=True))
+        tmp.replace(dest / f"sim-{i:04d}.json")  # atomic on POSIX
         deposited += 1
     return BatchResult(deposited=deposited, stopped_by_budget=False, trajectories_root=landing_root)
 

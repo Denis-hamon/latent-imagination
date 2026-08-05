@@ -24,19 +24,31 @@ class FeedSummary:
 
 
 def store_to_feed_items(store_root: Path) -> list[dict[str, Any]]:
-    """Reads the canonical store (raw files only — AD-8) into feed dicts."""
+    """Reads canonical snapshot PAYLOADS only (raw store files, AD-8).
+    Manifests/META are never items; non-dict rows are contained as rejections
+    would be — silently swallowing is what corrupts the mirror."""
     items: list[dict[str, Any]] = []
+    skipped: list[str] = []
     for f in sorted(store_root.rglob("*.json")):
+        name = f.name
+        if name == "META.json" or name.endswith(".artifact.json") or ".staging" in f.parts:
+            skipped.append(str(f.relative_to(store_root)))
+            continue
         data = json.loads(f.read_text())
-        if isinstance(data, list):
-            rows = data
-        else:
-            rows = [data]
+        rows = data if isinstance(data, list) else [data]
         for row in rows:
+            if not isinstance(row, dict):
+                skipped.append(str(f.relative_to(store_root)))
+                continue
             item = dict(row)
-            item["dataset_item_id"] = row.get("attempt_id") or row.get("id") or f.name
-            item["_source_file"] = str(f.relative_to(store_root))
+            item["dataset_item_id"] = row.get("attempt_id") or row.get("id") or str(
+                f.relative_to(store_root)
+            )
             items.append(item)
+    if skipped:
+        import logging
+
+        logging.getLogger("bench.feed").warning("skipped non-payload files: %s", skipped)
     return items
 
 

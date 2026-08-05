@@ -34,12 +34,12 @@ def test_sim_mode_emits_valid_atif(tmp_path):
 
 
 def test_budget_cap_stops_and_reports(tmp_path):
-    # sim cost per task = 0.004; cap 0.01 → 2 tasks pass, 3rd fails, remainder reported
+    # sim cost per task = 0.002 * 3 steps = 0.006; cap 0.01 → 1 task passes, 2nd breaches
     res = run_batch(TASKS[:3], AGENT, tmp_path, Budget(cap_usd=0.01), simulate=True)
     assert res.stopped_by_budget
-    assert res.deposited == 2
+    assert res.deposited == 1
     report = json.loads(next(tmp_path.rglob("remaining-tasks.json")).read_text())
-    assert report["remaining"] == ["task-2"]
+    assert report["remaining"] == ["task-1", "task-2"]
 
 
 def test_provenance_carried_in_extra(tmp_path):

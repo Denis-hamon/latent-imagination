@@ -27,12 +27,14 @@ class TestDesignPackage:
         assert suites == {"django", "scikit-learn", "sympy"}
 
     def test_hash_deterministic_and_content_addressed(self):
-        import sys
+        import importlib.util
 
-        sys.path.insert(0, str(GOV))
-        from hash import design_package_hash
-
-        assert design_package_hash(GOV) == design_package_hash(GOV)
+        spec = importlib.util.spec_from_file_location("act1_design_hash", GOV / "hash.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        h1, _ = mod.design_package_hash(GOV)
+        h2, _ = mod.design_package_hash(GOV)
+        assert h1 == h2
 
 
 class TestAnchoredPrecedenceOnRealRunner:
