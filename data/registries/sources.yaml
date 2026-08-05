@@ -1,0 +1,40 @@
+# Seed registry (FR-1). These three seed entries are fabrications for Story 1.7
+# fixtures — real registrations happen when sources are actually ingested (1.9+),
+# with snapshot hashes computed from real content.
+
+sources:
+  - source_id: own-harbor-seed
+    origin_class: own_harbor_run
+    license: "ours"
+    usage_rights: "full"
+    covered_families: ["claude-code"]
+    covered_generations: ["2026"]
+    snapshot_content_hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    coverage_gaps: ["pre-2026 generations — archives only"]
+    source_version: 1
+    registered_at: "2026-08-05T00:00:00Z"
+    notes: "seed entry for Story 1.7"
+
+  - source_id: public-traject-seed
+    origin_class: public_trajectory_collection
+    license: "MIT"
+    usage_rights: "analysis + derivative labels"
+    covered_families: ["swe-agent", "openhands"]
+    covered_generations: ["2024", "2025"]
+    snapshot_content_hash: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    coverage_gaps: []
+    source_version: 1
+    registered_at: "2026-08-05T00:00:00Z"
+    notes: "seed entry for Story 1.7"
+
+  - source_id: public-ci-seed
+    origin_class: public_ci_logs
+    license: "BSD-3-Clause"
+    usage_rights: "analysis"
+    covered_families: ["ci-generic"]
+    covered_generations: ["2023", "2024", "2025", "2026"]
+    snapshot_content_hash: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    coverage_gaps: ["sparse patch linkage in raw CI logs"]
+    source_version: 1
+    registered_at: "2026-08-05T00:00:00Z"
+    notes: "seed entry for Story 1.7"

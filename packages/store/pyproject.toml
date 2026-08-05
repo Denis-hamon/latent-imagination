@@ -3,7 +3,7 @@ name = "li-store"
 version = "0.1.0"
 requires-python = ">=3.14"
 description = "Latent Imagination — store (skeleton, Story 1.1)"
-dependencies = ["pyarrow==25.0.0", "duckdb==1.5.5", "li-core-schema"]
+dependencies = ["pyarrow==25.0.0", "duckdb==1.5.5", "li-core-schema", "pyyaml==6.0.3"]
 
 
 [build-system]

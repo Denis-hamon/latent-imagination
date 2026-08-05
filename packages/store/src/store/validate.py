@@ -113,7 +113,10 @@ def validate_store(root: Path) -> ValidationReport:
         try:
             from prereg.chain import verify_chain_precedence  # type: ignore
 
-            verdict = verify_chain_precedence(ledger, manifests)
+            manifest_dicts = [
+                json.loads(m.read_text()) for m in manifests
+            ]
+            verdict = verify_chain_precedence(ledger, manifest_dicts)
             report.checks["prereg-precedence"] = verdict.status  # ok|violation
             if verdict.status != "ok":
                 report.errors.append(f"prereg precedence: {verdict.detail}")
