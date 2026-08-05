@@ -17,3 +17,19 @@ jepa_arms = ["jepa-main"]
 baseline = "C in {0.1, 1, 10}; max_iter fixed 2000; lbfgs; seed fixed"
 jepa = "lr in {1e-4, 1e-3}; epochs <= 10; hidden 768; batch 128; dropout 0.1"
 budgets = "baseline: wall <= 30min CPU / steps <= 5k; jepa: wall <= 2h on the node / steps <= 20k"
+
+[eval_split] # AMENDMENT 2026-08-05 (post-seal, pre-training): split rule made explicit
+# Initial rule (repo-shuffle with seed) produced a 3-item eval set on this 11-repo slice —
+# unusable for CIs. Changing rule now, on the record, BEFORE any training:
+rule = "repo-grouped + size-stratified: sort repos by item count desc, take every k-th repo (k = ceil(n_repos / target_eval_repos)) so eval covers ~20% of ITEMS with ≥2 mid-size repos; seed-independent"
+target_eval_repos = 2
+target_eval_item_share = 0.2
+reason = "n_eval=3 on repo-shuffle seed 20260805; accounting must happen before outcomes are seen — this file is that accounting."
+
+[negatives_class] # AMENDMENT 2026-08-05 (post-seal, pre-training): the seal
+# named only the positive class (gold patches flip). The arbitration needs a REAL
+# negative class: agent attempt patches that did NOT flip the F2P tests, from
+# public SWE-bench experiment runs (real trajectories, real failures).
+source = "SWE-bench/SWE-smith-trajectories (MIT, public): per-trajectory `patch` + `resolved` flag, real agent attempts on real OSS repos; joined to SWE-smith task metadata for problem statements"
+rule = "positives: gold patch of each kept Verified instance (quality floor); negatives: real agent patches with resolved=false; both flow through the SAME features.py renderer and the SAME repo-grouped split. Instance sets are disjoint by corpus (never same instance on both sides); leakage control = repo grouping."
+why_now = "caught at baseline-arm test time (toy separation passed but real data has no negatives); amending on the record, before any model is trained. SWE-smith's synthetic task synthesis is a caveated population and we say so in the verdict doc."

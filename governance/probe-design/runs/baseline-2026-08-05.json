@@ -1,0 +1,16 @@
+{
+  "arm": "baseline",
+  "n_train": 593,
+  "n_eval": 141,
+  "tp": 96,
+  "fp": 0,
+  "fn": 12,
+  "precision": 1.0,
+  "precision_wilson95": [
+    0.9615,
+    1.0
+  ],
+  "recall": 0.8889,
+  "registered_bar": 0.8889,
+  "verdict_rule": "precision >= registered_bar (inclusive) AND margin vs arms"
+}
