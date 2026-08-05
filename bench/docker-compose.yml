@@ -1,0 +1,11 @@
+services:
+  phoenix:
+    # Pinned by digest, never by floating tag (AR-9).
+    image: arizephoenix/phoenix@sha256:PIN_AT_PROVISIONING_TIME
+    ports:
+      - "6006:6006"
+    environment:
+      PHOENIX_WORKING_DIR: /data
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

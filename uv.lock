@@ -306,6 +306,12 @@ provides-extras = ["ml"]
 name = "li-publication"
 version = "0.1.0"
 source = { editable = "packages/publication" }
+dependencies = [
+    { name = "li-prereg" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "li-prereg", editable = "packages/prereg" }]
 
 [[package]]
 name = "li-store"
