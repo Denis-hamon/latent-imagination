@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-
-from probe.arms.baseline import ArmConfig, BudgetWallExceeded, asymmetry, train_and_evaluate
+from probe.arms.baseline import (
+    ArmConfig,
+    BudgetWallExceeded,
+    asymmetry,
+    train_and_evaluate,
+)
 
 
 def _toy(seed=0):

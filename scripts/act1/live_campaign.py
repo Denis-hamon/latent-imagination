@@ -127,7 +127,7 @@ Rules:
 
 
 def extract_diff(text: str) -> str | None:
-    m = re.search(r"```(?:diff|patch)\n(.*?)```", text, re.S)
+    m = re.search(r"```(?:diff|patch)\n(.*?)```", text, re.DOTALL)
     if not m:
         m = re.search(r"(?m)^(diff --git .*)$", text)
         return m.group(1) if m else None
@@ -251,8 +251,6 @@ def main() -> int:
         print(f"   - {t['fix_commit'][:10]} {t['subject'][:70]}  src={t['src_file']}")
 
     # task_ids for registry-fidelity: content-derived, project-consistent
-    from core_schema.identity import task_fingerprint
-    from harbor_runner.run import AgentSpec
 
     records_dir = landing / "deposits"
     n_flip = 0
@@ -308,12 +306,12 @@ def main() -> int:
     (workdir / "campaign-summary.json").write_text(json.dumps({"flips": n_flip, "total": n_total, "model": MODEL}, indent=2) + "\n")
 
     # ---- full instrument pipeline over the gathered data ----
-    from traces_ingest.normalize import normalize_landing, write_canonical_snapshot
-    from labeling.runner import run_labeling, ruleset_content_hash
+    from harness.metrics import compute_erbve
+    from labeling.runner import ruleset_content_hash, run_labeling
     from prereg.ledger import anchor_entry, append_entry
     from store.validate import validate_store
-    from harness.figures import Taxonomy, erbve_curve, headline
-    from harness.metrics import compute_erbve
+    from traces_ingest.normalize import normalize_landing, write_canonical_snapshot
+
     from scripts.act1.sim_campaign import _read_labels  # reuse the fixed reader
 
     repo_hash = "live-" + sha256(str(workdir).encode()).hexdigest()[:52]

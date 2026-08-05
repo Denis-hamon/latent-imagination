@@ -12,5 +12,59 @@
   ],
   "recall": 0.8889,
   "registered_bar": 0.8889,
-  "verdict_rule": "precision >= registered_bar (inclusive) AND margin vs arms"
+  "verdict_rule": "precision >= registered_bar (inclusive) AND margin vs arms",
+  "controls": {
+    "by_diff_length": {
+      "large(81+)": {
+        "precision": 1.0,
+        "tnr": 1.0,
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "tn": 6
+      },
+      "medium(21-80)": {
+        "precision": 1.0,
+        "tnr": 1.0,
+        "tp": 16,
+        "fp": 0,
+        "fn": 2,
+        "tn": 13
+      },
+      "small(6-20)": {
+        "precision": 1.0,
+        "tnr": 1.0,
+        "tp": 29,
+        "fp": 0,
+        "fn": 7,
+        "tn": 11
+      },
+      "tiny(1-5)": {
+        "precision": 1.0,
+        "tnr": 1.0,
+        "tp": 47,
+        "fp": 0,
+        "fn": 3,
+        "tn": 3
+      }
+    },
+    "by_corpus": {
+      "swe-bench-verified": {
+        "precision": 1.0,
+        "tnr": null,
+        "tp": 96,
+        "fp": 0,
+        "fn": 12,
+        "tn": 0
+      },
+      "swe-smith-trajectories": {
+        "precision": null,
+        "tnr": 1.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 33
+      }
+    }
+  }
 }

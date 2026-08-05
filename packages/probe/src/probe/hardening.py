@@ -20,7 +20,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-INFRA_TEST_PATH = re.compile(r"(conftest\.py|\.github/|/ci/|setup\.py|tox\.ini)", re.I)
+INFRA_TEST_PATH = re.compile(r"(conftest\.py|\.github/|/ci/|setup\.py|tox\.ini)", re.IGNORECASE)
 SOURCE_GLOB = re.compile(r"^(?!.*test).*\.py$")  # test-path-ish is excluded separately
 
 
@@ -46,7 +46,7 @@ def reject_reasons(item: dict[str, Any], known_hackable: set[str] | None = None)
 
     # (2) test-only gold patch: patch touches no non-test .py file
     patch = item.get("patch") or ""
-    touched = re.findall(r"^\+\+\+ b/(.+)$", patch, re.M)
+    touched = re.findall(r"^\+\+\+ b/(.+)$", patch, re.MULTILINE)
     src_touched = [p for p in touched if p.endswith(".py") and "test" not in p.lower()]
     if not src_touched:
         reasons.append("test-only-patch")

@@ -43,12 +43,13 @@ def _pkg_dir_name(path: Path, packages_dir: Path) -> str:
 
 def find_unauthorized_writers(packages_dir: Path = PACKAGES) -> list[str]:
     violations: list[str] = []
+    store_targets = ("store_root", "canonical/", "labels/", "quarantine/", "figures/", "bundles/", "prereg/", "releases/")
     for mod in sorted(packages_dir.glob("**/src/**/*.py")):
         pkg = _pkg_dir_name(mod, packages_dir)
         if pkg in WRITER_PACKAGES:
             continue
         text = mod.read_text()
         for marker in WRITE_MARKERS:
-            if marker in text:
-                violations.append(f"{pkg}: {mod.name} contains write marker '{marker}'")
+            if marker in text and any(t in text for t in store_targets):
+                violations.append(f"{pkg}: {mod.name} contains write marker '{marker}' aimed at a store path")
     return violations

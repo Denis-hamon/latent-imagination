@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import sys
-from hashlib import sha256
 from pathlib import Path
 
 import numpy as np
@@ -67,6 +66,14 @@ def run_baseline_probe(workdir: Path) -> dict:
         "registered_bar": 0.8889,
         "verdict_rule": "precision >= registered_bar (inclusive) AND margin vs arms",
     }
+
+    # FR-14: stylistic controls, computed alongside the headline
+    from probe.controls import stratified_precision
+
+    controls = stratified_precision(
+        [(r["label"], int(p), r["patch"], r["source"]) for r, p in zip(eval_rows, pred)]
+    )
+    report["controls"] = controls
     return report
 
 

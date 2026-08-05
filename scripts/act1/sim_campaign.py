@@ -19,10 +19,9 @@ from pathlib import Path
 
 from harbor_runner.run import AgentSpec, Budget, run_batch
 from harness.figures import Taxonomy, erbve_curve, headline
-from labeling.runner import run_labeling, ruleset_content_hash
+from labeling.runner import ruleset_content_hash, run_labeling
 from prereg.ledger import anchor_entry, append_entry
 from store.validate import validate_store
-
 
 FAMILIES = {
     "claude-code": AgentSpec(name="claude-code", version="2.1.0", model_name="claude-sonnet-4-6", model_family="claude", scaffold_version="0.20.0"),
