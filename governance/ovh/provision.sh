@@ -23,16 +23,18 @@ aws --endpoint-url "https://s3.${OS_REGION_NAME}.io.cloud.ovh.net" \
   s3api get-object-lock-configuration \
   --bucket latent-imagination-releases
 
-echo "==> Compute — B3 instance for Harbor runs + task envs"
+echo "==> Compute — the consolidated GPU node (2× L40S)"
+echo "    (flavor string: from 'openstack flavor list | grep -i l40s' — pick the 2-GPU one)"
+: "${GPU_FLAVOR:?export GPU_FLAVOR=<2x-l40s flavor string from catalog>}"
 openstack server create \
-  --flavor b3-32 \
+  --flavor "$GPU_FLAVOR" \
   --image "Ubuntu 24.04" \
   --key-name "${OS_KEYPAIR:?ssh keypair name}" \
   --network Ext-Net \
-  li-field-runner-1
+  li-node-1
 
-echo "==> Post-boot (run via ssh):"
+echo "==> Post-boot (run via ssh as ubuntu):"
 cat <<'POST'
-sudo apt-get update && sudo apt-get install -y docker.io
-sudo docker --version   # must print 29.7.1 (record to bootstrap.md evidence log)
+# Driver NVIDIA + Docker via OFFICIAL repos (apt docker.io ships 26/27.x, we need 29.7.1):
+bash scripts/setup-node.sh   # from the cloned repo; it does driver, toolkit, docker pin, uv, clone, guard suite
 POST
