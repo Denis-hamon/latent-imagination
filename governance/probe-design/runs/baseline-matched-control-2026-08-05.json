@@ -1,0 +1,14 @@
+{
+  "arm": "baseline-matched-control",
+  "date": "2026-08-05",
+  "purpose": "watermark control — same corpus (SWE-smith-trajectories), same models, same instances; only the outcome differs between classes",
+  "n_train": 345,
+  "n_eval": 116,
+  "tp": 37, "fp": 22, "fn": 22, "tn": 35,
+  "precision": 0.6271,
+  "precision_wilson95": [0.4995, 0.7392],
+  "recall": 0.6271,
+  "registered_bar": 0.8889,
+  "crosses_bar": false,
+  "honest_read": "The fused-corpus precision (1.0) was a provenance artifact — the classifier learned style-of-maintainer vs style-of-agent. On the same-corpus control, the boring baseline sits barely above chance. This is not a failure of the day; it is the instrument working: the pre-registered control caught exactly the trap it was built to catch (R2E-Gym's stylistic-features critique). Branch (iii) cannot ship anything; the JEPA arm (3.5) now carries the real question."
+}
