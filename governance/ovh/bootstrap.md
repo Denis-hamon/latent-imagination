@@ -7,8 +7,8 @@ Target node: 2× L40S GPU instance (flavor from catalog at provisioning).
 
 - [ ] `source .env.ovh` (OS_APPLICATION_CREDENTIAL_ID/SECRET or OVH_TOKEN — env only, never committed)
 - [ ] `bash governance/ovh/provision.sh` — creates: Standard bucket, WORM bucket (Object Lock AT creation), **the GPU node**
-- [ ] SSH in, run `scripts/setup-node.sh` (uv, Docker via official repo 29.7.1, NVIDIA toolkit, repo clone, guard suite green)
-- [ ] Paste outputs below (instance id, bucket names, endpoints, `nvidia-smi` first screen) — evidence lives in this file, versioned
+- [x] GPU node reachable, bootstrapped via `scripts/setup-node.sh` (Docker 29.7.1, NVIDIA container toolkit, uv 0.12.2, Python 3.14.6, suite 149 verts)
+- [x] Object storage substitution decided (2026-08-05, user): **MinIO self-hosted on the node** instead of OVH-managed S3 — see evidence log; `provision.sh` keeps the OVH path for later
 
 ### Evidence log
 
