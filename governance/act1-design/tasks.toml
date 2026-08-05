@@ -1,0 +1,21 @@
+# Act I claim-point task subset (FR-6). Pinned BEFORE any field run.
+# Sources: SWE-bench family — Django / scikit-learn / SymPy instances only.
+# fmt: one instance_id per row. Real instance ids are pulled at design freeze
+# and pinned here; placeholder rows are NOT allowed past freeze.
+
+[[task]]
+suite = "django"
+probe_note = "80% of SWE-bench Verified-era instances are Django-family; kept for coverage breadth"
+
+[[task]]
+suite = "scikit-learn"
+probe_note = "numeric library; F2P suites are dense and non-trivial"
+
+[[task]]
+suite = "sympy"
+probe_note = "symbolic; exercises test-value sensitive assertions"
+
+[subset]
+families_required = 3              # ≥3 distinct model families (FR-6)
+selection_rule = "random.jl split with committed seed at freeze time; the frozen list lives in tasks-frozen.toml (generated)"
+seed = 0x1A71

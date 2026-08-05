@@ -1,0 +1,31 @@
+# Act I measurement design — pre-registered (freeze→hash→anchor before first field run)
+
+[scaffold]
+name = "harbor + our trace wrapper"
+version_locked_by = "git sha of latent-imagination at freeze time"
+
+[attempt_protocol]
+stop_rule = "stop-at-first-valid"         # per FR-6: attempt counting = to-and-including first valid
+max_attempts_per_task = 25                # cap beyond which the task's attempts simply continue false-start
+infra_restarts = "same task env re-seeded once; second infra failure in a row counts as 2 attempts"
+
+[families]
+list = ["claude-code", "codex", "openhands"]   # ≥3, vendor-distinct (NFR-V1)
+generations_window = "2023 → run start date"
+policy = "coverage gaps disclosed per figure (registry + figure caption)"
+
+[aggregation]
+primary = "macro_per_task"
+also_report = ["pooled_micro"]
+level_note = "macro is the claim line; micro must be printed under it"
+
+[tolerances]
+replay_t2_pp = 2.0            # OQ-5 placeholder — confirm at pre-registration
+inclusivity = "inclusive"     # "within" means ≤
+
+[quarantine_flaky]
+quarantine_cap = 0.10         # halted if exceeded, per task set (FR-3)
+flaky_flag_rule = "governance/flaky-policy.toml"
+
+[pre_registration]
+min_publish_delta_pp = "OQ-4 — set before Act II; kept out of Act I by design"
