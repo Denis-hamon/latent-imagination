@@ -6,7 +6,7 @@ cleanly on unreachable calendars (mocked failures), not live anchors.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from prereg.anchor_format import AnchorRecord  # type: ignore[import-not-found]
 
@@ -31,5 +31,5 @@ def anchor_offline_simulated(chain_hash: str, proof_path: str) -> AnchorRecord:
     return AnchorRecord(
         chain_hash=chain_hash,
         ots_proof_ref=proof_path,
-        anchored_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        anchored_at=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     )

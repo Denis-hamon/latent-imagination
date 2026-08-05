@@ -19,6 +19,9 @@ def test_guard_detects_unauthorized_writer(tmp_path):
     bad = fake / "probe" / "src" / "probe"
     bad.mkdir(parents=True)
     (bad / "sneaky.py").write_text("pq.write_table(t, p)\n")
+    ad = fake / "adapters" / "edge"
+    (ad / "src" / "edge").mkdir(parents=True)
+    (ad / "src" / "edge" / "dep.py").write_text("write_bytes(b)\n")  # adapters exempt (landing)
     violations = find_unauthorized_writers(Path(fake))
     assert any("probe" in v for v in violations)
     assert not any("store" in v for v in violations)

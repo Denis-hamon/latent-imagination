@@ -1,4 +1,8 @@
-"""Guard: write-capable code lives only in owning stages (AD-4). Mutation-proven."""
+"""Guard: write-capable code lives only in owning stages (AD-4). Mutation-proven.
+
+Scope note: AD-4 polices canonical-store writes. Adapters are EXEMPT — their job
+is landing-zone deposits (occurrence artifacts), which is not the protected
+surface. Compile-time ownership matters at the canonical store, not the landing."""
 
 from __future__ import annotations
 
@@ -10,7 +14,7 @@ PACKAGES = REPO_ROOT / "packages"
 # py-to-store write markers that must only appear in owning stage packages.
 WRITE_MARKERS = ("write_artifact(", "write_table(", "write_bytes(", "ParquetWriter")
 
-# which packages may contain write markers at all
+# which packages may contain write markers at all ("adapters" covers the edge set)
 WRITER_PACKAGES = {
     "store",          # the helper itself
     "traces-ingest",  # canonical snapshots
@@ -18,12 +22,13 @@ WRITER_PACKAGES = {
     "harness",        # figures + bundles
     "prereg",         # ledger/commit writes
     "publication",    # releases
+    "adapters",       # landing-zone deposits (occurrence artifacts)
 }
 
 
 def _pkg_dir_name(path: Path, packages_dir: Path) -> str:
     rel = path.relative_to(packages_dir)
-    return rel.parts[0] if rel.parts[0] != "adapters" else rel.parts[1]
+    return rel.parts[0] if rel.parts[0] != "adapters" else "adapters"
 
 
 def find_unauthorized_writers(packages_dir: Path = PACKAGES) -> list[str]:

@@ -3,7 +3,7 @@ name = "li-ci-logs"
 version = "0.1.0"
 requires-python = ">=3.14"
 description = "Latent Imagination — ci logs (skeleton, Story 1.1)"
-dependencies = []
+dependencies = ["httpx==0.28.1"]
 
 # edge package: network deps allowed (AD-1/AD-6)
 
