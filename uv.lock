@@ -17,6 +17,7 @@ members = [
     "li-ots-anchor",
     "li-prereg",
     "li-probe",
+    "li-public-corpora",
     "li-publication",
     "li-store",
     "li-tools-ranking",
@@ -298,9 +299,30 @@ source = { editable = "packages/prereg" }
 name = "li-probe"
 version = "0.1.0"
 source = { editable = "packages/probe" }
+dependencies = [
+    { name = "li-core-schema" },
+]
 
 [package.metadata]
+requires-dist = [{ name = "li-core-schema", editable = "packages/core-schema" }]
 provides-extras = ["ml"]
+
+[[package]]
+name = "li-public-corpora"
+version = "0.1.0"
+source = { editable = "packages/adapters/public-corpora" }
+dependencies = [
+    { name = "duckdb" },
+    { name = "httpx" },
+    { name = "li-core-schema" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "duckdb", specifier = "==1.5.5" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "li-core-schema", editable = "packages/core-schema" },
+]
 
 [[package]]
 name = "li-publication"
