@@ -11,8 +11,18 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKAGES = REPO_ROOT / "packages"
 
-# py-to-store write markers that must only appear in owning stage packages.
-WRITE_MARKERS = ("write_artifact(", "write_table(", "write_bytes(", "ParquetWriter")
+# py-to-store write markers in owning stage packages. Broad, intentionally
+# substring-based — the invariant is "any unauthorized write marker anywhere".
+WRITE_MARKERS = (
+    "write_artifact(",
+    "write_table(",
+    "write_bytes(",
+    "write_text(",
+    "ParquetWriter",
+    "copyfile(",
+    "copy2(",
+    "os.remove(",
+)
 
 # which packages may contain write markers at all ("adapters" covers the edge set)
 WRITER_PACKAGES = {

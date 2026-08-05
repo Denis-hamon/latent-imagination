@@ -25,8 +25,8 @@ class ReplayReport:
 
 def _hash_dir(d: Path) -> dict[str, str]:
     return {
-        f.name: sha256(f.read_bytes()).hexdigest()
-        for f in sorted(d.glob("*")) if f.is_file()
+        str(f.relative_to(d)): sha256(f.read_bytes()).hexdigest()
+        for f in sorted(d.rglob("*")) if f.is_file()
     }
 
 
@@ -41,13 +41,14 @@ def replay_check(bundle: Path, expected_figures_json: Path) -> ReplayReport:
     out.mkdir()
 
     env = os.environ.copy()
-    env["PYTHONPATH"] = ""  # project sources invisible to the recompute
+    env.pop("PYTHONPATH", None)  # "" is NOT isolation (it prepends cwd). Absent var + -I isolates.
     run = bundle / "pipeline" / "run.py"
     result = subprocess.run(
-        [sys.executable, str(run), "--slice", str(bundle / "slice"), "--out", str(out)],
+        [sys.executable, "-I", str(run), "--slice", str(bundle / "slice"), "--out", str(out)],
         capture_output=True,
         text=True,
         env=env,
+        cwd=str(bundle),
         check=False,  # nonzero exit is a ReplayReport, not an exception
     )
     if result.returncode != 0:
@@ -55,11 +56,15 @@ def replay_check(bundle: Path, expected_figures_json: Path) -> ReplayReport:
 
     expected = json.loads(Path(expected_figures_json).read_text())
     produced = _hash_dir(out)
-    mismatches = tuple(
+    missing_or_different = {
         name
         for name, h in expected.items()
         if produced.get(name) != h
-    )
+    }
+    extras = set(produced) - set(expected)  # UNKNOWN produced files are drift too
+    mismatches = tuple(sorted(missing_or_different | extras))
+    if mismatches:
+        return ReplayReport(False, mismatches, _env_diff())
     return ReplayReport(not mismatches, mismatches, _env_diff())
 
 

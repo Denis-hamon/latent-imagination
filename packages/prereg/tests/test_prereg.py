@@ -11,8 +11,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from prereg.anchor_format import AnchorRecord
 from prereg.chain import assemble_chain, verify_chain_precedence
 from prereg.verify import verify_offline

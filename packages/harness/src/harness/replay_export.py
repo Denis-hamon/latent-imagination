@@ -44,6 +44,11 @@ def export_bundle(
         (out / sub).mkdir(parents=True, exist_ok=True)
 
     def _copy(group: str, files: list[Path]) -> list[dict[str, Any]]:
+        names = [f.name for f in files]
+        if len(names) != len(set(names)):
+            raise ValueError(
+                f"duplicate basenames in bundle group '{group}': {names} — one would clobber the other"
+            )
         entries = []
         for f in files:
             dest = out / group / f.name

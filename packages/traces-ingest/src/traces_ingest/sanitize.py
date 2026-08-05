@@ -1,8 +1,12 @@
 """Sanitizer — secrets/PII redaction with counts, fail-closed (FR-2).
 
 Pattern policy is FROZEN (governance/sanitize-policy.toml): editing it is a
-pre-registered change event. Unknown-looking high-entropy strings near
-"token"/"key" markers are rejected (fail closed), not silently passed.
+pre-registered change event. Behavior contract:
+- hits are REDACTED (the redacted text, never the raw text, flows downstream)
+- any hit in a field destined to canonical storage is REPORTED with counts of
+  per class; a record carrying hits must be flagged ``sanitized=True`` so the
+  measurement can disclose its sanitized share
+- there is no silent-drop path and no adjudicate-by-judgment path.
 """
 
 from __future__ import annotations
@@ -33,6 +37,9 @@ class SanitizeResult:
 
 
 def sanitize_text(text: str) -> SanitizeResult:
+    """Apply the frozen patterns on RAW text (call before any serialization —
+    sanitizing a JSON dump would let escaped quotes defeat the quote-optional
+    token patterns)."""
     counts: dict[str, int] = {}
     out = text
     for name, pattern in PATTERNS.items():

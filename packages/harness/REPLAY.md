@@ -17,7 +17,7 @@ python pipeline/run.py --slice slice/ --out out/
 ```
 
 Then compare `out/` hashes to `expected_figures.json` published alongside
-(or let `store.replay_check` do it). Default tolerance: ZERO — byte-identical
+(or let `harness.replay_check` do it). Default tolerance: ZERO — byte-identical
 figures or a divergence report naming the exact artifact that moved.
 
 ## Divergence

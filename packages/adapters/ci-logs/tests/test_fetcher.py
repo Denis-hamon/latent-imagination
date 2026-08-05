@@ -25,7 +25,23 @@ def test_fetch_writes_log_and_provenance(tmp_path):
 
 
 def test_robots_disallow_blocks(tmp_path):
-    fx = Fetcher(_client(robots=b"Disallow: /", robots_status=200), min_interval_s=0)
+    # RFC-shaped fixture: User-agent group + Disallow — parser must block.
+    fx = Fetcher(
+        _client(robots=b"User-agent: *\nDisallow: /\n", robots_status=200),
+        min_interval_s=0,
+    )
+    with pytest.raises(PermissionError):
+        fx.fetch("http://ci.example/x", tmp_path, "s", "r")
+
+
+def test_robots_404_allows(tmp_path):
+    fx = Fetcher(_client(robots_status=404), min_interval_s=0)
+    r = fx.fetch("http://ci.example/run/9/log", tmp_path, "s", "9")
+    assert r.provenance["status"] == 200
+
+
+def test_robots_5xx_blocks(tmp_path):
+    fx = Fetcher(_client(robots=b"", robots_status=503), min_interval_s=0)
     with pytest.raises(PermissionError):
         fx.fetch("http://ci.example/x", tmp_path, "s", "r")
 

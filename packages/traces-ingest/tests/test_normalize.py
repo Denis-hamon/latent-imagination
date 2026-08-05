@@ -73,4 +73,6 @@ def test_sanitized_provenance_counts(tmp_path):
         extra_provenance={"note": "token: 'abcdef0123456789abcdef'"},
     )
     rep = normalize_landing(landing)
-    assert rep.counts.get("sanitized_keys", 0) >= 1
+    assert rep.counts.get("sanitized_generic_assignment_token", 0) >= 1
+    assert rep.counts.get("sanitized_records", 0) >= 1
+    assert "[REDACTED]" in rep.accepted[0].provenance["note"]

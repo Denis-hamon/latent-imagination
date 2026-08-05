@@ -61,5 +61,8 @@ def test_duplicate_id_rejected(tmp_path):
 
 def test_audit_mutation_detected():
     e = SourceEntry.model_validate(VALID)
-    assert audit_source(e, "a" * 64) == "unchanged"
-    assert audit_source(e, "b" * 64) == "mutated"
+    assert audit_source(e, "a" * 64) == ("unchanged", 1, "")
+    verdict, new_version, note = audit_source(e, "b" * 64)
+    assert verdict == "mutated"
+    assert new_version == 2
+    assert "WARN" in note and "swe-smith" in note

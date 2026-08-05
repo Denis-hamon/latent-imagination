@@ -39,20 +39,29 @@ class SourceEntry(BaseModel):
             raise SchemaError(
                 "LI-REGISTRY-001", "snapshot_content_hash must be sha256 hex", {"got": v}
             )
-        return v
+        return v.lower()  # normalized: audit comparisons are case-safe (EC-19)
+
+
+def _entries_map(data: object) -> list[dict]:
+    if not isinstance(data, dict):
+        raise SchemaError("LI-REGISTRY-004", "registry root must be a mapping", {})
+    sources = data.get("sources", [])
+    if not isinstance(sources, list):
+        raise SchemaError("LI-REGISTRY-004", "'sources' must be a list", {})
+    return sources
 
 
 def load_registry(path: Path) -> dict[str, SourceEntry]:
-    data = yaml.safe_load(Path(path).read_text())
+    raw = yaml.safe_load(Path(path).read_text())
     entries: dict[str, SourceEntry] = {}
-    for raw in data.get("sources", []):
+    for row in _entries_map(raw):
         try:
-            e = SourceEntry.model_validate(raw)
+            e = SourceEntry.model_validate(row)
         except SchemaError:
             raise
-        except Exception as exc:  # pydantic validation -> typed error
+        except Exception as exc:
             raise SchemaError(
-                "LI-REGISTRY-002", f"invalid source entry: {raw.get('source_id', '?')}", {}
+                "LI-REGISTRY-002", f"invalid source entry: {row.get('source_id', '?')}", {}
             ) from exc
         if e.source_id in entries:
             raise SchemaError("LI-REGISTRY-003", f"duplicate source_id {e.source_id}", {})
@@ -60,6 +69,13 @@ def load_registry(path: Path) -> dict[str, SourceEntry]:
     return entries
 
 
-def audit_source(entry: SourceEntry, new_snapshot_hash: str) -> str:
-    """'unchanged' if the content hash matches; 'mutated' otherwise (FR-1)."""
-    return "unchanged" if entry.snapshot_content_hash == new_snapshot_hash else "mutated"
+def audit_source(entry: SourceEntry, new_snapshot_hash: str) -> tuple[str, int, str]:
+    """FR-1: detect upstream mutation and compute the bump consequence.
+    Returns (verdict, new_source_version, note). 'mutated' bumps +1 and warns."""
+    if entry.snapshot_content_hash == new_snapshot_hash.lower():
+        return ("unchanged", entry.source_version, "")
+    return (
+        "mutated",
+        entry.source_version + 1,
+        f"WARN: upstream snapshot for {entry.source_id} mutated; re-ingestion must bump to v{entry.source_version + 1}",
+    )

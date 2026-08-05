@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Literal
@@ -59,32 +59,39 @@ class PrecedenceVerdict:
 
 
 def _parse_ts(s: str) -> datetime:
-    dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+    dt = datetime.fromisoformat(s)  # Python 3.11+ accepts "Z" natively
     if dt.tzinfo is None:
         raise ValueError(f"naive timestamp in ledger: {s}")
-    return dt.astimezone(timezone.utc)
+    return dt.astimezone(UTC)
 
 
 def verify_chain_precedence(ledger_path: Path, manifests: list[dict]) -> PrecedenceVerdict:
     """Every label-set manifest's ruleset must be anchored BEFORE its run started.
 
     Ledger shape (jsonl): rows with {"type": "anchor", "ruleset_hash", "anchored_at"}
-    and {"type": "run", "run_id", "started_at", "ruleset_hash"}. Only manifests whose
-    artifact_type is "labels" are checked; others ignored.
+    and {"type": "run", "run_id", "started_at", "ruleset_hash"}. Manifests whose
+    artifact_type is "labels" OR "quarantine" are checked (a ruleset's quarantine
+    output is governed by the same ruleset as its labels); others ignored.
     """
     anchors: dict[str, list[datetime]] = {}
     runs: dict[str, dict[str, Any]] = {}
     for line in Path(ledger_path).read_text().splitlines():
         if not line.strip():
             continue
-        row = json.loads(line)
-        if row.get("type") == "anchor":
-            anchors.setdefault(row["ruleset_hash"], []).append(_parse_ts(row["anchored_at"]))
-        elif row.get("type") == "run":
-            runs[row["run_id"]] = row
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as e:
+            return PrecedenceVerdict("violation", f"corrupt ledger row: {e}")
+        try:
+            if row.get("type") == "anchor":
+                anchors.setdefault(row["ruleset_hash"], []).append(_parse_ts(row["anchored_at"]))
+            elif row.get("type") == "run":
+                runs[row["run_id"]] = row
+        except (KeyError, ValueError) as e:
+            return PrecedenceVerdict("violation", f"malformed ledger row: {e}")
 
     for man in manifests:
-        if man.get("artifact_type") != "labels":
+        if man.get("artifact_type") not in ("labels", "quarantine"):
             continue
         inputs = man.get("inputs") or {}
         run_id = inputs.get("run_id")

@@ -59,17 +59,31 @@ class TestEmit:
         meta = json.loads((store_root / "META.json").read_text())
         assert meta["store_version"] == compute_store_version(store_root)
 
-    def test_overwrite_refused(self, store_root):
+    def test_rewrite_same_content_is_noop(self, store_root):
         f = _mkfile(store_root.parent / "w", "snap.parquet", b"PAR1a")
-        write_artifact(
-            "traces-ingest", "canonical-snapshot", "snap-001", "v0",
-            [f], good_inputs(), store_root,
-        )
+        a = write_artifact("traces-ingest", "canonical-snapshot", "snap-001", "v0", [f], good_inputs(), store_root)
+        b = write_artifact("traces-ingest", "canonical-snapshot", "snap-001", "v0", [f], good_inputs(), store_root)
+        assert a.manifest == b.manifest
+
+    def test_overwrite_different_content_refused(self, store_root):
+        f1 = _mkfile(store_root.parent / "w", "snap.parquet", b"PAR1a")
+        write_artifact("traces-ingest", "canonical-snapshot", "snap-002", "v0", [f1], good_inputs(), store_root)
+        f2 = _mkfile(store_root.parent / "w", "snap.parquet", b"PAR1-DIFFERENT")
         with pytest.raises(StoreWriteError):
-            write_artifact(
-                "traces-ingest", "canonical-snapshot", "snap-001", "v0",
-                [f], good_inputs(), store_root,
-            )
+            write_artifact("traces-ingest", "canonical-snapshot", "snap-002", "v0", [f2], good_inputs(), store_root)
+
+    def test_duplicate_basenames_rejected(self, store_root):
+        d1 = store_root.parent / "a"; d1.mkdir()
+        d2 = store_root.parent / "b"; d2.mkdir()
+        f1 = _mkfile(d1, "part.parquet", b"one")
+        f2 = _mkfile(d2, "part.parquet", b"two")
+        with pytest.raises(StoreWriteError):
+            write_artifact("traces-ingest", "canonical-snapshot", "snap-003", "v0", [f1, f2], good_inputs(), store_root)
+
+    def test_traversal_id_rejected(self, store_root):
+        f = _mkfile(store_root.parent / "w", "snap.parquet", b"PAR1a")
+        with pytest.raises(StoreWriteError):
+            write_artifact("traces-ingest", "canonical-snapshot", "../escaped", "v0", [f], good_inputs(), store_root)
 
     def test_wrong_stage_refused(self, store_root):
         f = _mkfile(store_root.parent / "w", "fig.json", b"{}")

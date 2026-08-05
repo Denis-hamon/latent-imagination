@@ -7,16 +7,19 @@ against it; readers need only this README + `duckdb`.
 
 ```text
 <store_root>/
-  META.json                        # {layout_version, store_version}
-  canonical/                       # reproducible artifacts (normalized traces, snapshots)
-    snapshots/<store_version>/*.parquet
+  META.json                                   # {layout_version, store_version}
+  canonical/                                  # reproducible: normalized traces/snapshots
+    <artifact_id>/<artifact_version>/*.parquet|*.json
     manifests/<artifact_id>.<artifact_version>.artifact.json
-  labels/<ruleset_version>/…       # label-sets
-  quarantine/<ruleset_version>/…   # quarantine records (labeling-owned)
-  figures/<figure_id>/<version>/   # published figures (json/csv/png)
-  bundles/                         # replay bundles (harness-owned)
-  prereg/                          # preregistration manifests
-  releases/                        # release manifests
+  labels/<artifact_id>/<artifact_version>/…   # label-sets
+  labels/manifests/…
+  quarantine/<artifact_id>/<artifact_version>/…
+  quarantine/manifests/…
+  figures/<figure_id>/<version>/{*.json,*.csv,*.png}
+  figures/manifests/…
+  bundles/                                    # replay bundles (harness-owned)
+  prereg/                                     # preregistration manifests
+  releases/                                   # release manifests
 ```
 
 Raw adapter deposits do NOT live here — they land in `data/landing/`
@@ -38,23 +41,28 @@ Raw adapter deposits do NOT live here — they land in `data/landing/`
 ```
 
 - **Reproducible-class** manifests carry NO `created_at` and no uuid — content only (AD-7).
-- **Occurrence-class** manifests carry `created_at` (ISO-8601 UTC). Today no store zones
-  hold occurrence artifacts (they live in `data/landing/`).
+- **Occurrence-class** manifests carry `created_at` (ISO-8601 UTC). No store zones hold
+  occurrence artifacts today (those live in `data/landing/`).
 - **inputs** is MANDATORY for reproducible artifacts (AD-13).
+- ids/versions match `^[a-z0-9][a-z0-9._-]*$` — no traversal, no uppercase.
+- Duplicate basenames within one write are rejected. Same id+version re-emitted with
+  IDENTICAL content hashes is a no-op (idempotent ingest); different content fails.
 
 ## Rules
 
-1. **Append-only.** An existing artifact path is never rewritten; corrections are a new
-   `artifact_version`. The emit helper refuses overwrites; the validator detects
-   same-id+version re-published with different content.
-2. **Ownership (AD-4).** Only the owning stage writes a type (see table below);
-   enforced in `store/emit.py` AND re-checked by the validator (manifests whose producer
-   doesn't own the type are invalid).
+1. **Append-only.** An existing artifact path is never rewritten with different
+   content; corrections are a new `artifact_version`.
+2. **Ownership (AD-4).** Only the owning stage's name may appear as `producer`
+   for a type (table below). It is enforced at write time in `store/emit.py`
+   AND re-checked at validate time (a manifest whose producer doesn't own the
+   type is invalid) — so a renamed caller de.validate fails too.
 3. **Content-addressing.** `store_version` = sha256 over the canonical-JSON list of the
    sorted content hashes of `canonical/` data files; empty store = sha256("[]").
-4. **Prereg precedence.** When `prereg-ledger.jsonl` exists at the store root, the
-   validator verifies that every label-set's ruleset was anchored BEFORE its run
-   (delegated to the `prereg` package).
+   `store-validate` RECOMPUTES it against META.json at every run.
+4. **Prereg precedence.** When `prereg-ledger.jsonl` exists at the store root, EVERY
+   `labels` AND `quarantine` manifest must link through `inputs.run_id` to a ledger
+   run row whose ruleset was anchored before the run started. Missing prereg package
+   with a ledger present is a FAIL, not a skip (fail-closed).
 
 ## Writer ownership table
 

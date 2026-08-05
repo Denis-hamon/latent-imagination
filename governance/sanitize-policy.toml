@@ -1,0 +1,16 @@
+# Frozen sanitization policy (FR-2). Editing this file is a pre-registered
+# change event (bump + anchor before the next decisive run).
+
+mode = "redact_and_flag"   # alternatives: reject — never silently pass
+on_unknown = "redact"      # fail-closed on unknown high-entropy, redact + count
+
+[patterns]
+aws_access_key = 'AKIA[0-9A-Z]{16}'
+github_token = 'gh[pousr]_[A-Za-z0-9]{36,}'
+openai_key = 'sk-[A-Za-z0-9_-]{20,}'
+private_key_block = '-----BEGIN [A-Z ]*PRIVATE KEY-----'
+generic_assignment_token = '(?i)(token|api[_-]?key|secret)\s*[:=]\s*[''"]?[A-Za-z0-9/_+\-.]{16,}[''"]?'
+email = '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
+
+# Rule: sanitize applies to RAW text before any JSON serialization; escaped
+# quotes inside dumps defeat quote-optional token patterns (reviewed 2026-08-05).

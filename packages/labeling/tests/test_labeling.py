@@ -23,6 +23,8 @@ class TestRules:
         assert classify_tests_output("Segmentation fault") == LabelOutcome.FALSE_START_INFRASTRUCTURE_FAILURE
         assert classify_tests_output("connection timeout while resolving") is None  # quarantine
         assert classify_tests_output("FAILED 2 tests") == LabelOutcome.FALSE_START_TESTS_RAN_NO_FLIP
+        assert classify_tests_output("OK\r\n") == LabelOutcome.VALID_EXECUTION  # CRLF hygiene (EC-6)
+        assert classify_tests_output("===== 2 failed, 1 passed =====") == LabelOutcome.FALSE_START_TESTS_RAN_NO_FLIP  # negative precedence (EC-5)
 
     def test_ambiguous_never_adjudicated(self):
         assert classify_tests_output("Killed by OOM watcher") is None
@@ -43,9 +45,34 @@ class TestRunner:
         ledger = (store / "prereg-ledger.jsonl").read_text()
         assert '"type": "run"' in ledger and '"run_id": "run-001"' in ledger
 
+
         rep = validate_store(store)
-        assert rep.checks.get("prereg-precedence") == "violation"  # no anchor row yet
+        # No anchor row yet → fail-closed violation (C-3 fix: the instrument
+        # must consider this store INVALID, and the test demands it).
+        assert rep.checks.get("prereg-precedence") == "violation"
         assert not rep.ok
+
+    def test_run_validates_ok_when_anchored_before(self, tmp_path):
+        store = tmp_path / "store"
+        res = run_labeling(
+            _attempts(),
+            store_root=store,
+            run_id="run-001",
+            store_snapshot="s" * 64,
+            code_commit="c" * 40,
+            now_utc="2026-08-05T12:00:00Z",
+        )
+        from prereg.ledger import anchor_entry, append_entry
+
+        append_entry(
+            store / "prereg-ledger.jsonl",
+            anchor_entry("x" * 64, res.summary["ruleset_hash"], "2026-08-04T10:00:00Z", "p.ots"),
+        )
+
+        rep = validate_store(store)
+        # The flip of the adversarial finding: a properly anchored run MUST be ok.
+        assert rep.checks.get("prereg-precedence") == "ok", rep.errors
+        assert rep.ok, rep.errors
 
     def test_quarantine_cap_halts(self, tmp_path):
         attempts = _attempts() + [
