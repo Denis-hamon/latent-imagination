@@ -65,7 +65,8 @@ class GateServer:
         ev = annotate(
             self.snapshot, ctx,
             flip_probability=p, model_family=model_family, latency_s=latency,
-            disclosure={"measured_precision": self.predictor.measured.get("precision"),
+            disclosure={**(self.predictor.measured or {}),
+                        "measured_precision": (self.predictor.measured or {}).get("precision"),
                         "posture": "sub-bar advisory (branch iii)"},
             prediction_target_tier=prediction_target_tier,
         )

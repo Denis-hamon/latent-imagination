@@ -85,7 +85,8 @@ def _check_path(p: str) -> str:
     return p
 
 
-def candidate_from(tool_name: str, tool_input: dict) -> CandidateCtx | None:
+def candidate_from(tool_name: str, tool_input: dict,
+                   wire_payload_sha256: str | None = None) -> CandidateCtx | None:
     """Reconstruct a minimal unified-diff approximation from the file tools.
     None for non-patch tools; malformed payloads RAISE (coded) — a partial
     fabricated annotation is worse than none (CR 5.3)."""
@@ -114,6 +115,7 @@ def candidate_from(tool_name: str, tool_input: dict) -> CandidateCtx | None:
         repo=tool_input.get("repo", "local/working-copy"),
         patch_diff=diff,
         rationale_ptr="governance/probe-design/model-strategy-v1.md",
+        wire_payload_sha256=wire_payload_sha256,
     )
 
 
@@ -154,11 +156,14 @@ def _output_json(event_kind: str, payload: dict) -> dict:
 def run_hook(stdin_text: str, server: GateServer) -> int:
     """The hook body. Exits 0 whatever happens — a hook crash must not break
     the user's loop."""
+    from hashlib import sha256 as _sha
+
+    wire_hash = _sha(stdin_text.encode("utf-8", errors="replace")).hexdigest()
     try:
         tool_name, tool_input = parse_hook_event(stdin_text)
         if tool_name == "__not_pre__":
             return 0
-        ctx = candidate_from(tool_name, tool_input)
+        ctx = candidate_from(tool_name, tool_input, wire_payload_sha256=wire_hash)
         if ctx is None:
             return 0
         settings = AdapterSettings(

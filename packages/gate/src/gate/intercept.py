@@ -31,6 +31,10 @@ class CandidateCtx:
     repo: str
     patch_diff: str
     rationale_ptr: str  # methodology doc pointer, never a narrated simulation
+    # hash of the raw wire payload the adapter received (the reconstructed diff
+    # is hash-addressed separately via patch_sha256 — naming both kills the
+    # "anchored to a reconstruction" ambiguity, CR 5.5)
+    wire_payload_sha256: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_patch_sha256", sha256(self.patch_diff.encode()).hexdigest())
@@ -97,7 +101,9 @@ def annotate(
         "predictor_hash": snapshot.predictor_hash,
         "predictor_version": snapshot.predictor_version,
         "corpus_version": snapshot.corpus_version,
-        "candidate": {"repo": ctx.repo, "patch_sha256": ctx.patch_sha256},
+        "candidate": {"repo": ctx.repo, "patch_sha256": ctx.patch_sha256,
+                       **({"wire_payload_sha256": ctx.wire_payload_sha256}
+                          if ctx.wire_payload_sha256 else {})},
         "rationale_ptr": ctx.rationale_ptr,
         "flip_probability": p,
         "model_family": model_family,

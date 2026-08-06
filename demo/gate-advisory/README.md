@@ -17,15 +17,18 @@ cooperation).
 - `fixtures/predictor.json` is STRUCTURALLY valid with zero weights — the demo
   scores the workload, not a trained model; every flip probability is
   sigmoid(−0.4) ≈ 0.40 by fixture construction. The disclosure line in each
-  annotation (measured precision 0.6271, sub-bar, branch iii) is the REAL
-  Epic-3 measurement, quoted from the sealed envelope.
+  annotation carries the manifest's measured block VERBATIM — including the
+  fixture `note` — so the record never dresses a fixture up as a trained model.
+  (0.6271 is the REAL Epic-3 matched-control measurement, quoted from the
+  sealed envelope, not produced by this artifact.)
 - OQ-10 policy on show: `user_designated` tier (SWE task F2P designated);
   without it, the same run abstains with a recorded `prediction_refused`.
 
-**Bit-rot policy (FR-25/§9):** this demo is a TIME-STAMPED artifact
-(2026-08-06): it pins its input parquet sha256, its predictor pin, and its date
-in `record/demo-record.json`. If any input rots, re-run from sources; nothing
-here pretends to be evergreen.
+**Bit-rot policy (FR-25/§9):** TIME-STAMPED artifact. A re-run REGENERATES
+`record/` (same items, same pins; wall-clock fields vary BY DESIGN). Pins:
+input parquet sha256, predictor sha256, vendor-wire pin. Tripwire:
+`tests/e2e/test_demo_gate_advisory.py` (skips when the parquet is absent).
+The decisions file is SANITIZED with the frozen patterns; counts in the record.
 
 **First in-the-wild Trace-Schema consumption:** the decisions log IS the
 telemetry surface a deployer inspects with their own tools (story 5.6's ETL
