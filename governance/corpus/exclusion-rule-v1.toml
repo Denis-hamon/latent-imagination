@@ -6,4 +6,6 @@
 version = 1
 constituents_file = "governance/corpus/eval-constituents-v1.json"
 constituents_sha256 = "e3f3f493c969ad53b23ecd4f1044e1c7a80f1cf4a1ede89a3e3d1cca5abc1ef3"
-strategy = "repo-level (conservative: any eval repo is out, even across commits) + instance-level + pr-level"
+# repo-level (conservative) + pr-level; NO instance leg by construction (noisy
+# items are task-less) — rationale + amendment flow: exclusion-rule-v1.md
+strategy = "repo-level + pr-level (instance-level N/A: noisy items carry no task ids)"

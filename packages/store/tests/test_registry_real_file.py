@@ -26,3 +26,25 @@ def test_real_registry_has_no_duplicate_ids():
     reg = load_registry(REAL)
     raw = [s["source_id"] for s in __import__("yaml").safe_load(REAL.read_text())["sources"]]
     assert len(raw) == len(reg)  # load_registry would raise on dupes; belt+braces
+
+
+def test_store_version_moves_when_artifact_json_content_changes(tmp_path):
+    """CR 4.2 (blind): the audit JSON inside canonical/ IS content — tampering it
+    must move the content-addressed store_version."""
+    from store.emit import compute_store_version
+
+    canon = tmp_path / "canonical" / "noisy-tier" / "v0"
+    canon.mkdir(parents=True)
+    f = canon / "leakage-audit.json"
+    f.write_text('{"zero_overlap": true}')
+    v1 = compute_store_version(tmp_path)
+    f.write_text('{"zero_overlap": false}')
+    assert compute_store_version(tmp_path) != v1
+    # manifests are metadata, NOT content:
+    man = tmp_path / "canonical" / "manifests"
+    man.mkdir()
+    (man / "noisy-tier.v0.artifact.json").write_text("{}")
+    assert compute_store_version(tmp_path) != v1  # dir add changes? no: manifests ignored
+    v2 = compute_store_version(tmp_path)
+    (man / "noisy-tier.v0.artifact.json").write_text('{"x": 1}')
+    assert compute_store_version(tmp_path) == v2  # manifest edits ignored

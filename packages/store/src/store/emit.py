@@ -86,7 +86,10 @@ def compute_store_version(store_root: Path) -> str:
     hashes: list[str] = []
     if canon_dir.is_dir():
         for f in sorted(canon_dir.rglob("*")):
-            if f.is_file() and f.suffix != ".json":
+            # manifests are index metadata; artifact CONTENT (parquet AND json,
+            # e.g. leakage-audit.json) feeds the store identity (CR 4.2 fix:
+            # audit tampering must move the version).
+            if f.is_file() and "manifests" not in f.relative_to(canon_dir).parts:
                 hashes.append(_sha256_file(f))
     if not hashes:
         return EMPTY_STORE_VERSION

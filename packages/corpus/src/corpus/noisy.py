@@ -46,6 +46,7 @@ class NoisyItem(BaseModel):
     repo: str
     head_sha: str
     workflow_run_id: int
+    pr_number: int | None  # from provenance; drives the pr-level exclusion leg (4.2 CR)
     conclusion: str
     license: str
     attempt_start_utc: str
@@ -116,6 +117,7 @@ def build_items(landing_root: Path, license_allowlist: list[str]) -> BuildResult
             repo=repo,
             head_sha=head_sha,
             workflow_run_id=int(prov.get("workflow_run_id", 0)),
+            pr_number=(int(pr_raw) if (pr_raw := prov.get("pr_number")) is not None else None),
             conclusion=str(prov.get("run_conclusion")),
             license=license_spdx,
             attempt_start_utc=start.isoformat().replace("+00:00", "Z"),

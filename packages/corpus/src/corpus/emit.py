@@ -18,8 +18,7 @@ import pyarrow.parquet as pq
 from core_schema.errors import SchemaError
 from store.emit import compute_store_version, write_artifact
 
-from corpus.constituents import load_constituents
-from corpus.exclusion import apply_exclusion, assert_no_overlap, load_rule
+from corpus.exclusion import apply_exclusion, assert_no_overlap_cited, load_rule
 from corpus.noisy import NoisyItem
 
 ARTIFACT_TYPE = "corpus-item-set"
@@ -56,6 +55,7 @@ def items_table(items: list[NoisyItem]) -> pa.Table:
             ("repo", pa.string()),
             ("head_sha", pa.string()),
             ("workflow_run_id", pa.int64()),
+            ("pr_number", pa.int64()),
             ("conclusion", pa.string()),
             ("license", pa.string()),
             ("attempt_start_utc", pa.string()),
@@ -77,25 +77,26 @@ def emit_noisy_item_set(
     policy_path: Path,
     landing_root: Path,
     exclusion_rule_path: Path,
-    constituents_path: Path,
     code_commit: str | None = None,
     repo_root: Path | None = None,
 ) -> dict:
     """Write <id>/<version>/{items.parquet, leakage-audit.json} + manifest.
 
-    The exclusion rule (story 4.2) is MANDATORY: items are filtered first, the
-    audit ships inside the artifact, and a kept collision fails the build
-    (LI-CORPUS-006) — defense in depth, AC2. Idempotent by store rules.
+    The exclusion rule (story 4.2) is MANDATORY and SINGULAR: `load_rule`
+    verifies the cited constituents' hash and returns THE bound set — there is
+    no second, uncited file (CR 4.2). Items are filtered, the audit ships
+    inside the artifact, and the kept set is re-checked against a FRESH read
+    of the cited file (LI-CORPUS-006) — defense in depth, non-tautological AC2.
+    Idempotent by store rules.
     """
     if not items:
         raise SchemaError("LI-CORPUS-004", "refusing to emit an empty item-set", {})
-    load_rule(exclusion_rule_path)  # verifies the cited constituents hash (no stale rules)
-    constituents = load_constituents(constituents_path)
+    _rule, constituents, constituents_path = load_rule(exclusion_rule_path)
     kept, excluded, audit = apply_exclusion(items, constituents)
-    assert_no_overlap(kept, constituents)  # the AC-2 build check
+    audit.update(assert_no_overlap_cited(kept, constituents_path))  # fresh-read check, AC2
     if not kept:
         raise SchemaError(
-            "LI-CORPUS-006", "exclusion consumed the ENTIRE set — nothing to emit",
+            "LI-CORPUS-008", "exclusion consumed the ENTIRE set — nothing to emit",
             {"excluded": len(excluded)},
         )
 
