@@ -1,0 +1,8 @@
+# Gate latency budget v1 — OQ-3 VALUE registered 2026-08-06 (story 5.4).
+# Placeholder confirmed as the budget after measurement (see oq-3-closure.md).
+
+[budget]
+p95_seconds = 1.0           # the pre-registered value (NFR-P1 placeholder ratified)
+reference_hardware = "OVH GPU node (Ubuntu 26.04) + consumer laptop (Apple silicon)"
+measurement = "per-prediction on the serve path; p50/p95/p99, cold max separate; harness packages/gate/src/gate/bench.py"
+on_miss = "annotations-async guidance; never a claim beyond measurement (SM-C3)"
