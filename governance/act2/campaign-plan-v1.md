@@ -23,5 +23,10 @@ fail-closed on the live attempt — Act I's field measurement evidences two fami
 the window (step 4). A pins file minted on a placeholder family would be counterfeit —
 the machinery saying no, on the record, is the system working.
 
+**Sealed-amendment discipline:** any change to pins/design mid-window = an amendment
+(same machinery as the sealed envelope: logged BEFORE outcomes, hash-referenced).
+**The refusal gates (`require_module_pin`, `require_task_set`) wire into the run
+manifest at campaign-run assembly (window step) — present-tense refusal begins then.**
+
 **Budget note (R10):** the campaign spend ceiling belongs to the window's pre-registration
 (step before ANY paid run), same posture as the 4.1 harvest caps.
