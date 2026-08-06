@@ -41,23 +41,39 @@ def emit_clean_tier(
     hardening_policy_path: Path,
     license_inventory_path: Path,
     candidates_total: int,
-    code_commit: str | None = None,
+    source_hashes: dict[str, str],
+    known_hackable_used: bool,
+    code_commit: str,
     repo_root: Path | None = None,
 ) -> dict:
     """Write <id>/<version>/{items.parquet, hardening-report.json} + manifest.
 
-    Floor integrity (LI-CORPUS-009): a SUB-FLOOR build MUST carry the caveat in
-    its report header — an in-band-less build without the caveat is refused."""
+    Integrity (4.3 CR): reconciliation is enforced — kept+rejects must equal
+    candidates_total and verdict.kept must equal the shipped count; the cited
+    policy hash binds the values the build actually derived from it; the
+    report names ONLY the rejectors that genuinely ran; code_commit is
+    mandatory and caller-supplied (no silent dirty-tree HEAD reads)."""
     if not kept:
         raise SchemaError("LI-CORPUS-009", "refusing to emit an empty clean tier", {})
+    if len(kept) + len(rejects) != candidates_total:
+        raise SchemaError(
+            "LI-CORPUS-009", "candidates_total does not reconcile with kept+rejected",
+            {"kept": len(kept), "rejects": len(rejects), "candidates_total": candidates_total},
+        )
+    if verdict.kept != len(kept):
+        raise SchemaError("LI-CORPUS-009", "floor verdict disagrees with the shipped set",
+                          {"verdict_kept": verdict.kept, "kept": len(kept)})
     if not verdict.in_band and not verdict.caveat:
         raise SchemaError(
             "LI-CORPUS-009", "sub-floor build without the header caveat is refused", {"kept": verdict.kept}
         )
     reject_rate = len(rejects) / max(candidates_total, 1)
+    ran = ["f2p-infra-config", "test-only-patch", "no-f2p-tests", "per-item license allowlist"]
+    if known_hackable_used:
+        ran.insert(2, "known-weak overlap")
     report = {
         "header_caveat": verdict.caveat or None,
-        "criteria": "probe/hardening.py reject_reasons v1 (infra/config F2P, test-only gold, known-weak) + per-item license allowlist (inventory v1)",
+        "criteria": "probe/hardening.py reject_reasons — ACTUALLY RUN: " + "; ".join(ran),
         "candidates": candidates_total,
         "kept": len(kept),
         "rejected": len(rejects),
@@ -73,9 +89,10 @@ def emit_clean_tier(
         inputs = {
             "store_snapshot": compute_store_version(store_root),
             "ruleset_version": sha256(Path(hardening_policy_path).read_bytes()).hexdigest(),
-            "code_commit": code_commit or _git_head(repo_root or Path.cwd()),
+            "code_commit": code_commit,
             "seeds": {},
             "license_inventory_hash": sha256(Path(license_inventory_path).read_bytes()).hexdigest(),
+            "source_hashes": source_hashes,
         }
         res = write_artifact(
             "corpus", ARTIFACT_TYPE, "clean-tier", artifact_version,

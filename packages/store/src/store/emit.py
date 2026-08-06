@@ -178,6 +178,18 @@ def write_artifact(
                 for oe, ne in zip(old.get("files", []), new_entries, strict=False)
             ) and len(old.get("files", [])) == len(new_entries)
             if same:
+                # Same bytes, DIFFERENT inputs claim = a different artifact
+                # pretending to be this version (4.3 CR). store_snapshot moves
+                # naturally as the store grows, so it is exempt from the compare.
+                old_inputs = {k: v for k, v in (old.get("inputs") or {}).items()
+                              if k != "store_snapshot"}
+                new_inputs = {k: v for k, v in (inputs or {}).items()
+                              if k != "store_snapshot"}
+                if old_inputs != new_inputs:
+                    raise StoreWriteError(
+                        "LI-STORE-008: same content, different inputs — bump artifact_version "
+                        "(inputs are part of the artifact's claim)"
+                    )
                 base = artifact_dir if artifact_dir.exists() else None
                 return WrittenArtifact(
                     artifact_dir=base or artifact_dir,

@@ -27,9 +27,9 @@ TEST_ONLY = "diff --git a/tests/test_x.py b/tests/test_x.py\n--- a/tests/test_x.
 INFRA_F2P = ["conftest.py::test_env"]
 
 
-def _cand(iid: str, repo: str, patch: str = GOOD_PATCH, f2p=None):
+def _cand(iid: str, repo: str, patch: str = GOOD_PATCH, f2p="tests/test_x.py::test_ok"):
     return {"instance_id": iid, "repo": repo, "patch": patch,
-            "FAIL_TO_PASS": f2p or ["tests/test_x.py::test_ok"], "PASS_TO_PASS": [],
+            "FAIL_TO_PASS": f2p, "PASS_TO_PASS": [],
             "problem_statement": "", "image_name": None, "source": "swe-smith"}
 
 
@@ -95,7 +95,8 @@ def test_emit_subfloor_requires_caveat(tmp_path):
     manifest = emit_clean_tier(  # noqa: F841 — truth lives in the shipped report
         tmp_path / "store", out["kept"], out["rejects"], out["by_reason"], verdict,
         artifact_version="v0", hardening_policy_path=POLICY,
-        license_inventory_path=INVENTORY, candidates_total=len(cands), code_commit="c" * 40,
+        license_inventory_path=INVENTORY, candidates_total=len(cands),
+        source_hashes={}, known_hackable_used=False, code_commit="c" * 40,
     )
     report = json.loads((tmp_path / "store" / "canonical" / "clean-tier" / "v0" / "hardening-report.json").read_text())
     assert report["header_caveat"]  # sub-floor caveat IS in the shipped report
@@ -109,7 +110,8 @@ def test_emit_subfloor_requires_caveat(tmp_path):
         emit_clean_tier(
             tmp_path / "s2", out["kept"], out["rejects"], out["by_reason"], bad,
             artifact_version="v0", hardening_policy_path=POLICY,
-            license_inventory_path=INVENTORY, candidates_total=1, code_commit="c" * 40,
+            license_inventory_path=INVENTORY, candidates_total=1,
+            source_hashes={}, known_hackable_used=False, code_commit="c" * 40,
         )
     assert ei.value.code == "LI-CORPUS-009"
 
@@ -122,3 +124,49 @@ def test_clean_table_schema():
                      patch_sha256="a" * 64)
     t = clean_table([item])
     assert t.num_rows == 1 and t.column("f2p_tests")[0].as_py() == ["t"]
+
+
+def test_empty_f2p_is_rejected():
+    inv = load_inventory(INVENTORY)
+    cands = [_cand("a__a-1", "swesmith/mahmoud__boltons.12345678", f2p=[])]
+    out = assemble_clean(cands, inv, ["BSD-2-Clause"])
+    assert out["kept"] == [] and out["by_reason"]["no-f2p-tests"] == 1
+
+
+def test_upstream_passthrough_allows_dots():
+    assert upstream_repo("pdfminer/pdfminer.six") == "pdfminer/pdfminer.six"
+    assert upstream_repo("chartjs/Chart.js") == "chartjs/Chart.js"
+
+
+def test_reconciliation_and_verdict_mismatch_refused(tmp_path):
+    inv = load_inventory(INVENTORY)
+    cands = [_cand("a__a-1", "swesmith/mahmoud__boltons.12345678")]
+    out = assemble_clean(cands, inv, ["BSD-2-Clause"])
+    verdict = evaluate_floor(len(out["kept"]), 10_000, 100_000, sources_exhausted=True)
+    with pytest.raises(SchemaError):  # candidates_total inflated → refused
+        emit_clean_tier(tmp_path / "a", out["kept"], out["rejects"], out["by_reason"], verdict,
+                        artifact_version="v0", hardening_policy_path=POLICY,
+                        license_inventory_path=INVENTORY, candidates_total=99,
+                        source_hashes={}, known_hackable_used=False, code_commit="c" * 40)
+    from corpus.clean import FloorVerdict
+
+    wrong = FloorVerdict(in_band=True, kept=5, rung="none", caveat="")
+    with pytest.raises(SchemaError):  # verdict.kept ≠ shipped set → refused
+        emit_clean_tier(tmp_path / "b", out["kept"], out["rejects"], out["by_reason"], wrong,
+                        artifact_version="v0", hardening_policy_path=POLICY,
+                        license_inventory_path=INVENTORY, candidates_total=1,
+                        source_hashes={}, known_hackable_used=False, code_commit="c" * 40)
+
+
+def test_report_names_only_criteria_that_ran(tmp_path):
+    inv = load_inventory(INVENTORY)
+    cands = [_cand("a__a-1", "swesmith/mahmoud__boltons.12345678")]
+    out = assemble_clean(cands, inv, ["BSD-2-Clause"])  # no known_hackable
+    verdict = evaluate_floor(1, 10_000, 100_000, sources_exhausted=True)
+    emit_clean_tier(tmp_path / "s", out["kept"], out["rejects"], out["by_reason"], verdict,
+                    artifact_version="v0", hardening_policy_path=POLICY,
+                    license_inventory_path=INVENTORY, candidates_total=1,
+                    source_hashes={}, known_hackable_used=False, code_commit="c" * 40)
+    rep = json.loads((tmp_path / "s" / "canonical" / "clean-tier" / "v0" / "hardening-report.json").read_text())
+    assert "known-weak" not in rep["criteria"]  # never claim a rejector that did not run
+    assert "ACTUALLY RUN" in rep["criteria"]
