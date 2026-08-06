@@ -79,6 +79,7 @@ def emit_noisy_item_set(
     exclusion_rule_path: Path,
     code_commit: str | None = None,
     repo_root: Path | None = None,
+    corpus_version: str = "corpus-v0",
 ) -> dict:
     """Write <id>/<version>/{items.parquet, leakage-audit.json} + manifest.
 
@@ -116,6 +117,7 @@ def emit_noisy_item_set(
             "seeds": {},
             "landing_manifests": landing_manifests,
             "exclusion_rule_hash": sha256(Path(exclusion_rule_path).read_bytes()).hexdigest(),
+            "corpus_version": corpus_version,
             "leakage_audit": {"kept": audit["kept"], "excluded": audit["excluded"],
                                "zero_overlap": audit["zero_overlap"]},
         }

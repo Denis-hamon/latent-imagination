@@ -8,6 +8,7 @@ Run ON the node (it has MinIO + network). Read-only elsewhere.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import tarfile
@@ -35,7 +36,11 @@ def build_release_artifacts(
     `packet` defaults to the probe packet (governance/probe-design) — the probe
     call-shape is unchanged; the corpus release passes its own packet dir (4.4).
     """
-    pkg_dir = Path(packet) if packet else (workdir / "governance" / "probe-design")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9._-]*", release_id):
+        raise SystemExit(f"invalid --release-id {release_id!r} (slug policy)")
+    pkg_dir = (Path(packet).resolve() if packet else (workdir / "governance" / "probe-design").resolve())
+    if not pkg_dir.is_dir() or not pkg_dir.name:
+        raise SystemExit(f"--packet must be an existing directory with a name, got {packet!r}")
     out_dir = store_root / "releases" / release_id / "v0"
     out_dir.mkdir(parents=True, exist_ok=True)
 

@@ -66,6 +66,23 @@ def _check_manifest(root: Path, mpath: Path, man: dict, report: ValidationReport
         if _sha256_file(fpath) != fe.get("sha256"):
             report.errors.append(f"{mpath.name}: sha256 mismatch on {fe.get('path')}")
 
+    # AD-13 teeth (story 4.4): corpus-touching manifests must cite corpus_version.
+    _inputs = man.get("inputs") or {}
+    _corpusish = (
+        str(man.get("artifact_type", "")).startswith("corpus")
+        or {"corpus_version", "corpus_tier", "tiers_cited"} & set(_inputs)
+    )
+    if _corpusish:
+        import re as _re
+
+        v = _inputs.get("corpus_version")
+        ok = isinstance(v, str) and _re.fullmatch(r"corpus-v(0|[1-9][0-9]*)", v) is not None
+        if not ok:
+            report.errors.append(
+                f"{mpath.name}: corpus-touching manifest without a parseable corpus_version "
+                f"(LI-CORPUS contract) — got {v!r}"
+            )
+
     key = (man.get("artifact_id", "?"), man.get("artifact_version", "?"))
     blob = "|".join(sorted(fe.get("sha256", "") for fe in man.get("files", [])))
     if key in seen and seen[key] != blob:

@@ -44,7 +44,7 @@ def main() -> int:
         raise SystemExit("no candidate data under landing (scp from the node; landing is scratch)")
 
     cands = iter_smith_candidates(smith) + iter_swe_bench_candidates(verified)
-    source_hashes = {str(p): _sha(p) for p in [*smith, *verified]}
+    source_hashes = {str(p.relative_to(root)): _sha(p) for p in [*smith, *verified]}
     policy = load_hardening_policy(root / "governance/corpus/hardening-policy-v1.toml")
     inv = load_inventory(root / "governance/corpus/license-inventory-v1.json")
     known = set(json.loads(Path(args.known_hackable).read_text())) if args.known_hackable else None

@@ -44,6 +44,7 @@ def emit_clean_tier(
     source_hashes: dict[str, str],
     known_hackable_used: bool,
     code_commit: str,
+    corpus_version: str = "corpus-v0",
     repo_root: Path | None = None,
 ) -> dict:
     """Write <id>/<version>/{items.parquet, hardening-report.json} + manifest.
@@ -93,6 +94,7 @@ def emit_clean_tier(
             "seeds": {},
             "license_inventory_hash": sha256(Path(license_inventory_path).read_bytes()).hexdigest(),
             "source_hashes": source_hashes,
+            "corpus_version": corpus_version,
         }
         res = write_artifact(
             "corpus", ARTIFACT_TYPE, "clean-tier", artifact_version,
