@@ -1,0 +1,100 @@
+"""Emit (store contract) + ATIF drift watch (Tasks 2)."""
+
+from __future__ import annotations
+
+import json
+
+import pyarrow.parquet as pq
+import pytest
+from corpus.atif_drift import watch
+from corpus.emit import emit_noisy_item_set
+from corpus.noisy import build_items
+
+ALLOWLIST = ["MIT"]
+REAL_POLICY = (
+    __import__("pathlib").Path(__file__).resolve().parents[3]
+    / "governance" / "corpus" / "harvest-policy-v1.toml"
+)
+
+
+def _copy_policy(tmp_path):
+    import shutil
+
+    dest = tmp_path / "policy.toml"
+    shutil.copy(REAL_POLICY, dest)
+    return dest
+
+
+def _one_item_landing(tmp_path):
+    d = tmp_path / "landing" / "ci-logs" / "o_per_r" / "101"
+    d.mkdir(parents=True)
+    (d / "patch.diff").write_bytes(b"diff --git a/x.py b/x.py\n+a\n")
+    (d / "provenance.json").write_text(json.dumps({
+        "repo": "o/r", "head_sha": "abc123", "workflow_run_id": 101,
+        "run_conclusion": "failure", "license": "MIT", "run_created_at": "2026-08-01T00:00:00Z",
+    }))
+    (tmp_path / "landing" / "ci-logs" / "o_per_r" / ".harvest-manifest.json").write_text("{}")
+    return tmp_path / "landing"
+
+
+def test_emit_writes_reproducible_canonical_artifact(tmp_path):
+    from corpus.policy import load_policy
+
+    landing = _one_item_landing(tmp_path)
+    items = build_items(landing, ALLOWLIST).items
+    store = tmp_path / "store"
+    policy_path = _copy_policy(tmp_path)
+    assert load_policy(policy_path).version == 1
+    manifest = emit_noisy_item_set(
+        store, items, artifact_id="noisy-tier", artifact_version="v0",
+        policy_path=policy_path, landing_root=landing, code_commit="c" * 40,
+    )
+    assert manifest["artifact_class"] == "reproducible"
+    assert manifest["producer"] == "corpus"
+    assert manifest["artifact_type"] == "corpus-item-set"
+    assert "created_at" not in manifest  # AD-7
+    assert manifest["inputs"]["code_commit"] == "c" * 40
+    assert len(manifest["inputs"]["ruleset_version"]) == 64
+    table = pq.read_table(store / "canonical" / "noisy-tier" / "v0" / "items.parquet")
+    assert table.num_rows == 1
+    assert json.loads(table.column("sanitize_counts")[0].as_py()) == {}
+
+
+def test_emit_refuses_empty_and_non_corpus_producer_fails(tmp_path):
+    landing = _one_item_landing(tmp_path)
+    store = tmp_path / "store"
+    policy_path = _copy_policy(tmp_path)
+    from core_schema.errors import SchemaError
+
+    with pytest.raises(SchemaError) as ei:
+        emit_noisy_item_set(store, [], artifact_id="noisy-tier", artifact_version="v0",
+                            policy_path=policy_path, landing_root=landing)
+    assert ei.value.code == "LI-CORPUS-004"
+    # AD-4: the emit table itself refuses a foreign stage for this artifact type
+    from store.emit import StoreWriteError, write_artifact
+
+    f = tmp_path / "x.parquet"
+    f.write_bytes(b"PAR1")
+    with pytest.raises(StoreWriteError):
+        write_artifact("harness", "corpus-item-set", "noisy-tier", "v0", [f],
+                       {"store_snapshot": "0" * 64, "ruleset_version": "1" * 64,
+                        "code_commit": "c" * 40, "seeds": {}}, store)
+
+
+def test_drift_watch_reports_versions_seen(tmp_path):
+    traj_dir = tmp_path / "atif-src" / "b1"
+    traj_dir.mkdir(parents=True)
+    (traj_dir / "ok.json").write_text(json.dumps({"schema_version": "ATIF-v1.7"}))
+    (traj_dir / "drifted.json").write_text(json.dumps({"schema_version": "ATIF-v9.9"}))
+    (traj_dir / ".landing-manifest.json").write_text("{}")
+    (traj_dir / "broken.json").write_text("{ nope")
+    rep = watch(tmp_path, "ATIF-v1.7")
+    assert rep.scanned == 2 and rep.matched == 1  # unparseable counted apart
+    assert rep.observed == {"ATIF-v1.7": 1, "ATIF-v9.9": 1}
+    assert rep.unparseable == 1
+    assert rep.drift is True
+
+
+def test_drift_watch_empty_landing_no_drift(tmp_path):
+    rep = watch(tmp_path, "ATIF-v1.7")
+    assert rep.scanned == 0 and rep.drift is False

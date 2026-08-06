@@ -27,14 +27,19 @@ sources:
     registered_at: "2026-08-05T00:00:00Z"
     notes: "seed entry for Story 1.7"
 
-  - source_id: public-ci-seed
+  # REAL entry (story 4.1): replaces the Story-1.7 `public-ci-seed` fixture.
+  # snapshot hash = sha256("[]") = the empty canonical set (store bootstrap
+  # convention, store/layout.EMPTY_STORE_VERSION): pre-first-harvest state.
+  # The first real harvest run mutates the content -> audit_source() bumps
+  # source_version to 2 and the new snapshot hash is recorded then.
+  - source_id: github-actions-public-ci
     origin_class: public_ci_logs
-    license: "BSD-3-Clause"
-    usage_rights: "analysis"
+    license: "per-repo SPDX id recorded per item (policy allowlist: MIT, Apache-2.0, BSD-2/3-Clause, ISC, 0BSD)"
+    usage_rights: "analysis + derivative labels; patches republished only from allowlisted-license repos"
     covered_families: ["ci-generic"]
     covered_generations: ["2023", "2024", "2025", "2026"]
-    snapshot_content_hash: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
-    coverage_gaps: ["sparse patch linkage in raw CI logs"]
+    snapshot_content_hash: "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    coverage_gaps: ["pre-GitHub-Actions CI estates", "patch-level F2P linkage is the Clean Tier's job, not this source's"]
     source_version: 1
-    registered_at: "2026-08-05T00:00:00Z"
-    notes: "seed entry for Story 1.7"
+    registered_at: "2026-08-06T00:00:00Z"
+    notes: "harvest governed by governance/corpus/harvest-policy-v1.toml (pre-registered, story 4.1)"

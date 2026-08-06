@@ -1,0 +1,31 @@
+# Noisy Tier harvest policy v1 — pre-registered 2026-08-06 (story 4.1, PRD R10).
+# Changes after this registration are amendment events (bump the version, cite the old hash).
+
+[policy]
+version = 1
+registered_at = "2026-08-06"
+
+[budget]
+# PRD R10: pre-registered caps per phase. Hitting a cap shrinks scope WITH disclosure,
+# never silently. First window values — conservative on purpose.
+rest_requests_per_day = 20000        # ≈4h of the 5,000/h PAT primary budget; hard stop
+harvest_window_days = 14             # first window; cadence reviewed at Epic-4 exit
+max_diff_fetches_per_repo_day = 1500 # web .diff endpoints dominate the budget
+
+[politeness]
+per_host_min_interval_s = 1.0        # robots.txt fetches throttled like any host traffic
+on_403_429 = "wait_until_x-ratelimit-reset"
+secondary_backoff = "retry-after header if present, else 60s * 2^n up to n=5"
+
+[rights]
+# R12 / FR-15 rights-clean: only permissive licenses enter a training tier.
+license_allowlist = ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD"]
+unknown_license = "audit-queue-only" # never enters a training tier unverified
+
+[noise_handling]
+dedup = "canonical attempt identity (FR-2, core_schema.identity); cross-source duplicates resolve to one primary entry and are reported beside rejection counts"
+flaky = "frozen FR-4 policy governs: governance/labeling-decision-tree.md + labeling rules_v1; NOT redefined here"
+sanitization = "governance/sanitize-policy.toml patterns (frozen); applied to patch CONTENT at harvest; per-item counts recorded"
+
+[drift_watch]
+expected_atif_version = "ATIF-v1.7"  # the pin is core_schema.trace.ExecutionTrace.schema_version

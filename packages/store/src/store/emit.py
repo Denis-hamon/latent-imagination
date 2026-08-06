@@ -33,6 +33,7 @@ WRITERS: dict[str, tuple[str, ...]] = {
     "harness": ("figure", "bundle"),
     "prereg": ("prereg-commit",),
     "publication": ("release-manifest",),
+    "corpus": ("corpus-item-set",),
 }
 
 _DIR_BY_TYPE = {
@@ -43,6 +44,9 @@ _DIR_BY_TYPE = {
     "bundle": "bundles",
     "prereg-commit": "prereg",
     "release-manifest": "releases",
+    # corpus item-sets are reproducible and live in canonical/ so the
+    # content-addressed store_version covers them (AD-13 citations hold).
+    "corpus-item-set": "canonical",
 }
 
 _SLUG = re.compile(r"^[a-z0-9][a-z0-9._-]*$")

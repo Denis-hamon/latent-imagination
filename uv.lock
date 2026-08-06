@@ -312,10 +312,14 @@ version = "0.1.0"
 source = { editable = "packages/adapters/ci-logs" }
 dependencies = [
     { name = "httpx" },
+    { name = "li-core-schema" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "httpx", specifier = "==0.28.1" }]
+requires-dist = [
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "li-core-schema", editable = "packages/core-schema" },
+]
 
 [[package]]
 name = "li-core-schema"
@@ -332,8 +336,22 @@ requires-dist = [{ name = "pydantic", specifier = "==2.13.4" }]
 name = "li-corpus"
 version = "0.1.0"
 source = { editable = "packages/corpus" }
+dependencies = [
+    { name = "li-core-schema" },
+    { name = "li-store" },
+    { name = "li-traces-ingest" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+]
 
 [package.metadata]
+requires-dist = [
+    { name = "li-core-schema", editable = "packages/core-schema" },
+    { name = "li-store", editable = "packages/store" },
+    { name = "li-traces-ingest", editable = "packages/traces-ingest" },
+    { name = "pyarrow", specifier = "==25.0.0" },
+    { name = "pydantic" },
+]
 provides-extras = ["ml"]
 
 [[package]]

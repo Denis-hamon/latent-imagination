@@ -16,6 +16,7 @@ REPRODUCIBLE_CLASSES = frozenset(
         "bundle",
         "prereg-commit",
         "release-manifest",
+        "corpus-item-set",
     }
 )
 

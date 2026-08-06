@@ -31,3 +31,23 @@ def test_guard_detects_unauthorized_writer(tmp_path):
     assert not any(v.startswith("probe:") for v in violations)
     assert any(v.startswith("probe2:") for v in violations)
     assert not any(v.startswith("edge") for v in violations)
+
+
+def test_guard_scans_scripts_scope(tmp_path):
+    """Story 4.1 / deferred-work Epic-1: scripts are no longer a guard blind spot."""
+    fake_pkg = tmp_path / "packages"
+    fake_pkg.mkdir()
+    scripts = tmp_path / "scripts"
+    # sanctioned ceremony surface: store-aimed writes allowed by design
+    (scripts / "prereg").mkdir(parents=True)
+    (scripts / "prereg" / "ceremony.py").write_text(
+        'Path(store_root / "prereg" / "x").write_text("ledger")\n'
+    )
+    # unsanctioned script writing to a store path → violation
+    (scripts / "corpus").mkdir(parents=True)
+    (scripts / "corpus" / "harvest.py").write_text(
+        'pq.write_table(t, store_root / "canonical" / "corpus")\n'
+    )
+    violations = find_unauthorized_writers(Path(fake_pkg), scripts)
+    assert not any(v.startswith("scripts/prereg") for v in violations)
+    assert any(v.startswith("scripts/corpus") for v in violations)
