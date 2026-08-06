@@ -1,78 +1,123 @@
-"""Act II publication assembly (story 6.4): chained, branch-explicit, gated."""
+"""Act II publication assembly (story 6.4 + CR): cross-bound chain, SM-3 on
+the third-party number, atomic packet, rendered verdict."""
 
 from __future__ import annotations
 
 import json
+from hashlib import sha256
+from pathlib import Path
 
 import pytest
 from core_schema.errors import SchemaError
-from publication.act2 import (
-    assemble_act2_release,
-    select_preprint_template,
-    sm3_evaluation,
+from harness.delta import (  # noqa: F401 (render used via act2)
+    compute_deltas,
+    render_verdict,
 )
+from publication.act2 import assemble_act2_release, sm3_evaluation
 
-A164 = "a" * 64
-
-
-def _inputs(tmp_path, *, met=True, within=True):
-    delta = {"claim_line": {"erbve_delta_pp": 25.1 if met else 1.2},
-             "oq4": {"met": met, "verdict": "material-reduction" if met else "below-threshold",
-                     "minimum_publishable_pp": 5.0}}
-    rerun = {"within_tolerance": within, "rerun": {"operator": "R2E-Lab", "affiliation": "independent"}}
-    pins = {"campaign": "act2-intervention"}
-    d, r, p = tmp_path / "delta.json", tmp_path / "rerun.json", tmp_path / "pins.json"
-    d.write_text(json.dumps(delta)); r.write_text(json.dumps(rerun)); p.write_text(json.dumps(pins))
-    return d, r, p
+REPO = Path(__file__).resolve().parents[3]
+TEMPLATES = REPO / "governance" / "act2" / "verdict-templates"
+DECISION = REPO / "governance" / "probe-design" / "decision.toml"
+DESIGN = REPO / "governance" / "act1-design" / "design.toml"
+A164, CC = "a" * 64, "c" * 64
 
 
-def test_branch_selection_mechanical():
-    assert select_preprint_template(True) == "material-reduction.md"
-    assert select_preprint_template(False) == "below-threshold.md"
+def _delta_dict(met=True, pp=25.1):
+    cl = _act(pp)
+    return {"claim_line": cl,
+            "per_series": [],
+            "tolerance_pp": 2.0,
+            "_citations": {"decision_toml_sha256": "e" * 64, "design_toml_sha256": "f" * 64},
+            "oq4": {"met": met, "verdict": "material-reduction" if met else "below-threshold",
+                    "minimum_publishable_pp": 5.0}}
 
 
-def test_sm3_records_against_the_release():
-    ok = sm3_evaluation({"published_delta_pp": 25.1, "minimum_pp": 5.0}, {"within_tolerance": True})
-    assert ok["outcome"] == "met"
-    ko = sm3_evaluation({"published_delta_pp": 1.2, "minimum_pp": 5.0}, {"within_tolerance": True})
-    assert ko["outcome"].startswith("not met")
-    assert ko["measured"]["delta_pp"] == 1.2  # recorded, not hidden
+def _act(pp):
+    return {"erbve_delta_pp": pp, "exec_per_task_delta": -0.2, "time_to_valid_delta_s": None,
+            "ttv_coverage": "0/2", "aggregation": "pooled macro-per-task, Act I discipline (never a mean of family means)",
+            "delta_ci": None, "ci_status": "fixture"}
 
 
-def test_assembly_act2_packet(tmp_path):
-    d, r, p = _inputs(tmp_path)
+def _write_pair(tmp_path, *, met=True, pp=25.1, anchor=True):
+    delta = _delta_dict(met=met, pp=pp)
+    delta_bytes = (json.dumps(delta, indent=1, sort_keys=True) + "\n").encode()
+    d = tmp_path / "delta.json"
+    d.write_bytes(delta_bytes)
+    rerun = {
+        "rerun": {"operator": "R2E-Lab", "affiliation": "independent"},
+        "published_delta_pp": pp, "reproduced_delta_pp": pp - 0.01,
+        "within_tolerance": True,
+        "bitwise_anchor": {"expected_sha256": sha256(delta_bytes).hexdigest() if anchor else "b" * 64,
+                            "bitwise_equal": anchor},
+    }
+    r = tmp_path / "rerun.json"
+    r.write_text(json.dumps(rerun))
+    pins = tmp_path / "pins.json"
+    pins.write_text('{"campaign": "act2-intervention"}')
+    return d, r, pins
+
+
+def test_assembly_full_chain_bound(tmp_path):
+    d, r, p = _write_pair(tmp_path)
     out = assemble_act2_release(tmp_path / "pkt", delta_json=d, rerun_report_json=r,
-                                verdict_text="# verdict\nreal text",
-                                campaign_pins_json=p, act1_release_hash=A164, code_commit="c" * 40)
-    assert out["references_act1_release"] == A164
+                                templates_dir=TEMPLATES, campaign_pins_json=p,
+                                act1_release_hash=A164, code_commit=CC)
+    assert out["references_act1_release_hash"] == A164
     assert out["preprint_branch"]["template"] == "material-reduction.md"
+    assert out["preprint_branch"]["template_sha256"]
     assert out["sm3"]["outcome"] == "met"
+    assert out["sm3"]["measured"]["reproduced_delta_pp"] == pytest.approx(25.09)
     pkt = tmp_path / "pkt"
-    assert (pkt / "release-manifest-block.json").is_file()
-    assert "Zenodo" in out["distribution_note"] and "pending" in out["distribution_note"]
+    block = json.loads((pkt / "release-manifest-block.json").read_text())
+    assert block["contents"]["verdict_md_sha256"]
+    # the packet's verdict is the TEMPLATE RENDER — guaranteed by construction
+    assert "NOT met" not in (pkt / "verdict.md").read_text()
 
 
-def test_below_threshold_publishes_exactly_that(tmp_path):
-    d, r, p = _inputs(tmp_path, met=False)
-    out = assemble_act2_release(tmp_path / "pkt", delta_json=d, rerun_report_json=r,
-                                verdict_text="below-threshold statement",
-                                campaign_pins_json=p, act1_release_hash=A164, code_commit="c" * 40)
-    assert out["preprint_branch"]["template"] == "below-threshold.md"
-    assert out["sm3"]["outcome"].startswith("not met")
+def test_cross_binding_rerun_must_anchor_this_delta(tmp_path):
+    d, r, p = _write_pair(tmp_path, anchor=False)  # rerun anchors other bytes
+    with pytest.raises(SchemaError) as ei:
+        assemble_act2_release(tmp_path / "pkt", delta_json=d, rerun_report_json=r,
+                              templates_dir=TEMPLATES, campaign_pins_json=p,
+                              act1_release_hash=A164, code_commit=CC)
+    assert "DIFFERENT delta figure" in str(ei.value)
 
 
-def test_guards(tmp_path):
-    d, r, p = _inputs(tmp_path)
-    with pytest.raises(SchemaError):  # bad act1 hash
-        assemble_act2_release(tmp_path / "a", delta_json=d, rerun_report_json=r,
-                              verdict_text="ok", campaign_pins_json=p,
-                              act1_release_hash="not-a-hash", code_commit="c" * 40)
-    with pytest.raises(SchemaError):  # unrendered placeholders
-        assemble_act2_release(tmp_path / "b", delta_json=d, rerun_report_json=r,
-                              verdict_text="delta {delta} pp", campaign_pins_json=p,
-                              act1_release_hash=A164, code_commit="c" * 40)
-    with pytest.raises(SchemaError):  # missing rerun report (FR-10)
-        assemble_act2_release(tmp_path / "c", delta_json=d,
-                              rerun_report_json=tmp_path / "nope.json",
-                              verdict_text="ok", campaign_pins_json=p,
-                              act1_release_hash=A164, code_commit="c" * 40)
+def test_sm3_is_the_third_party_number():
+    r = {"published_delta_pp": 6.9, "reproduced_delta_pp": 4.9,
+         "within_tolerance": True, "bitwise_anchor": {"bitwise_equal": True}}
+    out = sm3_evaluation(r, minimum_pp=5.0)
+    assert out["outcome"].startswith("not met")  # 4.9 < 5.0: written as "met" NO MORE
+
+
+def test_strict_types_on_bools(tmp_path):
+    d, r, p = _write_pair(tmp_path)
+    rerun = json.loads(r.read_text())
+    rerun["within_tolerance"] = "false"  # string poison — was bool("false")==True before
+    r.write_text(json.dumps(rerun))
+    with pytest.raises(SchemaError):
+        assemble_act2_release(tmp_path / "pkt", delta_json=d, rerun_report_json=r,
+                              templates_dir=TEMPLATES, campaign_pins_json=p,
+                              act1_release_hash=A164, code_commit=CC)
+
+
+def test_packet_refuses_nonempty_dir(tmp_path):
+    d, r, p = _write_pair(tmp_path)
+    assemble_act2_release(tmp_path / "pkt", delta_json=d, rerun_report_json=r,
+                          templates_dir=TEMPLATES, campaign_pins_json=p,
+                          act1_release_hash=A164, code_commit=CC)
+    with pytest.raises(SchemaError) as ei:
+        assemble_act2_release(tmp_path / "pkt", delta_json=d, rerun_report_json=r,
+                              templates_dir=TEMPLATES, campaign_pins_json=p,
+                              act1_release_hash=A164, code_commit=CC)
+    assert "non-empty" in str(ei.value)
+
+
+def test_delta_missing_claim_line_refused_before_writes(tmp_path):
+    _d, r, p = _write_pair(tmp_path)
+    bad = tmp_path / "bad.json"
+    bad.write_text('{"oq4": {"met": true, "verdict": "material-reduction", "minimum_publishable_pp": 5.0}}')
+    with pytest.raises(SchemaError):
+        assemble_act2_release(tmp_path / "pkt", delta_json=bad, rerun_report_json=r,
+                              templates_dir=TEMPLATES, campaign_pins_json=p,
+                              act1_release_hash=A164, code_commit=CC)

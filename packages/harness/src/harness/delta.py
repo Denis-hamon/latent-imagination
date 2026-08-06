@@ -151,6 +151,8 @@ def render_verdict(deltas: dict, templates_dir: Path) -> str:
         template = (Path(templates_dir) / name).read_text(encoding="utf-8")
     except FileNotFoundError as exc:
         raise SchemaError("LI-HARNESS-020", f"verdict template missing ({name})", {}) from exc
+    if "_citations" not in deltas or "decision_toml_sha256" not in deltas.get("_citations", {}):
+        raise SchemaError("LI-HARNESS-020", "delta dict lacks its citation block", {})
     cl = deltas["claim_line"]
     ttv = cl["time_to_valid_delta_s"]
     out = (template

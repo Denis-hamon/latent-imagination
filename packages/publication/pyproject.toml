@@ -3,7 +3,7 @@ name = "li-publication"
 version = "0.1.0"
 requires-python = ">=3.14"
 description = "Latent Imagination — publication (skeleton, Story 1.1)"
-dependencies = ["li-core-schema", "li-prereg"]
+dependencies = ["li-core-schema", "li-harness", "li-prereg"]
 
 
 [build-system]
@@ -12,6 +12,7 @@ build-backend = "uv_build"
 
 [tool.uv.sources]
 li-core-schema = { workspace = true }
+li-harness = { workspace = true }
 li-prereg = { workspace = true }
 
 [tool.uv.build-backend]
