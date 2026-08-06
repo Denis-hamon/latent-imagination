@@ -362,6 +362,12 @@ provides-extras = ["ml"]
 name = "li-gate"
 version = "0.1.0"
 source = { editable = "packages/gate" }
+dependencies = [
+    { name = "li-core-schema" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "li-core-schema", editable = "packages/core-schema" }]
 
 [[package]]
 name = "li-gate-adapters"
