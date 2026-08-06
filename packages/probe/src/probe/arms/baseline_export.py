@@ -31,6 +31,9 @@ def export_baseline(
     intercept = getattr(model, "intercept_", None)
     if coef is None or intercept is None:
         raise SchemaError("LI-PROBE-002", "model not fitted (coef_/intercept_ missing)", {})
+    if getattr(coef, "shape", None) is None or len(coef.shape) != 2 or coef.shape[0] != 1:
+        raise SchemaError("LI-PROBE-002",
+                          "binary logistic only — multiclass would silently export class 0", {})
     w = [float(c) for c in coef[0]]
     if len(w) != n_features:
         raise SchemaError("LI-PROBE-002", "coef width ≠ n_features", {"w": len(w)})
@@ -52,6 +55,6 @@ def export_baseline(
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = out_path.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n")
+    tmp.write_text(json.dumps(artifact, indent=2, sort_keys=True, allow_nan=False) + "\n")
     tmp.replace(out_path)
     return artifact

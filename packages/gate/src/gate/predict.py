@@ -48,6 +48,11 @@ class PinnedPredictor:
                  n_features: int, measured: dict, version: str) -> None:
         if len(coefficients) != n_features:
             raise SchemaError("LI-GATE-006", "coefficient count ≠ n_features", {})
+        if not all(isinstance(c, (int, float)) and not isinstance(c, bool) and math.isfinite(c)
+                   for c in coefficients):
+            raise SchemaError("LI-GATE-006", "non-finite or bool coefficient", {})
+        if isinstance(intercept, bool) or not math.isfinite(intercept):
+            raise SchemaError("LI-GATE-006", "intercept not finite", {})
         self._w = coefficients
         self._b = intercept
         self._nf = n_features
@@ -57,19 +62,35 @@ class PinnedPredictor:
     @classmethod
     def from_snapshot(cls, snap: PinnedSnapshot) -> PinnedPredictor:
         m = snap.manifest  # already the hash-pinned bytes' parse (ports job)
-        vec = m.get("vectorizer") or {}
-        model = m.get("model") or {}
+        vec = m.get("vectorizer")
+        model = m.get("model")
+        if not isinstance(vec, dict) or not isinstance(model, dict):
+            raise SchemaError("LI-GATE-006", "predictor artifact sections malformed", {})
+        # the serving mirror implements EXACTLY one recipe — the artifact must
+        # declare it or be refused (a pin binds bytes, not recipe semantics):
+        recipe = {"kind": "sklearn.HashingVectorizer", "alternate_sign": False,
+                  "norm": "l2", "lowercase": True, "token_pattern": r"\b\w\w+\b"}
+        for k, v in recipe.items():
+            if vec.get(k) != v:
+                raise SchemaError("LI-GATE-006", f"vectorizer recipe mismatch on {k}",
+                                  {"expected": v, "got": vec.get(k)})
+        nf_raw, ic_raw = vec.get("n_features"), model.get("intercept")
         coef = model.get("coefficients")
+        if isinstance(nf_raw, bool) or isinstance(ic_raw, bool):
+            raise SchemaError("LI-GATE-006", "bool where a number belongs", {})
         try:
-            n_features = int(vec.get("n_features"))
-            intercept = float(model.get("intercept"))
-        except (TypeError, ValueError) as exc:
+            n_features = int(nf_raw)
+            intercept = float(ic_raw)
+        except (TypeError, ValueError, OverflowError) as exc:
             raise SchemaError("LI-GATE-006", "predictor artifact malformed", {}) from exc
-        if not isinstance(coef, list) or not all(isinstance(c, (int, float)) for c in coef):
+        if not isinstance(coef, list):
             raise SchemaError("LI-GATE-006", "predictor coefficients malformed", {})
-        return cls(coefficients=[float(c) for c in coef], intercept=intercept,
-                   n_features=n_features, measured=m.get("measured") or {},
-                   version=m.get("predictor_version"))
+        try:
+            coefs = [float(c) for c in coef]  # bools/finiteness refused by __init__
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise SchemaError("LI-GATE-006", "predictor coefficients malformed", {}) from exc
+        return cls(coefficients=coefs, intercept=intercept, n_features=n_features,
+                   measured=m.get("measured") or {}, version=m.get("predictor_version"))
 
     def score(self, document: str) -> float:
         """logistic sigmoid over the hashed feature vector. Exact, deterministic."""
