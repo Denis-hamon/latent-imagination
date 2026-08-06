@@ -1,0 +1,45 @@
+{
+  "figure": {
+    "figure": "erbve_curve_v1",
+    "points": [
+      {
+        "family": "claude",
+        "generation": "2024",
+        "claim": true,
+        "macro_rate": 0.4218009478672986,
+        "micro_rate": 0.5784313725490197,
+        "total_attempts": 306,
+        "total_false_starts": 177,
+        "n_tasks": 211
+      },
+      {
+        "family": "claude",
+        "generation": "2025",
+        "claim": true,
+        "macro_rate": 0.6506849315068494,
+        "micro_rate": 0.7020810514786419,
+        "total_attempts": 2739,
+        "total_false_starts": 1923,
+        "n_tasks": 2336
+      },
+      {
+        "family": "openai",
+        "generation": "2024",
+        "claim": true,
+        "macro_rate": 0.9811320754716981,
+        "micro_rate": 0.9811320754716981,
+        "total_attempts": 53,
+        "total_false_starts": 52,
+        "n_tasks": 53
+      }
+    ],
+    "claim_line": {
+      "macro_per_task": 0.6388461538461538,
+      "micro_pooled": 0.6946417043253712,
+      "level_note": "macro_per_task is the claim line; pooled micro printed under"
+    },
+    "context_policy": "context series rendered, never averaged into claim lines"
+  },
+  "headline": "2152 attempts out of 3098 failed to pass the task's tests before a valid execution ran.",
+  "n_attempts": 3229
+}
