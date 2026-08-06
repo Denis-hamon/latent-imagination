@@ -8,7 +8,12 @@ from pathlib import Path
 
 import pytest
 from core_schema.errors import SchemaError
-from probe.campaign import MODULE_PENDING, build_campaign_pins, require_module_pin, write_campaign_pins
+from probe.campaign import (
+    MODULE_PENDING,
+    build_campaign_pins,
+    require_module_pin,
+    write_campaign_pins,
+)
 
 REPO = Path(__file__).resolve().parents[3]
 MODELS = [
