@@ -25,6 +25,8 @@ from pathlib import Path
 from core_schema.errors import SchemaError
 from store.emit import compute_store_version, write_artifact
 
+from harness.act2_delta_pipeline import AGGREGATION_NOTE, CI_STATUS, INCLUSIVITY_NOTE
+
 _REQ = ("family", "generation", "macro_rate", "total_attempts", "n_tasks")
 
 
@@ -128,14 +130,14 @@ def compute_deltas(
             "exec_per_task_delta": exec_delta,
             "time_to_valid_delta_s": ttv_d,
             "ttv_coverage": f"{ttv_have}/{len(a2)} paired series",
-            "aggregation": "pooled macro-per-task, Act I discipline (never a mean of family means)",
+            "aggregation": AGGREGATION_NOTE,
             "delta_ci": None,
-            "ci_status": "uncomputable from aggregated points — patch-level CIs come from 6.3's replay-tier raw attempts (pre-registered bootstrap, decision.toml)",
+            "ci_status": CI_STATUS,
         },
         "per_series": per_series,
         "oq4": {"minimum_publishable_pp": minimum_pp, "met": material,
                  "verdict": "material-reduction" if material else "below-threshold",
-                 "inclusivity": "inclusive (sealed); comparison at full precision, display rounded"},
+                 "inclusivity": INCLUSIVITY_NOTE},
         "tolerance_pp": tol_pp,
         "_citations": {"decision_toml_sha256": decision_hash, "design_toml_sha256": design_hash},
     }
