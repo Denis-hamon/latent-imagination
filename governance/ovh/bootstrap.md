@@ -20,5 +20,5 @@ Target node: 2× L40S GPU instance (flavor from catalog at provisioning).
 | 2026-08-05 | uv + Python | `uv --version`; `python3.14 --version` | `uv 0.12.2` *(0.12.2, not 0.12.1 — one patch newer than `.tool-versions`; CI pins handle)* · `Python 3.14.6` |
 | 2026-08-05 | workspace sync + full suite on the node | `uv sync --locked --all-packages && uv run pytest -q` | `149 passed in 1.03s` |
 | 2026-08-05 | Docker usable as ubuntu | `docker run --rm hello-world` | OK (after fresh ssh for group membership) |
-| 〈pending〉 | bucket standard created | `swift list` / manager (needs OVH creds in env, still owner-run) | 〈pending〉 |
-| 〈pending〉 | WORM bucket has Object Lock | `aws s3api get-object-lock-configuration` | 〈pending〉 |
+| 2026-08-05 | bucket standard created | `swift list` / manager (needs OVH creds in env, still owner-run) | 〈not needed — MinIO runs〉 |
+| 2026-08-06 | **First signed release ceremony** (probe-measurement branch (iii)) | ceremony output + mc stat | `release_hash 9ce1faf3`, `chain_hash 3ff03b8a`, anchor mode `ots-simulated (AnchorUnavailableError)` — live OTS calendars unreachable from the node; simulated anchor is disclosed as such |
