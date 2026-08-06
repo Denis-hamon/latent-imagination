@@ -24,10 +24,18 @@ ARTIFACT_TYPE = "corpus-item-set"
 
 
 def _git_head(root: Path) -> str:
+    """The producing code's commit — fail loud, never fabricate (P17)."""
     r = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True, check=False
     )
-    return r.stdout.strip() or "0" * 40
+    head = r.stdout.strip()
+    if r.returncode != 0 or len(head) != 40:
+        raise SchemaError(
+            "LI-CORPUS-005",
+            "cannot resolve code_commit (pass code_commit= explicitly or run in a git work tree)",
+            {"root": str(root), "rc": r.returncode},
+        )
+    return head
 
 
 def policy_sha256(policy_path: Path) -> str:
@@ -67,6 +75,7 @@ def emit_noisy_item_set(
     policy_path: Path,
     landing_root: Path,
     code_commit: str | None = None,
+    repo_root: Path | None = None,
 ) -> dict:
     """Write <id>/<version>/items.parquet + manifest. Idempotent by store rules
     (same content re-emitted = no-op; different = fail, append-only)."""
@@ -83,7 +92,7 @@ def emit_noisy_item_set(
         inputs = {
             "store_snapshot": compute_store_version(store_root),
             "ruleset_version": policy_sha256(policy_path),
-            "code_commit": code_commit or _git_head(Path.cwd()),
+            "code_commit": code_commit or _git_head(repo_root or Path.cwd()),
             "seeds": {},
             "landing_manifests": landing_manifests,
         }

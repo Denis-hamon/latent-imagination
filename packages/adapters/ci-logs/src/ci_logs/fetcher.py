@@ -1,23 +1,25 @@
-"""CI-logs adapter, productionized (story 4.1): robots respect, per-host
-throttling, and rate-limit-budget discipline.
+"""CI-logs adapter, productionized (story 4.1 + review P2/P15/P16): robots
+respect, per-host throttling, and ONE rate-limit-disciplined GET used by every
+call in this package (web diffs AND api.github.com enumeration alike).
 
 - robots.txt: RFC 9309-ish (404 → allow; 5xx → block; other 4xx → allow; 2xx →
-  parse). Robots fetches are throttled like any host traffic (politeness is
-  about the host, full stop).
-- Rate budget: 403/429 with an exhausted budget (`x-ratelimit-remaining: 0`)
-  waits until `x-ratelimit-reset` and retries ONCE; a second refusal is a hard
-  error (LI-CILOG-001) — never a hammer. Secondary limits honor `retry-after`
-  when present.
-- provenance v2 (see FetchResult.provenance): fetched_at, url, status,
-  source_id, run_id, plus any caller-supplied extraction fields
-  (repo/commits/workflow/license/robots disposition).
+  parse). Robots fetches are throttled like any host traffic.
+- Rate budget (policy harvest-policy-v1, committed): 403/429 waits and retries
+  — `retry-after` honored whenever present (numeric seconds or RFC HTTP-date),
+  else wait to `x-ratelimit-reset` when the primary budget reads exhausted,
+  else the registered exponential chain 60s·2ⁿ with n ≤ 5 attempts; after that
+  a hard LI-CILOG-001 — never a hammer. Header parsing is defensive: malformed
+  headers are ignored, never fatal.
+- provenance v2: fetched_at, url, status, source_id, run_id, robots
+  disposition, content hash, plus caller-supplied fields.
 """
 
 from __future__ import annotations
 
+import email.utils
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
 from typing import Any
@@ -27,6 +29,8 @@ from urllib.parse import urlparse
 import httpx
 from core_schema.errors import SchemaError
 
+_MAX_ATTEMPTS = 5  # policy: backoff 60s·2ⁿ, n ≤ 5, then hard failure
+
 
 @dataclass(frozen=True)
 class FetchResult:
@@ -35,30 +39,54 @@ class FetchResult:
     provenance: dict
 
 
-@dataclass
-class _Budget:
-    """Token-level GitHub budget state, fed by response headers."""
-
-    remaining: int | None = None
-    reset_epoch: int | None = None
-
-    def update(self, headers: httpx.Headers) -> None:
-        r = headers.get("x-ratelimit-remaining")
-        t = headers.get("x-ratelimit-reset")
-        if r is not None:
-            self.remaining = int(r)
-        if t is not None:
-            self.reset_epoch = int(t)
+def _parse_int_header(value: str | None) -> int | None:
+    try:
+        return int(value) if value is not None else None
+    except (TypeError, ValueError):
+        return None  # malformed intermediaries are noise, not a crash (P15)
 
 
-@dataclass
 class Fetcher:
-    client: httpx.Client
-    min_interval_s: float = 1.0
-    sleeper: Any = time.sleep  # injectable for tests
-    time_fn: Any = time.time  # injectable for tests (rate-limit reset windows)
-    _last_by_host: dict[str, float] = field(default_factory=dict)
-    _budget: _Budget = field(default_factory=_Budget)
+    """Robots/throttle/budget-disciplined getter. `sleeper` and `time_fn` are
+    injectable for tests (no real sleeping in the suite)."""
+
+    def __init__(
+        self,
+        client: httpx.Client,
+        min_interval_s: float = 1.0,
+        sleeper: Any = time.sleep,
+        time_fn: Any = time.time,
+    ) -> None:
+        self._client = client
+        self.min_interval_s = min_interval_s
+        self._sleeper = sleeper
+        self._time_fn = time_fn
+        self._last_by_host: dict[str, float] = {}
+
+    # ----- public surface -------------------------------------------------
+
+    def api_get(
+        self, url: str, params: dict | None = None, allow_status: frozenset[int] = frozenset()
+    ) -> httpx.Response:
+        """The ONE budget-disciplined GET. Every request of this package goes
+        through here (P2) — REST enumeration, license lookup, and web diffs.
+        `allow_status` whitelists statuses the caller wants to inspect itself
+        (e.g. a 404 license lookup means "no license file", not an error)."""
+        for attempt in range(_MAX_ATTEMPTS):
+            self._throttle(urlparse(url).netloc)
+            resp = self._client.get(url, params=params, follow_redirects=True)
+            if resp.status_code not in (403, 429):
+                if resp.status_code not in allow_status:
+                    resp.raise_for_status()
+                return resp
+            if attempt == _MAX_ATTEMPTS - 1:
+                raise SchemaError(
+                    "LI-CILOG-001",
+                    "rate limit persists after the registered backoff chain",
+                    {"url": url, "attempts": attempt + 1},
+                )
+            self._wait(resp, attempt)
+        raise AssertionError("unreachable")
 
     def fetch(
         self,
@@ -70,35 +98,35 @@ class Fetcher:
     ) -> FetchResult:
         if not self._allowed(url):
             raise PermissionError(f"robots.txt disallows {url}")
-        resp = self._get_with_budget(url)
+        resp = self.api_get(url)
         return self._deposit(resp, url, dest_dir, source_id, run_id, extra_provenance)
 
-    def _get_with_budget(self, url: str) -> httpx.Response:
-        """One retry after a rate-limit refusal, then hard fail (LI-CILOG-001)."""
-        for attempt in range(2):
-            self._throttle(urlparse(url).netloc)
-            resp = self.client.get(url, follow_redirects=True)
-            self._budget.update(resp.headers)
-            if resp.status_code in (403, 429) and self._budget.remaining == 0:
-                if attempt == 0:
-                    self._wait_for_reset(resp)
-                    continue
-                raise SchemaError(
-                    "LI-CILOG-001",
-                    "rate limit still exhausted after waiting for reset",
-                    {"url": url},
-                )
-            resp.raise_for_status()
-            return resp
-        raise AssertionError("unreachable")
+    # ----- internals --------------------------------------------------------
 
-    def _wait_for_reset(self, resp: httpx.Response) -> None:
+    def _wait(self, resp: httpx.Response, attempt: int) -> None:
         retry_after = resp.headers.get("retry-after")
         if retry_after is not None:
-            self.sleeper(max(float(retry_after), 1.0))
+            seconds = self._retry_after_seconds(retry_after)
+            if seconds is not None:
+                self._sleeper(max(seconds, 1.0))
+                return
+        remaining = _parse_int_header(resp.headers.get("x-ratelimit-remaining"))
+        reset = _parse_int_header(resp.headers.get("x-ratelimit-reset"))
+        if remaining == 0 and reset is not None:
+            self._sleeper(max(reset - int(self._time_fn()), 1))
             return
-        reset = self._budget.reset_epoch or 0
-        self.sleeper(max(reset - int(self.time_fn()), 1))
+        self._sleeper(float(60 * (2 ** attempt)))  # registered secondary backoff
+
+    def _retry_after_seconds(self, value: str) -> float | None:
+        try:
+            return float(value)
+        except ValueError:
+            pass
+        try:  # RFC 7231 allows an HTTP-date form
+            dt = email.utils.parsedate_to_datetime(value)
+            return dt.timestamp() - self._time_fn()
+        except (TypeError, ValueError):
+            return None
 
     def _deposit(
         self,
@@ -112,7 +140,9 @@ class Fetcher:
         out = dest_dir / source_id / str(run_id)
         out.mkdir(parents=True, exist_ok=True)
         content = resp.content
-        name = "patch.diff" if url.endswith(".diff") else "log.txt"
+        # name from the parsed path, not the raw URL — query strings must not
+        # re-type a patch as a log (P16)
+        name = "patch.diff" if urlparse(url).path.endswith(".diff") else "log.txt"
         artifact = out / name
         artifact.write_bytes(content)
         prov: dict = {
@@ -134,7 +164,7 @@ class Fetcher:
         last = self._last_by_host.get(host, 0.0)
         delta = now - last
         if delta < self.min_interval_s:
-            self.sleeper(self.min_interval_s - delta)
+            self._sleeper(self.min_interval_s - delta)
         self._last_by_host[host] = time.monotonic()
 
     def _allowed(self, url: str) -> bool:
@@ -142,7 +172,7 @@ class Fetcher:
         The robots fetch itself is throttled like any host traffic."""
         host = urlparse(url).netloc
         self._throttle(host)
-        resp = self.client.get(f"{self._origin(url)}/robots.txt", follow_redirects=True)
+        resp = self._client.get(f"{self._origin(url)}/robots.txt", follow_redirects=True)
         if resp.status_code == 404:
             return True
         if resp.status_code >= 500:

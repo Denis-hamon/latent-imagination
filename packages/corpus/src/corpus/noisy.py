@@ -58,10 +58,13 @@ class BuildResult(BaseModel):
     items: list[NoisyItem]
     duplicates: int
     excluded_rights: list[dict]  # audit queue: never enters a tier
+    corrupt: int  # torn/degenerate deposits skipped, counted (P11) — never fatal
     scanned: int
 
 
-def _parse_instant(raw: str, ctx: str) -> datetime:
+def _parse_instant(raw: str | None, ctx: str) -> datetime:
+    if not raw:  # both timestamps absent (P11): coded, never a bare TypeError
+        raise SchemaError("LI-CORPUS-003", "missing run timestamp", {"ctx": ctx})
     try:
         dt = datetime.fromisoformat(raw)  # Python 3.11+ parses the Z suffix natively
     except ValueError as exc:
@@ -76,10 +79,11 @@ def build_items(landing_root: Path, license_allowlist: list[str]) -> BuildResult
     ci_root = Path(landing_root) / "ci-logs"
     items: dict[str, NoisyItem] = {}
     duplicates = 0
+    corrupt = 0
     excluded: list[dict] = []
     scanned = 0
     if not ci_root.is_dir():
-        return BuildResult(items=[], duplicates=0, excluded_rights=[], scanned=0)
+        return BuildResult(items=[], duplicates=0, excluded_rights=[], corrupt=0, scanned=0)
 
     for prov_path in sorted(ci_root.glob("*/*/provenance.json")):
         run_dir = prov_path.parent
@@ -87,7 +91,11 @@ def build_items(landing_root: Path, license_allowlist: list[str]) -> BuildResult
         if not patch_path.is_file():
             continue  # log-only deposits are not pairs
         scanned += 1
-        prov = json.loads(prov_path.read_text())
+        try:
+            prov = json.loads(prov_path.read_text())
+        except ValueError:
+            corrupt += 1  # torn write (deposit order: patch, then provenance) — skip
+            continue
         repo = prov.get("repo", "unknown/unknown")
         head_sha = prov.get("head_sha", "")
         license_spdx = prov.get("license", "UNKNOWN")
@@ -120,5 +128,6 @@ def build_items(landing_root: Path, license_allowlist: list[str]) -> BuildResult
             continue
         items[iid] = item
     return BuildResult(
-        items=list(items.values()), duplicates=duplicates, excluded_rights=excluded, scanned=scanned
+        items=list(items.values()), duplicates=duplicates, excluded_rights=excluded,
+        corrupt=corrupt, scanned=scanned,
     )

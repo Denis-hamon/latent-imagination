@@ -41,3 +41,30 @@ def test_missing_policy_fails_loud():
     with pytest.raises(SchemaError) as ei:
         load_policy(Path("/nonexistent/policy.toml"))
     assert ei.value.code == "LI-CORPUS-001"
+
+
+def test_invalid_toml_is_coded(tmp_path):
+    """P14: malformed TOML fails with LI-CORPUS-002, not a raw TOMLDecodeError."""
+    from core_schema.errors import SchemaError
+    from corpus.policy import load_policy
+
+    bad = tmp_path / "bad.toml"
+    bad.write_text("[policy\nversion = :")
+    import pytest
+
+    with pytest.raises(SchemaError) as ei:
+        load_policy(bad)
+    assert ei.value.code == "LI-CORPUS-002"
+
+
+def test_non_table_policy_section_is_coded(tmp_path):
+    from core_schema.errors import SchemaError
+    from corpus.policy import load_policy
+
+    bad = tmp_path / "bad2.toml"
+    bad.write_text('policy = 1\n')
+    import pytest
+
+    with pytest.raises(SchemaError) as ei:
+        load_policy(bad)
+    assert ei.value.code == "LI-CORPUS-001"

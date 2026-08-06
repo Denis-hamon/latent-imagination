@@ -78,3 +78,34 @@ def test_naive_timestamp_rejected(tmp_path):
 def test_empty_landing_is_empty_not_error(tmp_path):
     res = build_items(tmp_path, ALLOWLIST)
     assert res.items == [] and res.scanned == 0
+
+
+def test_missing_timestamp_is_coded_not_typeerror(tmp_path):
+    """P11: a deposit with neither timestamp raises LI-CORPUS-003, not TypeError."""
+    _deposit(tmp_path, 101, "abc123", "MIT", "2026-08-01T00:00:00Z")
+    d = tmp_path / "ci-logs" / "o_per_r" / "202"
+    d.mkdir(parents=True)
+    patch = d / "patch.diff"
+    patch.write_bytes(b"diff --git a/x b/x\n+1\n")
+    (d / "provenance.json").write_text(json.dumps({
+        "repo": "o/r", "head_sha": "c", "license": "MIT", "workflow_run_id": 202,
+        "run_conclusion": "failure",
+    }))
+    import pytest as _pt
+    from core_schema.errors import SchemaError
+
+    with _pt.raises(SchemaError) as ei:
+        build_items(tmp_path, ALLOWLIST)
+    assert ei.value.code == "LI-CORPUS-003"
+
+
+def test_torn_provenance_skipped_and_counted(tmp_path):
+    """P11: a torn provenance.json (crash mid-deposit) skips the pair, counted."""
+    _deposit(tmp_path, 101, "abc123", "MIT", "2026-08-01T00:00:00Z")
+    d = tmp_path / "ci-logs" / "o_per_r" / "303"
+    d.mkdir(parents=True)
+    (d / "patch.diff").write_bytes(b"diff --git a/x b/x\n+1\n")
+    (d / "provenance.json").write_text("{ torn")
+    res = build_items(tmp_path, ALLOWLIST)
+    assert len(res.items) == 1
+    assert res.corrupt == 1

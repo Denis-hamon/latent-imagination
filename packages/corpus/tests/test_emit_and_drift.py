@@ -98,3 +98,29 @@ def test_drift_watch_reports_versions_seen(tmp_path):
 def test_drift_watch_empty_landing_no_drift(tmp_path):
     rep = watch(tmp_path, "ATIF-v1.7")
     assert rep.scanned == 0 and rep.drift is False
+
+
+def test_emit_git_fallback_fails_loud(tmp_path):
+    """P17: no fabricated 40-zero code_commit — LI-CORPUS-005 instead."""
+    from core_schema.errors import SchemaError
+
+    landing = _one_item_landing(tmp_path)
+    items = build_items(landing, ALLOWLIST).items
+    with pytest.raises(SchemaError) as ei:
+        emit_noisy_item_set(tmp_path / "s", items, artifact_id="noisy-tier", artifact_version="v0",
+                            policy_path=_copy_policy(tmp_path), landing_root=landing,
+                            repo_root=tmp_path / "definitely-not-a-repo")
+    assert ei.value.code == "LI-CORPUS-005"
+
+
+def test_write_report_persists_occurrence(tmp_path):
+    """P7: the drift watch has a real invocation surface writing an occurrence report."""
+    traj = tmp_path / "landing" / "src" / "b1"
+    traj.mkdir(parents=True)
+    (traj / "ok.json").write_text(json.dumps({"schema_version": "ATIF-v1.7"}))
+    from corpus.atif_drift import write_report
+
+    out = write_report(tmp_path / "landing", "ATIF-v1.7")
+    assert out.name == "atif-drift-report.json"
+    payload = json.loads(out.read_text())
+    assert payload["matched"] == 1 and "created_at" in payload

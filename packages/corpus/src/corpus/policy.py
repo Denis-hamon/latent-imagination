@@ -65,8 +65,11 @@ def load_policy(path: Path) -> HarvestPolicy:
         raw = Path(path).read_bytes()
     except FileNotFoundError as exc:
         raise SchemaError("LI-CORPUS-001", "harvest policy not found", {"path": str(path)}) from exc
-    data = tomllib.loads(raw.decode("utf-8"))
-    if "policy" not in data:
+    try:
+        data = tomllib.loads(raw.decode("utf-8"))
+    except (tomllib.TOMLDecodeError, UnicodeDecodeError) as exc:
+        raise SchemaError("LI-CORPUS-002", "harvest policy not parseable TOML/UTF-8", {"err": str(exc)}) from exc
+    if not isinstance(data.get("policy"), dict):
         raise SchemaError("LI-CORPUS-001", "harvest policy missing [policy] table", {})
     # [policy] carries the identity fields; the other top-level tables carry the sections.
     payload = {k: v for k, v in data.items() if k != "policy"} | data["policy"]

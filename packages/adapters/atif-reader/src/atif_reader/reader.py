@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import shutil
+from collections import Counter
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
@@ -34,12 +35,16 @@ def deposit_trajectories(
     deposited: list[Path] = []
     rejected: list[tuple[str, str]] = []
     skipped: list[str] = []
+    versions: Counter[str] = Counter()  # ATIF versions OBSERVED (drift watch surface, AC2)
     for f in files:
         if f.name == ".landing-manifest.json":
             skipped.append(f.name)
             continue
+        raw = json.loads(f.read_text())
+        if isinstance(raw, dict) and "schema_version" in raw:
+            versions[str(raw["schema_version"])] += 1
         try:
-            ExecutionTrace.model_validate(json.loads(f.read_text()))
+            ExecutionTrace.model_validate(raw)
         except (ValueError, SchemaError) as e:  # structural AND business-rule violations both bucket
             rejected.append((f.name, type(e).__name__))
             continue
@@ -48,10 +53,11 @@ def deposit_trajectories(
         deposited.append(dest)
 
     manifest = {
-        "landing_manifest_version": 1,
+        "landing_manifest_version": 2,
         "origin": "atif-reader",
         "source_id": source_id,
         "batch_id": batch_id,
+        "atif_versions_observed": dict(versions),
         "deposited": [
             {
                 "path": f"{source_id}/{batch_id}/{p.name}",

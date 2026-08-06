@@ -28,3 +28,12 @@ old policy hash in the corpus manifest `inputs` chain — AD-13).
   `core_schema.trace.ExecutionTrace.schema_version`; the watch reports drift rather than
   hard-failing so an upstream format move surfaces as information, not silence (addendum
   §E.4 note 3: ATIF = alignment, not pin — drift risk is owned by this phase).
+
+## Hash of record
+
+`sha256(harvest-policy-v1.toml) = c084105cc1a42584fe24227af50ae6fb59d5c1cab1f3e87244c5ade2ca615a7c`
+
+This is the registration hash of the frozen policy (story 4.1, commit of the 4.1
+implementation). Any amendment = `harvest-policy-v2.toml` + a new hash of record; corpus
+manifests cite the hash they ran under (`inputs.ruleset_version`), so the chain from a
+corpus artifact to the exact governing text is auditable (AD-13).
