@@ -3,7 +3,7 @@ name = "li-gate-adapters"
 version = "0.1.0"
 requires-python = ">=3.14"
 description = "Latent Imagination — gate edge adapters (Story 5.3)"
-dependencies = ["li-gate", "pydantic-settings==2.14.2"]
+dependencies = ["duckdb==1.5.5", "li-gate", "pydantic-settings==2.14.2"]
 
 
 [project.scripts]

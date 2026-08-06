@@ -1,6 +1,6 @@
 {
   "demo": "gate-advisory-public-demo-1",
-  "demo_recorded_on": "2026-08-06T20:03:51.603075Z",
+  "demo_recorded_on": "2026-08-06T20:06:04.961642Z",
   "vendor_wire_pin": "hooks contract as documented 2026-08-06 (wire reproduced, not vendor-run \u2014 see README)",
   "input_parquet_sha256": "a45b1fe4e2f0c8390b2b2938ac83e92ed5979000856808f3679c07812e9e6dcd",
   "predictor_pin_sha256": "398fda8a383abc6f7f895c5efdb09cad2b5d475ea8cbad90c459b7da4af60a8d",
@@ -30,8 +30,27 @@
         "astropy/table/tests/test_table.py::test_structured_masked_column"
       ],
       "gold_patch_sha256": "e3366b1923660fb0ae2bbc8fb16981184e77fc3f9e3669727f1a3e6061ddaa6d"
+    },
+    {
+      "instance_id": "astropy__astropy-13398",
+      "repo": "astropy/astropy",
+      "f2p_designated": [
+        "astropy/coordinates/tests/test_intermediate_transformations.py::test_itrs_topo_to_altaz_with_refraction",
+        "astropy/coordinates/tests/test_intermediate_transformations.py::test_itrs_topo_to_hadec_with_refraction",
+        "astropy/coordinates/tests/test_intermediate_transformations.py::test_cirs_itrs_topo",
+        "astropy/coordinates/tests/test_intermediate_transformations.py::test_itrs_straight_overhead"
+      ],
+      "gold_patch_sha256": "5124ad079250b10166141d9deeb28d2cdf58ca42e50fb898b0ec8819bacc06e1"
+    },
+    {
+      "instance_id": "astropy__astropy-13453",
+      "repo": "astropy/astropy",
+      "f2p_designated": [
+        "astropy/io/ascii/tests/test_html.py::test_write_table_formatted_columns"
+      ],
+      "gold_patch_sha256": "7f579408e4ad94b129886283f9c6df7d27d3965e2aaaa88141045515dd4710d9"
     }
   ],
   "sanitize_counts": {},
-  "transcript": "=== demo task: astropy__astropy-12907 (astropy/astropy) ===\n{\"systemMessage\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\", \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\"}}\n=== demo task: astropy__astropy-13033 (astropy/astropy) ===\n{\"systemMessage\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\", \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\"}}\n=== demo task: astropy__astropy-13236 (astropy/astropy) ===\n{\"systemMessage\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\", \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\"}}\n"
+  "transcript": "=== demo task: astropy__astropy-12907 (astropy/astropy) ===\n{\"systemMessage\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\", \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\"}}\n=== demo task: astropy__astropy-13033 (astropy/astropy) ===\n{\"systemMessage\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\", \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\"}}\n=== demo task: astropy__astropy-13236 (astropy/astropy) ===\n{\"systemMessage\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\", \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\"}}\n=== demo task: astropy__astropy-13398 (astropy/astropy) ===\n{\"systemMessage\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\", \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\"}}\n=== demo task: astropy__astropy-13453 (astropy/astropy) ===\n{\"systemMessage\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\", \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"additionalContext\": \"[latent-imagination] advisory \\u2014 flip probability 0.40 (precision mesur\\u00e9e 0.6271, posture sub-barre, corpus corpus-v0) \\u2014 m\\u00e9thodologie: governance/probe-design/model-strategy-v1.md\"}}\n"
 }
