@@ -1,6 +1,6 @@
 {
   "demo": "gate-advisory-public-demo-1",
-  "demo_recorded_on": "2026-08-06T20:06:04.961642Z",
+  "demo_recorded_on": "2026-08-06T20:16:10.387043Z",
   "vendor_wire_pin": "hooks contract as documented 2026-08-06 (wire reproduced, not vendor-run \u2014 see README)",
   "input_parquet_sha256": "a45b1fe4e2f0c8390b2b2938ac83e92ed5979000856808f3679c07812e9e6dcd",
   "predictor_pin_sha256": "398fda8a383abc6f7f895c5efdb09cad2b5d475ea8cbad90c459b7da4af60a8d",

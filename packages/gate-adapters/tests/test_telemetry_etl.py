@@ -35,12 +35,35 @@ def test_empty_is_coded(tmp_path):
     assert ei.value.code == "LI-GADPT-004"
 
 
-def test_duckdb_round_trip_queryable(tmp_path):
+def test_duckdb_round_trip_queryable_on_a_real_file(tmp_path):
+    """File-backed path (what deployers use), queried read-only after close."""
+    import duckdb
+
     records, _ = load_log(_log(tmp_path))
-    con = to_duckdb(records, ":memory:")
-    n = con.execute("select count(*) from gate_events").fetchone()[0]
-    assert n == 3
-    p = con.execute("select avg(flip_probability) from gate_events").fetchone()[0]
-    assert abs(p - 0.4) < 1e-12
-    kinds = con.execute("select distinct kind from gate_events").fetchall()
-    assert kinds == [("gate_annotated",)]
+    db = tmp_path / "tel.duckdb"
+    result = to_duckdb(records, db)
+    assert result["inserted"] == 3 and result["degraded_cells"] == 0
+    con = duckdb.connect(str(db), read_only=True)
+    try:
+        assert con.execute("select count(*) from gate_events").fetchone()[0] == 3
+        assert abs(con.execute("select avg(flip_probability) from gate_events").fetchone()[0] - 0.4) < 1e-12
+    finally:
+        con.close()
+
+
+def test_reload_over_a_file_db_never_loses_prior_data_on_garbage(tmp_path):
+    import duckdb
+
+    records, _ = load_log(_log(tmp_path))
+    db = tmp_path / "tel.duckdb"
+    to_duckdb(records, db)
+    # now poison the log: a payload that's not a dict
+    p = tmp_path / "decisions.jsonl"
+    p.write_text(p.read_text() + json.dumps({"kind": "gate_annotated", "payload": "oops"}) + "\n")
+    records2, _stats = load_log(p)
+    assert _stats["malformed_lines"] == 0  # valid JSON with poisoned payload loads (shape degrade counted downstream)
+    result = to_duckdb(records2, db)  # must NOT crash; poisoned row counted/degraded
+    assert result["inserted"] == 4 and result["degraded_cells"] == 1  # the poisoned payload is counted
+    con = duckdb.connect(str(db), read_only=True)
+    assert con.execute("select count(*) from gate_events").fetchone()[0] == 4
+    con.close()

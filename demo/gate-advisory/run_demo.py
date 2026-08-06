@@ -66,6 +66,7 @@ def _as_hook_payload(item: dict) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--items", type=int, default=5)
+    ap.add_argument("--record-dir", default=None, help="scratch target (CI); default: the committed record/")
     args = ap.parse_args()
 
     from gate.serve import GateServer
@@ -78,7 +79,7 @@ def main() -> int:
 
     snap = DEMO_DIR / "fixtures"
     phash = sha256(PREDICTOR_ART.read_bytes()).hexdigest()
-    out_dir = DEMO_DIR / "record"
+    out_dir = Path(args.record_dir) if args.record_dir else DEMO_DIR / "record"
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "decisions.jsonl").unlink(missing_ok=True)  # regenerate, never falsify
 
