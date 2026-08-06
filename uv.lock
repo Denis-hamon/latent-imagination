@@ -340,6 +340,7 @@ version = "0.1.0"
 source = { editable = "packages/corpus" }
 dependencies = [
     { name = "li-core-schema" },
+    { name = "li-probe" },
     { name = "li-store" },
     { name = "li-traces-ingest" },
     { name = "pyarrow" },
@@ -349,6 +350,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "li-core-schema", editable = "packages/core-schema" },
+    { name = "li-probe", editable = "packages/probe" },
     { name = "li-store", editable = "packages/store" },
     { name = "li-traces-ingest", editable = "packages/traces-ingest" },
     { name = "pyarrow", specifier = "==25.0.0" },

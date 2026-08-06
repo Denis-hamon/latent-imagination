@@ -7,6 +7,7 @@ dependencies = [
     "li-core-schema",
     "li-store",
     "li-traces-ingest",
+    "li-probe",
     "pydantic",
     "pyarrow==25.0.0",
 ]
@@ -22,6 +23,7 @@ build-backend = "uv_build"
 li-core-schema = { workspace = true }
 li-store = { workspace = true }
 li-traces-ingest = { workspace = true }
+li-probe = { workspace = true }
 
 [tool.uv.build-backend]
 module-name = "corpus"

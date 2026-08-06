@@ -16,3 +16,7 @@ htmlcov/
 # raw `messages` are unsanitized and the files far exceed git's purpose.
 # Committed data stays small: registries, manifests, replay bundles.
 data/landing/
+
+# Bulk artifact stores (canonical corpus parquet etc.) — committed surface = the
+# hashed manifests/reports (AD-10: bulk on object storage, manifest in-repo).
+data/store/

@@ -27,6 +27,8 @@ Core package (AD-6: zero network at run time). The harvest's network lives in
 | --- | --- |
 | `policy.py` | loads the pre-registered harvest policy (fail-loud, LI-CORPUS-001/2) |
 | `noisy.py` | landing deposits → deduped/sanitized/rights-filtered items |
+| `clean.py` | Clean Tier assembly: candidates → hardening+rights filter → floor verdict (4.3) |
+| `clean_emit.py` | `clean-tier` artifact with the hardening report inside (4.3) |
 | `constituents.py` | eval-constituents assembly from the sealed probe surfaces (Task 4.2.0) |
 | `exclusion.py` | versioned exclusion rule + leakage audit + the build check (4.2) |
 | `atif_drift.py` | drift watch: schema_version actually seen vs the pinned one (AC 2) |

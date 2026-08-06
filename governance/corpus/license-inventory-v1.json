@@ -1,0 +1,170 @@
+{
+  "a6_flag": "CLOSED 2026-08-06 (SWE-Gym + R2E-Gym verified Apache-2.0)",
+  "datasets": {
+    "R2E-Gym": {
+      "evidence": "api.github.com/repos/R2E-Gym/R2E-Gym/license \u2192 LICENSE file",
+      "license": "Apache-2.0"
+    },
+    "SWE-Gym": {
+      "evidence": "api.github.com/repos/SWE-Gym/SWE-Gym/license \u2192 LICENSE file",
+      "license": "Apache-2.0"
+    },
+    "SWE-bench (Verified)": {
+      "evidence": "dataset family repo LICENSE (\u00a7A.6)",
+      "license": "MIT"
+    },
+    "SWE-smith": {
+      "evidence": "dataset repo LICENSE (\u00a7A.6)",
+      "license": "MIT"
+    }
+  },
+  "note_hf_cards": "HF dataset cards carry NO license field for SWE-Gym/R2E-Gym \u2014 code-repo LICENSE used as evidence; per-item licenses resolved from upstream repos below.",
+  "upstream_repos": {
+    "Cog-Creators/Red-DiscordBot": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "GPL-3.0"
+    },
+    "PyCQA/flake8": {
+      "evidence": "license-file content match: main/LICENSE",
+      "license": "MIT"
+    },
+    "Suor/funcy": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-3-Clause"
+    },
+    "agronholm/exceptiongroup": {
+      "evidence": "license-file content match: main/LICENSE",
+      "license": "MIT"
+    },
+    "agronholm/typeguard": {
+      "evidence": "license-file content match: master/LICENSE",
+      "license": "MIT"
+    },
+    "ariga/atlas": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "Apache-2.0"
+    },
+    "astropy/astropy": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-3-Clause"
+    },
+    "bottlepy/bottle": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "cantools/cantools": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "cknd/stackprinter": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "django/django": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-3-Clause"
+    },
+    "doctrine/dbal": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "getnikola/nikola": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "go-zoo/bone": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "hjson/hjson-go": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "jd/tenacity": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "Apache-2.0"
+    },
+    "joke2k/faker": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "luozhouyang/python-string-similarity": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "madzak/python-json-logger": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-2-Clause"
+    },
+    "mahmoud/boltons": {
+      "evidence": "license-file content match: master/LICENSE",
+      "license": "BSD-2-Clause"
+    },
+    "matplotlib/matplotlib": {
+      "evidence": "not found",
+      "license": "UNKNOWN"
+    },
+    "mwaskom/seaborn": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-3-Clause"
+    },
+    "oauthlib/oauthlib": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-3-Clause"
+    },
+    "pallets/flask": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-3-Clause"
+    },
+    "pdfminer/pdfminer.six": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "psf/requests": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "Apache-2.0"
+    },
+    "pudo/dataset": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "pydata/xarray": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "Apache-2.0"
+    },
+    "pygments/pygments": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-2-Clause"
+    },
+    "pylint-dev/pylint": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "GPL-2.0"
+    },
+    "pytest-dev/iniconfig": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "pytest-dev/pytest": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "scikit-learn/scikit-learn": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "BSD-3-Clause"
+    },
+    "seatgeek/thefuzz": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "MIT"
+    },
+    "sphinx-doc/sphinx": {
+      "evidence": "api.github.com/repos/<repo>/license",
+      "license": "NOASSERTION"
+    },
+    "sympy/sympy": {
+      "evidence": "content match master/LICENSE",
+      "license": "MIT"
+    }
+  },
+  "verified_at": "2026-08-06",
+  "version": 1
+}

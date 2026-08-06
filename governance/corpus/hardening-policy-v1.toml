@@ -1,0 +1,23 @@
+# Hardening policy v1 — OQ-7 FINALIZED (story 4.3, criteria BEFORE assembly).
+# FR-16/R7: the Clean Tier rests on suites that can actually fail.
+
+[policy]
+version = 1
+registered_at = "2026-08-06"
+
+[detector]
+# Two layers, honestly separated by cost:
+metadata = "the three lite rejectors of probe/hardening.py (infra/config F2P paths, test-only gold patch, known-weak overlap) — run at build time, criteria frozen HERE, imported not forked (sealed-envelope discipline)"
+execution = "docker-verified-incorrect probe (the ~28.5% hackability-class answer, arXiv:2606.16062): run a battery of known-incorrect patches against sampled suites on the GPU node; a suite that PASSES an incorrect patch is weak and quarantined. Execution-window only (story 4.3 harness hook: harbor-runner adapter + policy below)."
+spot_sample_rate = 0.01            # 1% of kept candidates per build window
+weak_threshold = "reject task iff ANY seeded incorrect patch passes its F2P suite"
+on_breach = "quarantine task + count in the published reject rate (never silent)"
+
+[floor]
+tier_band_min = 10000              # 10⁴
+tier_band_max = 100000             # 10⁵
+ladder = ["expand-sources", "extend-repos", "publish-sub-floor-with-header-caveat"]
+
+[rights]
+# Per-item license from the inventory (4.3 Task 0); copyleft/UNKNOWN → audit queue.
+allowlist = ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD"]
