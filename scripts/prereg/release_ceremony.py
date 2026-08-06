@@ -11,7 +11,6 @@ import json
 import subprocess
 import sys
 import tarfile
-from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
 
@@ -73,7 +72,9 @@ def build_release_artifacts(workdir: Path, store_root: Path) -> dict:
 
 
 def _git_head(root: Path) -> str:
-    r = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True)
+    r = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True, check=False
+    )
     return r.stdout.strip() or ("0" * 40)
 
 
@@ -97,7 +98,8 @@ def anchor_chain(workdir: Path, artifacts: dict, store_root: Path) -> dict:
         proof_path = str(store_root / "proofs" / f"{chain.chain_hash[:16]}.ots")
         rec = anchor(chain.chain_hash, proof_path)
         mode = "ots-live"
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 — degrade-with-disclosure is the design: ANY live-anchor
+        # failure falls back to a simulated anchor, and the mode lands on the ledger + ceremony output.
         from ots_anchor.anchor import anchor_offline_simulated
 
         proof_path = str(store_root / "proofs" / f"{chain.chain_hash[:16]}.sim.ots")
