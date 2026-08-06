@@ -25,6 +25,21 @@ def _copy_policy(tmp_path):
     return dest
 
 
+def _exclusion_fixture(tmp_path):
+    """A colliding-free constituents + matching rule (hashes computed live)."""
+    import json as _json
+    from hashlib import sha256
+
+    c = tmp_path / "constituents.json"
+    c.write_text(_json.dumps({"version": 1, "sources": [], "instance_ids": ["z__z-1"], "repos": ["z/z"], "prs": []}))
+    r = tmp_path / "rule.toml"
+    r.write_text(
+        f'[rule]\nversion = 1\nconstituents_file = "{c}"\n'
+        f'constituents_sha256 = "{sha256(c.read_bytes()).hexdigest()}"\nstrategy = "t"\n'
+    )
+    return r, c
+
+
 def _one_item_landing(tmp_path):
     d = tmp_path / "landing" / "ci-logs" / "o_per_r" / "101"
     d.mkdir(parents=True)
@@ -48,6 +63,7 @@ def test_emit_writes_reproducible_canonical_artifact(tmp_path):
     manifest = emit_noisy_item_set(
         store, items, artifact_id="noisy-tier", artifact_version="v0",
         policy_path=policy_path, landing_root=landing, code_commit="c" * 40,
+        exclusion_rule_path=(fx := _exclusion_fixture(tmp_path))[0], constituents_path=fx[1],
     )
     assert manifest["artifact_class"] == "reproducible"
     assert manifest["producer"] == "corpus"
@@ -67,8 +83,10 @@ def test_emit_refuses_empty_and_non_corpus_producer_fails(tmp_path):
     from core_schema.errors import SchemaError
 
     with pytest.raises(SchemaError) as ei:
+        rule, const = _exclusion_fixture(tmp_path)
         emit_noisy_item_set(store, [], artifact_id="noisy-tier", artifact_version="v0",
-                            policy_path=policy_path, landing_root=landing)
+                            policy_path=policy_path, landing_root=landing,
+                            exclusion_rule_path=rule, constituents_path=const)
     assert ei.value.code == "LI-CORPUS-004"
     # AD-4: the emit table itself refuses a foreign stage for this artifact type
     from store.emit import StoreWriteError, write_artifact
@@ -107,8 +125,10 @@ def test_emit_git_fallback_fails_loud(tmp_path):
     landing = _one_item_landing(tmp_path)
     items = build_items(landing, ALLOWLIST).items
     with pytest.raises(SchemaError) as ei:
+        rule, const = _exclusion_fixture(tmp_path)
         emit_noisy_item_set(tmp_path / "s", items, artifact_id="noisy-tier", artifact_version="v0",
                             policy_path=_copy_policy(tmp_path), landing_root=landing,
+                            exclusion_rule_path=rule, constituents_path=const,
                             repo_root=tmp_path / "definitely-not-a-repo")
     assert ei.value.code == "LI-CORPUS-005"
 

@@ -18,6 +18,8 @@ import pyarrow.parquet as pq
 from core_schema.errors import SchemaError
 from store.emit import compute_store_version, write_artifact
 
+from corpus.constituents import load_constituents
+from corpus.exclusion import apply_exclusion, assert_no_overlap, load_rule
 from corpus.noisy import NoisyItem
 
 ARTIFACT_TYPE = "corpus-item-set"
@@ -74,17 +76,34 @@ def emit_noisy_item_set(
     artifact_version: str,
     policy_path: Path,
     landing_root: Path,
+    exclusion_rule_path: Path,
+    constituents_path: Path,
     code_commit: str | None = None,
     repo_root: Path | None = None,
 ) -> dict:
-    """Write <id>/<version>/items.parquet + manifest. Idempotent by store rules
-    (same content re-emitted = no-op; different = fail, append-only)."""
+    """Write <id>/<version>/{items.parquet, leakage-audit.json} + manifest.
+
+    The exclusion rule (story 4.2) is MANDATORY: items are filtered first, the
+    audit ships inside the artifact, and a kept collision fails the build
+    (LI-CORPUS-006) — defense in depth, AC2. Idempotent by store rules.
+    """
     if not items:
         raise SchemaError("LI-CORPUS-004", "refusing to emit an empty item-set", {})
+    load_rule(exclusion_rule_path)  # verifies the cited constituents hash (no stale rules)
+    constituents = load_constituents(constituents_path)
+    kept, excluded, audit = apply_exclusion(items, constituents)
+    assert_no_overlap(kept, constituents)  # the AC-2 build check
+    if not kept:
+        raise SchemaError(
+            "LI-CORPUS-006", "exclusion consumed the ENTIRE set — nothing to emit",
+            {"excluded": len(excluded)},
+        )
 
     with tempfile.TemporaryDirectory() as tmp:
         parquet = Path(tmp) / "items.parquet"
-        pq.write_table(items_table(items), parquet)
+        pq.write_table(items_table(kept), parquet)
+        audit_path = Path(tmp) / "leakage-audit.json"
+        audit_path.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n")
         landing_manifests = sorted(
             sha256(p.read_bytes()).hexdigest()
             for p in Path(landing_root).glob("ci-logs/*/.harvest-manifest.json")
@@ -95,13 +114,16 @@ def emit_noisy_item_set(
             "code_commit": code_commit or _git_head(repo_root or Path.cwd()),
             "seeds": {},
             "landing_manifests": landing_manifests,
+            "exclusion_rule_hash": sha256(Path(exclusion_rule_path).read_bytes()).hexdigest(),
+            "leakage_audit": {"kept": audit["kept"], "excluded": audit["excluded"],
+                               "zero_overlap": audit["zero_overlap"]},
         }
         res = write_artifact(
             "corpus",
             ARTIFACT_TYPE,
             artifact_id,
             artifact_version,
-            [parquet],
+            [parquet, audit_path],
             inputs,
             store_root,
         )

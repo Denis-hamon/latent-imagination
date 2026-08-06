@@ -27,7 +27,21 @@ Core package (AD-6: zero network at run time). The harvest's network lives in
 | --- | --- |
 | `policy.py` | loads the pre-registered harvest policy (fail-loud, LI-CORPUS-001/2) |
 | `noisy.py` | landing deposits → deduped/sanitized/rights-filtered items |
+| `constituents.py` | eval-constituents assembly from the sealed probe surfaces (Task 4.2.0) |
+| `exclusion.py` | versioned exclusion rule + leakage audit + the build check (4.2) |
 | `atif_drift.py` | drift watch: schema_version actually seen vs the pinned one (AC 2) |
 | `emit.py` | `corpus-item-set` artifacts into the store (canonical zone, AD-4/AD-13) |
 
-Error codes allocated here: `LI-CORPUS-001..004`.
+## Exclusion (story 4.2, FR-15/R11)
+
+No training tier may contain the measurement's own test set. `emit_noisy_item_set`
+REQUIRES `exclusion_rule_path` + `constituents_path`: items are filtered
+conservatively (eval repo = out, even across commits), the audit
+(`leakage-audit.json`) ships inside the artifact, and a surviving collision
+raises LI-CORPUS-006 — an injected colliding pair fails the build (AC2, CI-tested).
+Rule + constituents live committed: `governance/corpus/exclusion-rule-v1.toml`
+(cites the constituents' sha256 — a stale citation refuses to load) and
+`eval-constituents-v1.json` (assembled from the sealed `governance/probe-design/`
+surfaces by `constituents.build_constituents`).
+
+Error codes allocated here: `LI-CORPUS-001..007`.

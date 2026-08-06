@@ -1,0 +1,9 @@
+# Exclusion rule v1 — versioned repo/task/PR exclusion of eval constituents
+# from training tiers (story 4.2, FR-15 disjointness / R11).
+# Amendments bump the version; corpus manifests cite this file's hash (AD-13).
+
+[rule]
+version = 1
+constituents_file = "governance/corpus/eval-constituents-v1.json"
+constituents_sha256 = "e3f3f493c969ad53b23ecd4f1044e1c7a80f1cf4a1ede89a3e3d1cca5abc1ef3"
+strategy = "repo-level (conservative: any eval repo is out, even across commits) + instance-level + pr-level"
