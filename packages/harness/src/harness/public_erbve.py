@@ -15,9 +15,7 @@ import json
 from pathlib import Path
 
 import duckdb
-
 from core_schema.domain import LabelOutcome
-from harness.metrics import compute_erbve
 
 MODEL_TO_FAMILY = {
     "claude-3-5-sonnet-20241022": ("claude", "2024"),
@@ -32,19 +30,19 @@ def measure_public_erbve(raw_parquet: Path) -> dict:
         f"""select instance_id, model, resolved from read_parquet('{raw_parquet}')"""
     ).fetchall()
 
-    # every trajectory row = one attempt; nothing more, nothing less
+    # every trajectory row = one attempt; task key = (instance, model) to keep
+    # families' denominators unmixed (a task per model, not a shared instance)
     labels: list[dict] = []
     task_of: dict[str, str] = {}
     start_of: dict[str, str] = {}
     series_of: dict[str, tuple[str, str]] = {}
-    base = "2026-01-01T00:00:00Z"
     for i, (iid, model, resolved) in enumerate(rows):
         aid = f"{iid}::{model}::{i}"
         outcome = (
             LabelOutcome.VALID_EXECUTION if resolved else LabelOutcome.FALSE_START_TESTS_RAN_NO_FLIP
         )
         labels.append({"attempt_id": aid, "outcome": outcome.value})
-        task_of[aid] = iid
+        task_of[aid] = f"{iid}::{model}"
         start_of[aid] = f"2026-01-01T{(i % 86400) // 3600:02d}:{(i % 3600) // 60:02d}:00Z"
         series_of[aid] = MODEL_TO_FAMILY.get(model, ("unknown", "unknown"))
 
@@ -74,6 +72,13 @@ def main() -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(res, indent=2, default=str) + "\n")
     print(json.dumps({"n_attempts": res["n_attempts"], "headline": res["headline"]}, indent=2))
+    per_series = {}
+    for p in res["figure"]["points"]:
+        per_series[f"{p['family']}-{p['generation']}"] = {
+            "macro": p["macro_rate"], "micro": p["micro_rate"],
+            "attempts": p["total_attempts"], "false": p["total_false_starts"], "n_tasks": p["n_tasks"],
+        }
+    print(json.dumps(per_series, indent=2))
     return 0
 
 
