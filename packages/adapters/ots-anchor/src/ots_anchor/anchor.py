@@ -1,11 +1,14 @@
 """OTS anchor adapter — the ONLY network hop in the prereg family (AD-9 split).
 
-Uses opentimestamps-client 0.7.2 pinned. Module names: ``otsclient`` /
-``opentimestamps`` (verified live on the node 2026-08-05).
+Uses opentimestamps-client 0.7.2 pinned. The 0.7.2 packages are ``otsclient`` /
+``opentimestamps`` (lib 0.4.5) and the CLI is the ``ots`` console script —
+there is NO importable ``ots`` module (deferred-work Epic-1 entry closed
+2026-08-06: ``python -m ots`` could never work).
 """
 
 from __future__ import annotations
 
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -23,23 +26,19 @@ def anchor(chain_hash: str, proof_path: str) -> AnchorRecord:
     proof needs a confirmation round. We stamp now and record; the caller may
     upgrade the proof later (OTS upgrade flow).
     """
-    try:
-        from opentimestamps.core import Op, OpSHA256  # noqa: F401
-        from opentimestamps.core.timestamp import DetachedTimestampFile  # noqa: F401
-        from otsclient.args import create  # noqa: F401
-    except ImportError as e:  # pragma: no cover - env-dependent
-        raise AnchorUnavailableError(str(e)) from e
+    # Live path: invoke the ots console script (cleaner than the lib's
+    # argparse-driven client code). Probe PATH honestly: no script, no live.
+    ots_bin = shutil.which("ots")  # pragma: no cover - env-dependent
+    if ots_bin is None:  # pragma: no cover - env-dependent
+        raise AnchorUnavailableError("ots console script not on PATH (opentimestamps-client 0.7.2)")
 
-    # Live path: invoke the ots CLI via subprocess (cleaner than the lib's
-    # argparse-driven client code).
     import subprocess
-    import sys
 
     prof = Path(proof_path)
     prof.parent.mkdir(parents=True, exist_ok=True)
     (prof.with_suffix(".data.bin")).write_bytes(bytes.fromhex(chain_hash))
     r = subprocess.run(
-        [sys.executable, "-m", "ots", "stamp", "-i", prof.with_suffix(".data.bin")],
+        [ots_bin, "stamp", prof.with_suffix(".data.bin")],  # 0.7.2: FILE is positional (no -i)
         capture_output=True,
         text=True,
         check=False,
