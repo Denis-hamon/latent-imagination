@@ -14,3 +14,10 @@ No surrogate judges; labels = `resolved` computed by the tasks' own tests.
 
 Files: `../public-measurement-2026-08-06.json` (the figure artifact with the
 figure pipeline inputs block), this README.
+
+**Provenance note (history prune):** before the first public push (2026-08-06),
+`data/landing/` was purged from git history and is now git-ignored — raw
+trajectory `messages` are unsanitized and oversized for git; the corpora stay
+on the node / will ship on the dataset surface. Commit hashes changed in the
+prune: the node-side release ceremony's `code_commit` (`fd3eae6`) refers to
+the pre-prune history. Code content is identical; only landing data was removed.

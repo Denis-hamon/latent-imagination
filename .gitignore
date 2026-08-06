@@ -11,3 +11,8 @@ htmlcov/
 .idea/
 .vscode/
 .DS_Store
+
+# Raw landings (trajectory corpora) live ON DISK / object storage, never in git:
+# raw `messages` are unsanitized and the files far exceed git's purpose.
+# Committed data stays small: registries, manifests, replay bundles.
+data/landing/
