@@ -1,78 +1,122 @@
-"""Vendor-neutral interception interface (story 5.1, FR-18/FR-19).
+"""Vendor-neutral interception interface (story 5.1 + CR, FR-18/FR-19).
 
-One seam for every adapter: a pre-execution callback IN, an annotated
-response OUT, every decision appended to the deployer-local log. Advisory by
-CONSTRUCTION: there is no blocking code path in this package — nothing here
-returns or raises a "halt execution" signal. FR-21's blocking mode is a
-different phase's package with measured-precision certificates; wiring it here
-would be a doctrine violation.
+One seam for every adapter: a CandidateCtx IN, an annotated StoreEvent OUT,
+every decision appended to the deployer-local log. Advisory by CONSTRUCTION:
+no public callable returns or signals "halt execution". FR-21's blocking mode
+is a different phase's package with measured-precision certificates.
 
-Annotations are StoreEvents (kind `gate_annotated`) — the deployed telemetry
-speaks the Trace Schema like everything else.
+Abstention is a first-class event (`prediction_refused`) — per the OQ-10
+resolution, a gate without a denominator emits silence-on-purpose, recorded.
 """
 
 from __future__ import annotations
 
+import math
 import time
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, Protocol
+from hashlib import sha256
+from typing import Any
 
 from core_schema.errors import SchemaError
 from core_schema.events import StoreEvent
 
-from gate.ports import INTERFACE_VERSION, PinnedSnapshot
+from gate.ports import _SHA_RE, INTERFACE_VERSION, PinnedSnapshot
 
 
-class CandidatePatchCtx(Protocol):
-    """What any adapter must supply about a pre-execution candidate."""
+@dataclass(frozen=True)
+class CandidateCtx:
+    """The subject of an annotation — an annotation without a subject is not one."""
 
     repo: str
     patch_diff: str
-    attempt_start_hint: datetime | None  # adapter clock hint; log time is authoritative
+    rationale_ptr: str  # methodology doc pointer, never a narrated simulation
+
+    @property
+    def patch_sha256(self) -> str:
+        return sha256(self.patch_diff.encode()).hexdigest()
 
 
-class Annotation(Protocol):
-    event: StoreEvent
-    rationale_ptr: str  # pointer to the methodology doc, never a narrated sim
+def _check_number(name: str, v: Any, lo: float, hi: float) -> float:
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        raise SchemaError("LI-GATE-002", f"{name} must be numeric", {"got": type(v).__name__})
+    f = float(v)
+    if math.isnan(f) or math.isinf(f) or not (lo <= f <= hi):
+        raise SchemaError("LI-GATE-002", f"{name} outside [{lo},{hi}] or non-finite", {"got": f})
+    return f
+
+
+def _check_disclosure(disclosure: Any, snapshot: PinnedSnapshot) -> dict:
+    if not isinstance(disclosure, dict):
+        raise SchemaError("LI-GATE-002", "predictor disclosure must be a mapping", {})
+    prec = disclosure.get("measured_precision")
+    _check_number("measured_precision", prec, 0.0, 1.0)
+    posture = disclosure.get("posture")
+    if not isinstance(posture, str) or not posture.strip():
+        raise SchemaError("LI-GATE-002", "disclosure.posture missing/empty", {})
+    pinned = (snapshot.manifest.get("measured") or {}).get("precision")
+    if pinned is not None and isinstance(pinned, (int, float)) and abs(float(prec) - float(pinned)) > 1e-9:
+        raise SchemaError(
+            "LI-GATE-002", "disclosed precision disagrees with the PINNED manifest",
+            {"disclosed": prec, "pinned": pinned},
+        )
+    return disclosure
+
+
+def _event(kind: str, payload: dict, now: datetime | None) -> StoreEvent:
+    return StoreEvent(schema_version=1, kind=kind, occurred_at=now or datetime.now(UTC), payload=payload)
 
 
 def annotate(
     snapshot: PinnedSnapshot,
+    ctx: CandidateCtx,
     *,
     flip_probability: float,
     model_family: str,
     latency_s: float,
     disclosure: dict[str, Any],
+    prediction_target_tier: str,
     now: datetime | None = None,
 ) -> StoreEvent:
-    """Build the annotated response as a Trace-Schema event.
+    """The annotated response — subject-bound, disclosure-validated, trace-schema."""
+    if not isinstance(model_family, str) or not model_family.strip():
+        raise SchemaError("LI-GATE-002", "model_family missing", {})
+    if prediction_target_tier not in ("diff_touched", "user_designated"):
+        raise SchemaError("LI-GATE-002", "prediction_target_tier unknown (abstain instead)",
+                          {"got": prediction_target_tier})
+    if not _SHA_RE.fullmatch(ctx.patch_sha256):
+        raise SchemaError("LI-GATE-002", "candidate patch hash malformed", {})
+    p = _check_number("flip_probability", flip_probability, 0.0, 1.0)
+    lat = _check_number("latency_s", latency_s, 0.0, 3600.0)
+    disc = _check_disclosure(disclosure, snapshot)
+    return _event("gate_annotated", {
+        "interface_version": INTERFACE_VERSION,
+        "predictor_hash": snapshot.predictor_hash,
+        "predictor_version": snapshot.predictor_version,
+        "corpus_version": snapshot.corpus_version,
+        "candidate": {"repo": ctx.repo, "patch_sha256": ctx.patch_sha256},
+        "rationale_ptr": ctx.rationale_ptr,
+        "flip_probability": p,
+        "model_family": model_family,
+        "latency_s": round(lat, 6),
+        "predictor_disclosure": disc,
+        "prediction_target_tier": prediction_target_tier,
+    }, now)
 
-    `disclosure` is MANDATORY and must carry the sub-bar posture — an
-    annotation that hides the predictor's measured precision is refused.
-    """
-    if not (0.0 <= flip_probability <= 1.0):
-        raise SchemaError("LI-GATE-002", "flip_probability outside [0,1]", {"got": flip_probability})
-    if not isinstance(disclosure, dict) or "measured_precision" not in disclosure:
-        raise SchemaError(
-            "LI-GATE-002", "annotation lacks predictor disclosure (measured_precision)",
-            {"keys": sorted(disclosure) if isinstance(disclosure, dict) else None},
-        )
-    ts = now or datetime.now(UTC)
-    return StoreEvent(
-        schema_version=1,
-        kind="gate_annotated",
-        occurred_at=ts,
-        payload={
-            "interface_version": INTERFACE_VERSION,
-            "predictor_hash": snapshot.predictor_hash,
-            "predictor_version": snapshot.predictor_version,
-            "corpus_version": snapshot.corpus_version,
-            "flip_probability": flip_probability,
-            "model_family": model_family,
-            "latency_s": round(latency_s, 6),
-            "predictor_disclosure": disclosure,
-        },
-    )
+
+def refuse(snapshot: PinnedSnapshot, ctx: CandidateCtx, *, reason: str,
+           now: datetime | None = None) -> StoreEvent:
+    """The OQ-10 abstention event — silence on purpose, recorded (never a
+    fabricated denominator)."""
+    if not isinstance(reason, str) or not reason.strip():
+        raise SchemaError("LI-GATE-002", "abstention reason required", {})
+    return _event("prediction_refused", {
+        "interface_version": INTERFACE_VERSION,
+        "predictor_hash": snapshot.predictor_hash,
+        "corpus_version": snapshot.corpus_version,
+        "candidate": {"repo": ctx.repo, "patch_sha256": ctx.patch_sha256},
+        "reason": reason,
+    }, now)
 
 
 def timed(fn, *args, **kwargs):
