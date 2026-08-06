@@ -1,56 +1,77 @@
-"""Act II delta computation (story 6.2, FR-10): both deltas under Act I's
-aggregation discipline, OQ-4 consulted mechanically.
+"""Act II delta computation (story 6.2 + CR, FR-10): Act I's TRUE aggregation
+discipline, sealed inputs, artifact-grade output.
 
-- Aggregation: macro-per-task is the claim line; pooled micro printed under
-  (act1-design/design.toml [aggregation]).
-- Tolerance: replay_t2_pp from the same sealed file.
-- Publish-worthy minimum (OQ-4): read from the sealed decision.toml
-  [publishable_delta] — NOT a parameter; the hash of that file is cited in the
-  artifact's inputs (AD-13).
-- Verdict text: the pre-anchored templates in governance/probe-design/
-  verdict-templates/ render it (win/null), never ad-hoc prose.
+- Claim-line statistic: POOLED macro-per-task (Σ rate_i·n_i / Σ n_i) — Act I's
+  pre-registered statistic; "never a mean of family means" (C1 fix).
+- Series sets must be IDENTICAL across acts, each key unique — the delta
+  compares like for like or refuses (LI-HARNESS-020).
+- Executions-per-task delta is always computable from attempts/n_tasks;
+  time-to-valid delta reports ONLY with disclosed coverage (a field Act I
+  production points never carried — honesty over theater).
+- OQ-4 from the sealed decision.toml; design tolerance from act1-design; both
+  sha256-cited. Verdicts render through governance/act2/verdict-templates/
+  (anchored in advance per 6.4), NEVER the probe's branch templates.
 """
 
 from __future__ import annotations
 
+import json
+import math
+import tempfile
 import tomllib
+from hashlib import sha256
 from pathlib import Path
 
 from core_schema.errors import SchemaError
+from store.emit import compute_store_version, write_artifact
+
+_REQ = ("family", "generation", "macro_rate", "total_attempts", "n_tasks")
 
 
-def _load_pp_minimum(decision_toml: Path) -> tuple[float, str]:
-    from hashlib import sha256
-
-    raw = Path(decision_toml).read_bytes()
+def _load_sealed(path: Path, table: list[str], expect=float) -> tuple[float, str]:
+    try:
+        raw = Path(path).read_bytes()
+    except FileNotFoundError as exc:
+        raise SchemaError("LI-HARNESS-020", "sealed file missing", {"path": str(path)}) from exc
     try:
         data = tomllib.loads(raw.decode("utf-8"))
-        v = float(data["publishable_delta"]["minimum_publishable_pp"])
-    except FileNotFoundError as exc:
-        raise SchemaError("LI-HARNESS-020", "decision.toml missing (OQ-4 unreadable)", {}) from exc
-    except (KeyError, TypeError, ValueError, tomllib.TOMLDecodeError) as exc:
-        raise SchemaError("LI-HARNESS-020", "OQ-4 publishable minimum unreadable", {}) from exc
-    if v <= 0:
-        raise SchemaError("LI-HARNESS-020", "OQ-4 minimum must be positive", {"got": v})
+        node = data
+        for t in table:
+            node = node[t]
+        v = float(node)
+    except (KeyError, TypeError, ValueError, tomllib.TOMLDecodeError, UnicodeDecodeError) as exc:
+        raise SchemaError("LI-HARNESS-020", "sealed value unreadable", {"path": str(path)}) from exc
+    if not math.isfinite(v) or v <= 0:
+        raise SchemaError("LI-HARNESS-020", "sealed value must be finite and positive", {"got": v})
     return v, sha256(raw).hexdigest()
 
 
-def _load_tolerance(design_toml: Path) -> float:
-    try:
-        data = tomllib.loads(Path(design_toml).read_bytes().decode("utf-8"))
-        v = float(data["tolerances"]["replay_t2_pp"])
-    except FileNotFoundError as exc:
-        raise SchemaError("LI-HARNESS-020", "act1 design.toml missing", {}) from exc
-    except (KeyError, TypeError, ValueError, tomllib.TOMLDecodeError) as exc:
-        raise SchemaError("LI-HARNESS-020", "replay tolerance unreadable", {}) from exc
-    return v
+def _check(points: list[dict], what: str) -> None:
+    seen: set[tuple] = set()
+    for p in points:
+        for f in _REQ:
+            if f not in p:
+                raise SchemaError("LI-HARNESS-020", f"{what} point missing {f}", {"point": p})
+        if not isinstance(p["macro_rate"], (int, float)) or isinstance(p["macro_rate"], bool):
+            raise SchemaError("LI-HARNESS-020", f"{what} macro_rate not numeric", {})
+        if not math.isfinite(float(p["macro_rate"])):
+            raise SchemaError("LI-HARNESS-020", f"{what} macro_rate non-finite", {})
+        k = (p["family"], p["generation"])
+        if k in seen:
+            raise SchemaError("LI-HARNESS-020", f"{what} duplicate series key {k}", {})
+        seen.add(k)
+        n = p["n_tasks"]
+        if not isinstance(n, int) or isinstance(n, bool) or n <= 0:
+            raise SchemaError("LI-HARNESS-020", f"{what} n_tasks must be a positive int", {})
 
 
-def _macro(series_points: list[dict]) -> float:
-    """Act I's claim-line aggregation: mean of per-series macro rates."""
-    if not series_points:
-        raise SchemaError("LI-HARNESS-020", "empty series — no claim line", {})
-    return sum(p["macro_rate"] for p in series_points) / len(series_points)
+def _pooled_macro(points: list[dict]) -> float:
+    """Act I's pre-registered statistic: pooled over tasks (rate_i·n_i summed)."""
+    return sum(p["macro_rate"] * p["n_tasks"] for p in points) / sum(p["n_tasks"] for p in points)
+
+
+def _exec_per_task(points: list[dict]) -> float:
+    return sum(p["total_attempts"] for p in points) / sum(p["n_tasks"] for p in points)
 
 
 def compute_deltas(
@@ -60,68 +81,122 @@ def compute_deltas(
     decision_toml: Path,
     design_toml: Path,
 ) -> dict:
-    """Paired per-series deltas + claim lines + mechanical OQ-4 verdict.
-
-    Point shape (harness figures): {family, generation, macro_rate, micro_rate,
-    total_attempts, total_false_starts, n_tasks, mean_time_to_valid_s?}.
-    """
+    _check(act1_points, "act1")
+    _check(act2_points, "act2")
     if not act2_points:
         raise SchemaError("LI-HARNESS-020", "no Act II points", {})
-    key = lambda p: (p["family"], p["generation"])
-    a1 = {key(p): p for p in act1_points}
-    a2 = {key(p): p for p in act2_points}
-    missing = sorted(set(a2) - set(a1))
-    if missing:
-        raise SchemaError("LI-HARNESS-020", "Act II series without an Act I pin", {"keys": missing})
+    k1 = {(p["family"], p["generation"]) for p in act1_points}
+    k2 = {(p["family"], p["generation"]) for p in act2_points}
+    if k1 != k2:
+        raise SchemaError("LI-HARNESS-020", "series sets differ — pairs must be exact",
+                          {"only_act1": sorted(k1 - k2), "only_act2": sorted(k2 - k1)})
 
+    a1 = {(p["family"], p["generation"]): p for p in act1_points}
+    a2 = {(p["family"], p["generation"]): p for p in act2_points}
     per_series = []
+    ttv_have = 0
     for k in sorted(a2):
         b, a = a2[k], a1[k]
         row = {
             "family": k[0], "generation": k[1],
-            "erbve_delta_pp": (a["macro_rate"] - b["macro_rate"]) * 100.0,  # >0 = fewer false starts
+            "erbve_delta_pp": (a["macro_rate"] - b["macro_rate"]) * 100.0,
             "act1_macro": a["macro_rate"], "act2_macro": b["macro_rate"],
-            "act2_attempts": b["total_attempts"],
-            "act1_attempts": a["total_attempts"],
+            "exec_delta_per_task": (b["total_attempts"] / b["n_tasks"]) - (a["total_attempts"] / a["n_tasks"]),
+            "n_tasks": b["n_tasks"],
         }
-        for field, label in (("mean_time_to_valid_s", "ttv_delta_s"),):
-            if field in a and field in b:
-                row[label] = b[field] - a[field]
+        if "mean_time_to_valid_s" in a and "mean_time_to_valid_s" in b:
+            row["ttv_delta_s"] = b["mean_time_to_valid_s"] - a["mean_time_to_valid_s"]
+            ttv_have += 1
         per_series.append(row)
 
-    d_erbve = (_macro(act1_points) - _macro(act2_points)) * 100.0
-    ttv = None
-    if all("ttv_delta_s" in r for r in per_series) and per_series:
-        a1m = sum(a1[k]["mean_time_to_valid_s"] for k in a2) / len(a2)
-        a2m = sum(a2[k]["mean_time_to_valid_s"] for k in a2) / len(a2)
-        ttv = a2m - a1m
+    d_erbve = (_pooled_macro(act1_points) - _pooled_macro(act2_points)) * 100.0
+    exec_delta = _exec_per_task(act2_points) - _exec_per_task(act1_points)
+    ttv_d = None
+    if ttv_have == len(a2):  # disclosed coverage only; no partial silent mean
+        n1 = sum(a1[k]["n_tasks"] for k in a2)
+        ttv_d = (
+            sum(a2[k]["mean_time_to_valid_s"] * a2[k]["n_tasks"] for k in a2)
+            - sum(a1[k]["mean_time_to_valid_s"] * a1[k]["n_tasks"] for k in a2)
+        ) / n1
 
-    minimum_pp, decision_hash = _load_pp_minimum(decision_toml)
-    tol_pp = _load_tolerance(design_toml)
-    material = d_erbve >= minimum_pp  # mechanical: ≥ → material-reduction claim
+    minimum_pp, decision_hash = _load_sealed(decision_toml, ["publishable_delta", "minimum_publishable_pp"])
+    tol_pp, design_hash = _load_sealed(design_toml, ["tolerances", "replay_t2_pp"])
+    material = d_erbve >= minimum_pp  # sealed inclusivity = "inclusive"
     return {
         "claim_line": {
-            "erbve_delta_pp": round(d_erbve, 4),
-            "time_to_valid_delta_s": None if ttv is None else round(ttv, 3),
-            "aggregation": "macro_per_task (claim line; pooled micro printed under)",
+            "erbve_delta_pp": d_erbve,
+            "exec_per_task_delta": exec_delta,
+            "time_to_valid_delta_s": ttv_d,
+            "ttv_coverage": f"{ttv_have}/{len(a2)} paired series",
+            "aggregation": "pooled macro-per-task, Act I discipline (never a mean of family means)",
+            "delta_ci": None,
+            "ci_status": "uncomputable from aggregated points — patch-level CIs come from 6.3's replay-tier raw attempts (pre-registered bootstrap, decision.toml)",
         },
         "per_series": per_series,
         "oq4": {"minimum_publishable_pp": minimum_pp, "met": material,
-                 "verdict": "material-reduction" if material else "below-threshold-measurement-only"},
+                 "verdict": "material-reduction" if material else "below-threshold",
+                 "inclusivity": "inclusive (sealed); comparison at full precision, display rounded"},
         "tolerance_pp": tol_pp,
-        "_citations": {"decision_toml_sha256": decision_hash},
+        "_citations": {"decision_toml_sha256": decision_hash, "design_toml_sha256": design_hash},
     }
 
 
 def render_verdict(deltas: dict, templates_dir: Path) -> str:
-    """Pre-anchored templates only: win.md / null.md."""
-    name = "win.md" if deltas["oq4"]["met"] else "null.md"
+    """Act II's OWN pre-anchored templates (governance/act2/verdict-templates/) —
+    never the probe's branch prose. Every placeholder must substitute."""
+    name = "material-reduction.md" if deltas["oq4"]["met"] else "below-threshold.md"
     try:
-        template = (Path(templates_dir) / name).read_text()
+        template = (Path(templates_dir) / name).read_text(encoding="utf-8")
     except FileNotFoundError as exc:
         raise SchemaError("LI-HARNESS-020", f"verdict template missing ({name})", {}) from exc
-    out = template
-    out = out.replace("{delta}", f"{deltas['claim_line']['erbve_delta_pp']:+.2f}")
-    ci = deltas["claim_line"].get("delta_ci", "n/a")
-    margin = "met" if deltas["oq4"]["met"] else "below the minimum"
-    return out.replace("{delta_ci}", str(ci)).replace("{margin}", margin)
+    cl = deltas["claim_line"]
+    ttv = cl["time_to_valid_delta_s"]
+    out = (template
+           .replace("{delta}", f"{cl['erbve_delta_pp']:+.2f}")
+           .replace("{exec_delta}", f"{cl['exec_per_task_delta']:+.3f}")
+           .replace("{ttv}", "n/a (no paired ttv source)" if ttv is None else f"{ttv:+.3f}s")
+           .replace("{minimum}", f"{deltas['oq4']['minimum_publishable_pp']:.1f}")
+           .replace("{chain}", deltas["_citations"]["decision_toml_sha256"][:16] + "…"))
+    import re as _re
+
+    leftovers = _re.findall(r"\{[a-z_]+\}", out)
+    if leftovers:
+        raise SchemaError("LI-HARNESS-020", "template placeholders left literal",
+                          {"leftovers": leftovers})
+    return out
+
+
+def publish_delta_figure(
+    deltas: dict,
+    store_root: Path,
+    *,
+    figure_version: str,
+    act1_measure_hash: str,
+    campaign_pins_hash: str,
+    corpus_version: str,
+    code_commit: str,
+) -> dict:
+    """Figure artifact with the AD-13 inputs block tying BOTH Acts' pins."""
+    for name, h in (("act1_measure_hash", act1_measure_hash), ("campaign_pins_hash", campaign_pins_hash),
+                    ("code_commit", code_commit)):
+        if not isinstance(h, str) or len(h) < 8:
+            raise SchemaError("LI-HARNESS-020", "pin citation malformed", {"field": name})
+    if not isinstance(corpus_version, str) or not corpus_version.startswith("corpus-v"):
+        raise SchemaError("LI-HARNESS-020", "corpus_version citation malformed", {})
+    with tempfile.TemporaryDirectory() as tmp:
+        f = Path(tmp) / "delta.json"
+        f.write_text(json.dumps(deltas, indent=1, sort_keys=True) + "\n")
+        inputs = {
+            "store_snapshot": compute_store_version(store_root),
+            "ruleset_version": deltas["_citations"]["decision_toml_sha256"],
+            "design_toml_sha256": deltas["_citations"]["design_toml_sha256"],
+            "code_commit": code_commit,
+            "seeds": {},
+            "corpus_version": corpus_version,
+            "act1_measure_hash": act1_measure_hash,
+            "act2_campaign_pins_hash": campaign_pins_hash,
+        }
+        res = write_artifact(
+            "harness", "figure", "act2-delta", figure_version, [f], inputs, store_root,
+        )
+    return res.manifest
