@@ -1,0 +1,43 @@
+{
+  "measured_at": "2026-08-06T19:49:50.351596Z",
+  "report": {
+    "hardware": "local-apple-silicon (Denis's MacBook)",
+    "predictor_hash": "6a453725515ad0f941c9e096af1398211fa5cd336061893c64a9d061f740086f",
+    "corpus_version": "corpus-v0",
+    "workload": {
+      "docs": 60,
+      "max_doc_bytes": 25147,
+      "seed": "embedded fixture (deterministic)"
+    },
+    "cold": {
+      "n": 60,
+      "mean_s": 0.0023760499999999998,
+      "p50_s": 0.001413,
+      "p95_s": 0.00533,
+      "p99_s": 0.005449,
+      "max_s": 0.005449
+    },
+    "warm": {
+      "n": 1980,
+      "mean_s": 0.00255065,
+      "p50_s": 0.001426,
+      "p95_s": 0.005519,
+      "p99_s": 0.008463,
+      "max_s": 0.053246
+    },
+    "serve_overhead": {
+      "n": 1980,
+      "mean_s": 0.00035232066973348274,
+      "p50_s": 0.0002182920178137723,
+      "p95_s": 0.0006105409961417317,
+      "p99_s": 0.0030765409875996436,
+      "max_s": 0.024356084020018577
+    }
+  },
+  "verdict": {
+    "verdict": "meets-budget",
+    "p95_s": 0.005519,
+    "cold_max_s": 0.005449,
+    "budget_s": 1.0
+  }
+}

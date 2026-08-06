@@ -70,9 +70,13 @@ def test_bench_report_shape_and_cold_warm_split(tmp_path):
 
 
 def test_verdict_meet_and_miss():
-    rep_ok = {"warm": {"p95_s": 0.5}}
+    rep_ok = {"warm": {"p95_s": 0.5}, "cold": {"max_s": 0.6}}
     assert verdict(rep_ok, 1.0)["verdict"] == "meets-budget"
-    rep_miss = {"warm": {"p95_s": 2.0}}
+    rep_miss = {"warm": {"p95_s": 2.0}, "cold": {"max_s": 0.2}}
     v = verdict(rep_miss, 1.0)
     assert v["verdict"] == "annotations-async"
-    assert "do NOT quote" in v["guidance"]  # SM-C3: never a claim beyond measurement
+    assert "do NOT quote" in v["guidance"]
+    rep_cold_breach = {"warm": {"p95_s": 0.5}, "cold": {"max_s": 3.0}}  # cold blind spot closed
+    assert verdict(rep_cold_breach, 1.0)["verdict"] == "annotations-async"
+    with pytest.raises(SchemaError):  # malformed report → coded, never green-wash
+        verdict({"warm": {}}, 1.0)

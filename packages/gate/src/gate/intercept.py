@@ -32,9 +32,12 @@ class CandidateCtx:
     patch_diff: str
     rationale_ptr: str  # methodology doc pointer, never a narrated simulation
 
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "_patch_sha256", sha256(self.patch_diff.encode()).hexdigest())
+
     @property
     def patch_sha256(self) -> str:
-        return sha256(self.patch_diff.encode()).hexdigest()
+        return self._patch_sha256  # computed once (CR 5.4: hot path never re-hashes)
 
 
 def _check_number(name: str, v: Any, lo: float, hi: float) -> float:
