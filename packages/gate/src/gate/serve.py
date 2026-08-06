@@ -26,11 +26,24 @@ class GateServer:
     snapshot: PinnedSnapshot
     predictor: PinnedPredictor
     log_path: Path
+    user_test_selection: str | None = None
 
     @classmethod
-    def load(cls, snapshot_root: Path, *, expected_predictor_hash: str, log_path: Path) -> GateServer:
+    def load(cls, snapshot_root: Path, *, expected_predictor_hash: str, log_path: Path,
+             user_test_selection: str | None = None) -> GateServer:
         snap = load_pinned_snapshot(snapshot_root, expected_predictor_hash=expected_predictor_hash)
-        return cls(snapshot=snap, predictor=PinnedPredictor.from_snapshot(snap), log_path=Path(log_path))
+        log = Path(log_path)
+        # fail EARLY on a bad log target (startup, not mid-loop): name + store-root wire
+        from gate.decision_log import _inside_store_root
+
+        if log.name != "decisions.jsonl":
+            raise SchemaError("LI-GATE-003", "decision log must be named decisions.jsonl",
+                              {"got": str(log)})
+        if _inside_store_root(log):
+            raise SchemaError("LI-GATE-004", "the gate never writes inside a store root (AD-4)",
+                              {"path": str(log)})
+        return cls(snapshot=snap, predictor=PinnedPredictor.from_snapshot(snap),
+                   log_path=log, user_test_selection=user_test_selection)
 
     def handle(
         self,

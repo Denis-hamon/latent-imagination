@@ -21,7 +21,7 @@ _ALLOWED_KINDS = frozenset({"gate_annotated", "prediction_refused"})
 def _inside_store_root(p: Path) -> bool:
     """Any ancestor holding a META.json marks a store root — off-limits (AD-4)."""
     cur = p.parent
-    for _ in range(8):
+    for _ in range(64):  # 64 ancestors: absurdly deep, still bounded
         if (cur / "META.json").exists():
             return True
         if cur.parent == cur:

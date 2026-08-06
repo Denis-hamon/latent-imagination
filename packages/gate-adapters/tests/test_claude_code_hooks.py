@@ -17,9 +17,6 @@ from gate_adapters.claude_code_hooks import (
     target_tier_of,
 )
 
-D = Path(__file__).resolve().parents[2] / "gate" / "tests"
-TRUTH = json.loads((D / "featurization-truth.json").read_text())
-
 
 def _artifact(tmp_path):
     art = {
@@ -81,11 +78,14 @@ def test_advisory_wire_shape_and_no_blocking_channels(tmp_path):
     assert rc == 0
     payload = json.loads(out)
     assert "systemMessage" in payload
-    assert "0.62" in payload["systemMessage"] or "flip probability" in payload["systemMessage"]
-    # FR-19: blocking channels never emitted
-    assert "hookSpecificOutput" not in payload
-    assert "permissionDecision" not in payload
+    assert "flip probability" in payload["systemMessage"]
+    # advisory channel reaching the AGENT (per vendor contract) is present…
+    assert payload["hookSpecificOutput"]["hookEventName"] == "PreToolUse"
+    assert "additionalContext" in payload["hookSpecificOutput"]
+    # …while the blocking channels stay provably absent (FR-19):
+    assert "permissionDecision" not in payload["hookSpecificOutput"]
     assert "decision" not in payload
+    assert "continue" not in payload
     # telemetry written BEFORE the tool runs, by PreToolUsen construction — the
     # log exists NOW (pre-execution is real)
     log = Path(server.log_path)
@@ -99,7 +99,8 @@ def test_abstain_writes_silence_on_wire_but_records(tmp_path):
     with redirect_stdout(buf):
         rc = run_hook(_hook_edit(path="pkg/core.py"), server)  # no test paths, no designation
     assert rc == 0
-    assert json.loads(buf.getvalue().strip() or "{}") == {}
+    wire = buf.getvalue().strip()
+    assert wire == "{}"  # abstention: exactly the empty object — no advisory shown
     rec = json.loads(Path(server.log_path).read_text(encoding="utf-8").strip())
     assert rec["kind"] == "prediction_refused"
 
