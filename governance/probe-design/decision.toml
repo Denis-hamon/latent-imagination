@@ -26,3 +26,8 @@ tie_at_margin = "branch (ii) — baseline ships"
 branch_i = "JEPA arm precision >= bar AND margin_met vs baseline → SHIP JEPA"
 branch_ii = "some arm >= bar but margin unmet → SHIP BASELINE, publish honest comparison"
 branch_iii = "no arm >= bar → NO GATE PRODUCT this cycle; measurement artifacts stand alone"
+
+
+[publishable_delta] # OQ-4 resolved 2026-08-05
+minimum_publishable_pp = 5.0
+note = "5pp: big enough to stand out from instrument noise, small enough to trigger on real effects. Comparable to public claims (FailFast ~15-20%)."

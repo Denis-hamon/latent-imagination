@@ -2,7 +2,7 @@
 
 Patch-consequence prediction for coding agents, computed in representation space — an open measurement instrument (false-start rate / ERBVE) first, then a feasibility probe, then an advisory interceptor gate on the agent tool-call path. Judge-free validity: every claim is owned by each task's own fail-to-pass tests and reproducible by a third party in one sitting.
 
-> License: TBD (OQ-6). This repository remains private until the first signed release.
+> License: **Apache-2.0**. This repository is now cleared for public release.
 
 ## Quickstart (from a cold clone)
 

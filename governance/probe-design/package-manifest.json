@@ -4,7 +4,7 @@
     "RATIONALE.md": "7c1b680e63321d7e6ac97fa70e89b8de192687cacf3044596b793d8042c97cd0",
     "clean-slice/DISCLOSURE.md": "1bfff2ffad0c00acc9cf9d6b9a70a8f1af3e25bb6d1019a34cbbe74803365151",
     "clean-slice/items.json": "e51255abf30c9ceb4c1f2a75b5924067baa6797f6a293dd890d0d7616966518e",
-    "decision.toml": "262c70d3c6ed2c91bf1b4c7b60922a0b1fe0528568e8ccefcb4727fba750f0c2",
+    "decision.toml": "6b63eeb0702ae45dbb723e91abf9a22395a7aeaf77ff504eeec024e7966943d5",
     "design.toml": "5924ef204cf18c7f7c1cb4cdf9a62ac537e7e2afd0f601db3464a230f89f6894",
     "matched-matrix-manifest.json": "68d760d3111d99234bfba9b4032e5a4b913f4469ea78ad55f759a16b413e9508",
     "matched-matrix.json": "c7b54d4c73f8f5c486e58be387400e2893234a11c507dbafaabe5c8393efb263",
@@ -17,11 +17,13 @@
     "runs/baseline-matched-control-2026-08-05.json": "e510a609da46bdc5d83f86ed587014b1d15a32a4a24a2d086e54f93247886257",
     "runs/jepa-envelope-2026-08-05.json": "1f0addbad5599b1c32b03f2c86552a33bacbd6f660f1e4a2f07e62f183dfc1d0",
     "runs/jepa-main-2026-08-05.json": "c2a9a16052b63f2848cf3343d9a120f8410ff0cc110976606e0119316eaa96c8",
+    "runs/jepa-proper-2026-08-05.json": "a8779e4748ea7de0a9033a50187ee969a799d30a5de190683ca5029ecd5f0877",
+    "runs/verdict-2026-08-05.md": "1e42ad7feb19b5c15787eae0cc41ebe69a16aca9909f7c3f10229df54a624829",
     "split-manifest.json": "56749a97ae4260acb729d5b567752340ba59c589c551a1143a6346a6dad35309",
     "verdict-templates/measurement-only.md": "a68b5c9f24af3efcd36c419c35947a33e495050e9c60c085a5667247c439c7ef",
     "verdict-templates/null.md": "e08d7a84ae231caab4e33648b07ace871a715052772568551b9251c11f9f0f89",
     "verdict-templates/win.md": "d07f4c8a35cbb8f6f38f51abca13da1268b0e4146f1d35772b92acd259b661d0"
   },
   "package": "probe-design",
-  "package_hash": "6c3b0b73256c373aff3060362e0b0579947484900f2728d2fd43130ee77d6db7"
+  "package_hash": "527610cc5b47072a6c97aad4104db2dde05d3d44bc616c05a92953e0820a67f0"
 }

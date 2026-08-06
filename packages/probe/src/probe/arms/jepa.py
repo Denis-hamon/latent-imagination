@@ -35,7 +35,6 @@ class JepaConfig:
 
 
 def _mmd_inv_sqrt_var(z: Any) -> Any:
-    import torch
 
     # SIGReg core: encourage isotropic Gaussian latents via inverse-sqrt of variance.
     std = z.std(dim=0).clamp_min(1e-6)
