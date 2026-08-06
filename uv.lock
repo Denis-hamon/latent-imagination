@@ -491,11 +491,15 @@ name = "li-publication"
 version = "0.1.0"
 source = { editable = "packages/publication" }
 dependencies = [
+    { name = "li-core-schema" },
     { name = "li-prereg" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "li-prereg", editable = "packages/prereg" }]
+requires-dist = [
+    { name = "li-core-schema", editable = "packages/core-schema" },
+    { name = "li-prereg", editable = "packages/prereg" },
+]
 
 [[package]]
 name = "li-store"
