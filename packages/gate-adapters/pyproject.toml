@@ -2,13 +2,16 @@
 name = "li-gate-adapters"
 version = "0.1.0"
 requires-python = ">=3.14"
-description = "Latent Imagination — gate adapters (skeleton, Story 1.1)"
-dependencies = []
+description = "Latent Imagination — gate edge adapters (Story 5.3)"
+dependencies = ["li-gate", "pydantic-settings==2.14.2"]
 
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13"]
 build-backend = "uv_build"
+
+[tool.uv.sources]
+li-gate = { workspace = true }
 
 [tool.uv.build-backend]
 module-name = "gate_adapters"

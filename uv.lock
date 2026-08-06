@@ -373,6 +373,16 @@ requires-dist = [{ name = "li-core-schema", editable = "packages/core-schema" }]
 name = "li-gate-adapters"
 version = "0.1.0"
 source = { editable = "packages/gate-adapters" }
+dependencies = [
+    { name = "li-gate" },
+    { name = "pydantic-settings" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "li-gate", editable = "packages/gate" },
+    { name = "pydantic-settings", specifier = "==2.14.2" },
+]
 
 [[package]]
 name = "li-harbor-runner"
