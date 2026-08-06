@@ -29,6 +29,7 @@ Core package (AD-6: zero network at run time). The harvest's network lives in
 | `noisy.py` | landing deposits → deduped/sanitized/rights-filtered items |
 | `clean.py` | Clean Tier assembly: candidates → hardening+rights filter → floor verdict (4.3) |
 | `clean_emit.py` | `clean-tier` artifact with the hardening report inside (4.3) |
+| `publish.py` | `corpus-release` manifest-of-manifests + corpus_version teeth (4.4) |
 | `constituents.py` | eval-constituents assembly from the sealed probe surfaces (Task 4.2.0) |
 | `exclusion.py` | versioned exclusion rule + leakage audit + the build check (4.2) |
 | `atif_drift.py` | drift watch: schema_version actually seen vs the pinned one (AC 2) |
@@ -46,4 +47,4 @@ Rule + constituents live committed: `governance/corpus/exclusion-rule-v1.toml`
 `eval-constituents-v1.json` (assembled from the sealed `governance/probe-design/`
 surfaces by `constituents.build_constituents`).
 
-Error codes allocated here: `LI-CORPUS-001..007`.
+Error codes allocated here: `LI-CORPUS-001..012`.

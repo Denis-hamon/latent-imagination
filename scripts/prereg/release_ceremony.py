@@ -23,18 +23,26 @@ def _sha(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
 
 
-def build_release_artifacts(workdir: Path, store_root: Path) -> dict:
-    """Copy the published set into a release store + tarball it."""
-    gov = workdir / "governance"
-    pkg_dir = gov / "probe-design"
-    release_id = "probe-measurement-2026-08-05"
+def build_release_artifacts(
+    workdir: Path,
+    store_root: Path,
+    *,
+    packet: Path | None = None,
+    release_id: str = "probe-measurement-2026-08-05",
+) -> dict:
+    """Copy the published packet into a release store + tarball it.
+
+    `packet` defaults to the probe packet (governance/probe-design) — the probe
+    call-shape is unchanged; the corpus release passes its own packet dir (4.4).
+    """
+    pkg_dir = Path(packet) if packet else (workdir / "governance" / "probe-design")
     out_dir = store_root / "releases" / release_id / "v0"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Tarball of the governance packet (design + decisions + controls + runs)
+    # Tarball of the packet (arcname = the packet's real name, not a hardcode)
     tarball = out_dir / f"{release_id}.tar.gz"
     with tarfile.open(tarball, "w:gz") as tar:
-        tar.add(pkg_dir, arcname="probe-design")
+        tar.add(pkg_dir, arcname=pkg_dir.name)
 
     # manifest of the object
     rel_manifest = {
@@ -133,12 +141,26 @@ def publish_to_worm_bucket(artifacts: dict, anchor_payload: dict) -> str:
 
 
 def main() -> int:
-    workdir = Path(sys.argv[1] if len(sys.argv) > 1 else ".")
-    store_root = Path(sys.argv[2] if len(sys.argv) > 2 else workdir / "data" / "release-store")
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Release ceremony (signed chain + WORM write)")
+    ap.add_argument("workdir", nargs="?", default=".")
+    ap.add_argument("store_root", nargs="?", default=None)
+    ap.add_argument("--packet", default=None,
+                    help="packet dir to ship (default: <workdir>/governance/probe-design)")
+    ap.add_argument("--release-id", default="probe-measurement-2026-08-05")
+    args = ap.parse_args()
+
+    workdir = Path(args.workdir)
+    store_root = Path(args.store_root) if args.store_root else workdir / "data" / "release-store"
     store_root.mkdir(parents=True, exist_ok=True)
 
     print("[1/4] build release artifacts…")
-    arts = build_release_artifacts(workdir, store_root)
+    arts = build_release_artifacts(
+        workdir, store_root,
+        packet=Path(args.packet) if args.packet else None,
+        release_id=args.release_id,
+    )
     print(f"    release_hash: {arts['release_hash'][:16]}…  tarball: {arts['tarball'].stat().st_size}B")
 
     print("[2/4] assemble + anchor the chain…")
