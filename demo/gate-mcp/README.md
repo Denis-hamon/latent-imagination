@@ -1,19 +1,23 @@
-# Public demo #2 — gate advisory through the MCP wire, on a DIFFERENT vendor (story 8.4)
+# Public demo #2 — gate advisory through the MCP wire, on gpt-4o trajectories (story 8.4)
 
 **Re-run:** `uv run python demo/gate-mcp/run_demo.py --items 5`
-(needs `data/landing/swe-smith-trajectories/smith-matched-full/raw/ticks-00000.parquet` — scp from the node; landing is scratch)
+(`--record-dir <scratch>` for re-runs that must not touch the committed record; the
+trajectory parquet comes from the node, landing is scratch)
 
-**What it evidences (FR-25, second distinct setup):** same gate doctrine, a DIFFERENT
-interception harness (MCP `tools/call` JSON-RPC — a vendor-documented protocol surface)
-on trajectories from a DIFFERENT model vendor (openai `gpt-4o-2024-08-06`, from the Act I
-field measurement record). Paired with demo #1 (`demo/gate-advisory/`: Claude Code hooks +
-Anthropic-class trajectories) the two demos satisfy NFR-V1 (documented surfaces) × FR-25
-(different harness AND different vendor cages).
+**Fixture honesty (up front, like demo #1):** `demo/gate-advisory/fixtures/predictor.json`
+is zero-weight BY CONSTRUCTION (sigmoid(−0.4) ≈ 0.40 on every item — fixture, disclosed
+in every annotation via `predictor_disclosure.note`). Nothing here is a trained model.
 
-**Playback honesty:** we replay recorded trajectory patches (the real false starts —
-4 of 5 played attempts carry `resolved=False` on the wire's disclosure); NO claim that the
-model was re-run. The F2P designation rides OQ-10's tier-2 (user-designated) because
-replay patches don't touch test files; abstention posture remains what 5.3/8.2 tests prove.
+**Distinctness (FR-25):** harness — Claude Code PreToolUse hooks (demo #1) vs MCP
+`tools/call` JSON-RPC (here); vendor — demo #1 played HUMAN gold patches (SWE-bench
+Verified) while this one replays REAL gpt-4o-2024-08-06 trajectories (node-side Act I
+parquet, hash-pinned in the record). Different harness AND different vendor axis.
 
-**Bit-rot policy:** identical to demo #1 (timestamped artifact; re-run from sources;
-pins in `record/demo-record.json`).
+**Playback honesty:** patches replayed from the record — 5 of 5 played attempts carry
+`resolved=False` (the record's `items[].resolved`, verbatim from the parquet). OQ-10
+tier-2 designations are recorded per item (`items[].f2p_designated` from the tasks
+parquet; empty when the task has none anchored — an honest empty list, not a placeholder).
+Wire notifications follow JSON-RPC law (no id → no reply).
+
+**Bit-rot policy:** identical to demo #1, enforced by `tests/e2e/test_demo_gate_advisory.py`
+(scratch re-run via `--record-dir`; committed record never drama-drifted by a test run).

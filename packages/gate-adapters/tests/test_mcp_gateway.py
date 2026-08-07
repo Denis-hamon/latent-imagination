@@ -42,13 +42,28 @@ def test_pass_through_non_mutating(tmp_path):
     assert not (tmp_path / "dep" / "decisions.jsonl").exists()
 
 
-def test_passthrough_non_tool_call_and_garbage(tmp_path):
+def test_notifications_and_forwarded_calls_never_get_a_reply(tmp_path):
+    """JSON-RPC law: no id → NO reply; non tools/call methods → forward (None)."""
     _root, _pin, server = _server(tmp_path)
     out = run_mcp_message(json.dumps({"jsonrpc": "2.0", "method": "resources/list",
                                       "id": 1}), server)
-    assert out["result"]["status"] == "pass-through"
+    assert out is None  # forwarded downstream untouched — we only annotate tools/call
+    notif = run_mcp_message(json.dumps({"jsonrpc": "2.0", "method": "tools/call",
+                                        "params": {"name": "apply_patch",
+                                                   "arguments": {"patch": "+x"}}}), server)
+    assert notif is None  # notification: mutating but ID-less → annotate+log, NO reply
     out2 = run_mcp_message("{not json", server)
-    assert out2["result"]["status"] == "adapter-abstained"
+    assert out2 is None  # unparseable: nothing to correlate → silence, not id:null theater
+
+
+def test_coded_refusal_echoes_the_request_id(tmp_path):
+    """A parseable request that fails validation gets its refusal WITH its id."""
+    _root, _pin, server = _server(tmp_path)
+    out = run_mcp_message(json.dumps({"jsonrpc": "2.0", "id": 7, "method": "tools/call",
+                                      "params": {"name": "apply_patch", "arguments": "garbage"}}),
+                          server)
+    assert out["id"] == 7
+    assert out["result"]["status"] == "adapter-abstained"
 
 
 def test_abstains_when_no_tier(tmp_path):

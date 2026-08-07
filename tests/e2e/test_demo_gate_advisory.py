@@ -52,3 +52,22 @@ def test_consistency_driver_reruns(tmp_path):
                        capture_output=True, text=True, cwd=REPO, check=False)
     assert r.returncode == 0, r.stderr
     assert (store / "canonical" / "ordering-consistency" / "v0" / "consistency-report.json").is_file()
+
+
+TRAJ = REPO / "data" / "landing" / "swe-smith-trajectories" / "smith-matched-full" / "raw" / "ticks-00000.parquet"
+
+
+@pytest.mark.skipif(not TRAJ.exists(), reason="trajectory parquet absent (CI/scratch)")
+def test_mcp_demo_reruns_into_scratch(tmp_path):
+    demo = REPO / "demo" / "gate-mcp"
+    scratch = tmp_path / "rec2"
+    r = subprocess.run([sys.executable, str(demo / "run_demo.py"), "--items", "2",
+                        "--record-dir", str(scratch)],
+                       capture_output=True, text=True, cwd=REPO, check=False)
+    assert r.returncode == 0, r.stderr
+    cap = json.loads((scratch / "demo-record.json").read_text())
+    assert cap["items_played"] == 2
+    assert cap["mcp_spec_pin"].startswith("Model Context Protocol")
+    assert cap["items"][0]["instance_id"] and "designated_selection" in cap["items"][0]
+    assert "f2p_anchored" in cap["items"][0]  # honesty flags recorded either way
+    assert cap["sanitize_counts"] == {}

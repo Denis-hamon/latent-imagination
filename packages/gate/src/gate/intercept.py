@@ -83,6 +83,7 @@ def annotate(
     latency_s: float,
     disclosure: dict[str, Any],
     prediction_target_tier: str,
+    prediction_target_detail: str | None = None,
     now: datetime | None = None,
 ) -> StoreEvent:
     """The annotated response — subject-bound, disclosure-validated, trace-schema."""
@@ -110,6 +111,7 @@ def annotate(
         "latency_s": round(lat, 6),
         "predictor_disclosure": disc,
         "prediction_target_tier": prediction_target_tier,
+        "prediction_target_detail": prediction_target_detail,  # the designated set, recorded
     }, now)
 
 

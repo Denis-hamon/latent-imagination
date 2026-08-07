@@ -69,6 +69,8 @@ class GateServer:
                         "measured_precision": (self.predictor.measured or {}).get("precision"),
                         "posture": "sub-bar advisory (branch iii)"},
             prediction_target_tier=prediction_target_tier,
+            prediction_target_detail=(self.user_test_selection
+                                      if prediction_target_tier == "user_designated" else None),
         )
         append_decision(self.log_path, ev)
         return ev
