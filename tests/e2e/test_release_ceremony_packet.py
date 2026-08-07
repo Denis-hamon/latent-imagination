@@ -106,3 +106,37 @@ def test_act2_packet_rides_the_same_ceremony(tmp_path, monkeypatch):
         names = tar.getnames()
     assert any(n.endswith("release-manifest-block.json") for n in names)
     assert any(n.endswith("verdict.md") for n in names)
+
+
+def test_distribute_external_skips_disclosed_without_tokens(monkeypatch):
+    """Story 2.6 task 4 close: absent tokens → recorded SKIP, not silence."""
+    monkeypatch.delenv("LI_ZENODO_TOKEN", raising=False)
+    monkeypatch.delenv("LI_HF_TOKEN", raising=False)
+    arts = {"release_id": "x", "tarball": Path("/tmp/none.tar.gz")}
+    out = rc.distribute_external(Path("/tmp"), arts, {}, env={})
+    assert out["zenodo"].startswith("SKIP")
+    assert out["hf_hub"].startswith("SKIP")
+
+
+def test_distribute_external_zenodo_flow_offline(tmp_path, monkeypatch):
+    """Zenodo path through a MockTransport client — full create/upload/publish."""
+    import httpx as _hx
+
+    def handler(request):
+        if request.method == "POST" and "deposit/depositions" in request.url.path:
+            if "publish" in request.url.path:
+                return _hx.Response(202, json={"metadata": {"doi": "10.5281/zenodo.9"},
+                                               "links": {}})
+            return _hx.Response(201, json={"id": 9, "links": {"bucket": "https://f/b"}})
+        if request.method == "PUT":
+            return _hx.Response(201, json={})
+        return _hx.Response(404)
+
+    tarball = tmp_path / "rel.tar.gz"
+    tarball.write_bytes(b"PAR1")
+    client = _hx.Client(transport=_hx.MockTransport(handler))
+    arts = {"release_id": "r", "tarball": tarball}
+    out = rc.distribute_external(Path("/tmp"), arts, {},
+                                 env={"LI_ZENODO_TOKEN": "t"}, client=client)
+    assert out["zenodo"] == "doi:10.5281/zenodo.9"
+    assert out["hf_hub"].startswith("SKIP")

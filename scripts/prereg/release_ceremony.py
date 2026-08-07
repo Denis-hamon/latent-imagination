@@ -145,6 +145,60 @@ def publish_to_worm_bucket(artifacts: dict, anchor_payload: dict) -> str:
     return f"minio://latent-imagination-releases/{name}"
 
 
+def distribute_external(workdir: Path, arts: dict, anchor_payload: dict,
+                        *, env=None, client=None) -> dict:
+    """Zenodo DOI + HF Hub mirror — env-token gated, every outcome disclosed.
+
+    Skipped-open (recorded as such) when tokens are absent; a failed push after
+    WORM-anchor is DISCLOSED in the ceremony output, never silently swallowed —
+    the signed artifact already exists by then, mirrors are distribution only.
+    """
+    import os
+
+    env = env if env is not None else os.environ
+    out: dict[str, str] = {}
+    # --- Zenodo ---
+    z_tok = env.get("LI_ZENODO_TOKEN")
+    if not z_tok:
+        out["zenodo"] = "SKIP (LI_ZENODO_TOKEN absent — disclosed, not executed)"
+    else:
+        try:
+            import httpx
+            from zenodo_push.mint import mint_doi
+
+            meta = {
+                "title": f"Latent Imagination — {arts['release_id']}",
+                "upload_type": "dataset",
+                "description": "Signed release packet (chain-anchored; hash in the manifest).",
+                "creators": [{"name": "Denis Hamon"}],
+                "license": "Apache-2.0",
+            }
+            http = client or httpx.Client(timeout=120.0)
+            docs = mint_doi(http, arts["tarball"], meta,
+                            api_base="https://zenodo.org/api", token=z_tok)
+            out["zenodo"] = f"doi:{docs.doi}"
+        except Exception as exc:  # noqa: BLE001 — ceremony law: a mirror failure degrades
+            # to a disclosed string, never a crash, after the WORM anchor exists
+            out["zenodo"] = f"FAILED ({type(exc).__name__}: {str(exc)[:120]}) — disclosed; WORM anchor unaffected"
+    # --- HF Hub ---
+    h_tok = env.get("LI_HF_TOKEN")
+    if not h_tok:
+        out["hf_hub"] = "SKIP (LI_HF_TOKEN absent — disclosed, not executed)"
+    else:
+        try:
+            from hf_hub_push.mirror import default_hub, mirror_release
+
+            staging = arts["tarball"].parent
+            res = mirror_release(default_hub(h_tok),
+                                 repo_id="Denis-hamon/latent-imagination-releases",
+                                 repo_type="dataset", folder=staging,
+                                 path_in_repo=arts["release_id"])
+            out["hf_hub"] = res.url
+        except Exception as exc:  # noqa: BLE001 — same law: disclosed degrade, never a crash
+            out["hf_hub"] = f"FAILED ({type(exc).__name__}: {str(exc)[:120]}) — disclosed; WORM anchor unaffected"
+    return out
+
+
 def main() -> int:
     import argparse
 
@@ -176,7 +230,7 @@ def main() -> int:
     uri = publish_to_worm_bucket(arts, anchor_payload)
     print(f"    written: {uri}")
 
-    print("[4/4] record into the ledger…")
+    print("[4/5] record into the ledger…")
     from prereg.ledger import anchor_entry, append_entry
 
     ledger = store_root / "prereg-ledger.jsonl"
@@ -191,6 +245,11 @@ def main() -> int:
     )
     print("    ledger row appended")
 
+    print("[5/5] external mirrors (Zenodo DOI + HF Hub)…")
+    dist = distribute_external(workdir, arts, anchor_payload)
+    for k, v in dist.items():
+        print(f"    {k}: {v}")
+
     print("CEREMONY COMPLETE")
     print(json.dumps(
         {
@@ -198,6 +257,7 @@ def main() -> int:
             "chain_hash": anchor_payload["chain"]["chain_hash"],
             "anchor_mode": anchor_payload["anchor_mode"],
             "bucket_uri": uri,
+            "distribution": dist,
         },
         indent=2,
     ))
