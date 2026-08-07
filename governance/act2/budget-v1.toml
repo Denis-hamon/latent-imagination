@@ -1,0 +1,18 @@
+# R10 — Act II campaign budget, pré-enregistré 2026-08-07 (avant toute dépense)
+
+[api_models]
+# Trajectoires 3ᵉ famille + campagne. Toute dérive = amendement loggé AVANT résultats.
+galere_kimi_k3_calls_cap = 2000      # jouées contre l'endpoint Denis (pas de facture externe)
+claude_calls_cap_usd = 0             # 0 = pas d'appels payants Anthropic ce cycle
+openai_calls_cap_usd = 0
+
+[compute]
+node_gpu_hours_cap = 12              # fenêtre node déjà provisionnée
+spot_audit_tasks_cap = 72            # 1 % de 7 166 (Clean Tier v0) arrondi
+
+[publication]
+zenodo_calls = "owner-run, tokens hors-repo"
+hf_hub_calls = "owner-run, tokens hors-repo"
+
+[disclosure]
+rule = "si un cap est atteint au milieu d'une série, la série se PUBLIE partielle avec le pourcentage couvert dans le header — jamais d'extension silencieuse"
