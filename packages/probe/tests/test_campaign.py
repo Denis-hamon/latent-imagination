@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 from core_schema.errors import SchemaError
 from probe.campaign import (
-    MODULE_PENDING,
+    _SHA_RE,
     build_campaign_pins,
     require_module_pin,
     require_task_set,
@@ -71,22 +71,29 @@ def test_same_bytes_parse_and_hash_cited():
     assert p["protocol"]["sha256"] == sha256(
         (REPO / "governance" / "probe-design" / "decision.toml").read_bytes()).hexdigest()
     assert p["inputs"]["corpus_version"] == "corpus-v0"  # AD-13 leg
-    assert p["task_set"]["status"] == "pending-frozen-list"  # honest pending
+    assert p["task_set"]["status"] == "frozen"  # gelée le 2026-08-07 (fenêtre d'exécution)
+    assert p["task_set"]["n"] == 32  # le manchon pilote, seed 6769
     assert p["harness"]["name"] == "harbor + our trace wrapper"
 
 
-def test_module_and_task_slots_refuse_until_real(tmp_path):
+def test_module_and_task_slots_stateful_not_lying():
     p = build_campaign_pins(REPO, observed_models=_observed())
-    assert p["module"]["advisory_predictor_hash"] == MODULE_PENDING
-    with pytest.raises(SchemaError):
-        require_module_pin(p)
-    with pytest.raises(SchemaError):
-        require_task_set(p)
-    # garbage hex is not a pin
+    h = p["module"]["advisory_predictor_hash"]
+    gov = json.loads((REPO / "governance" / "act2" / "campaign-pins-v1.json").read_text())
+    gov_h = gov["module"]["advisory_predictor_hash"]
+    # builder must emit EXACTLY what gouvernance enregistre — pas deux vérités
+    assert h == gov_h
+    if _SHA_RE.fullmatch(h):
+        require_module_pin(p)  # pin réel enregistré ce matin → passe
+    else:
+        with pytest.raises(SchemaError):
+            require_module_pin(p)
+    # garbage hex is never a pin
     p["module"]["advisory_predictor_hash"] = "z" * 64
     with pytest.raises(SchemaError):
         require_module_pin(p)
     p["module"]["advisory_predictor_hash"] = "a" * 64
+    assert require_module_pin(p) == "a" * 64
     p["task_set"] = {"status": "frozen", "n": 481, "file": "…", "sha256": "b" * 64}
     assert require_module_pin(p) == "a" * 64
     assert require_task_set(p)["n"] == 481

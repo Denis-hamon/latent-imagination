@@ -114,6 +114,17 @@ def build_campaign_pins(repo_root: Path, *, observed_models: list[dict]) -> dict
         if frozen.is_file() else
         {"status": TASKS_PENDING, "policy": "the frozen list generates at design freeze (tasks.toml[subset].selection_rule); pending is the record"}
     )
+    # the module pin reads what gouvernance/a grafted — never a Python constant
+    gov_pins_path = root / "governance" / "act2" / "campaign-pins-v1.json"
+    module_hash = MODULE_PENDING
+    if gov_pins_path.is_file():
+        try:
+            prev = json.loads(gov_pins_path.read_text())
+            real = prev.get("module", {}).get("advisory_predictor_hash", MODULE_PENDING)
+            if isinstance(real, str) and _SHA_RE.fullmatch(real):
+                module_hash = real
+        except ValueError:
+            pass
     payload = {
         "campaign": "act2-intervention",
         "task_set": task_set,
@@ -121,7 +132,7 @@ def build_campaign_pins(repo_root: Path, *, observed_models: list[dict]) -> dict
         "protocol": {"file": "governance/probe-design/decision.toml", "sha256": sha256(dec_raw).hexdigest()},
         "harness": harness,
         "agents": agents,
-        "module": {"advisory_predictor_hash": MODULE_PENDING,
+        "module": {"advisory_predictor_hash": module_hash,
                    "posture": "sub-bar advisory baseline (branch iii) — measured, NOT certified",
                    "policy": "re-export via probe.arms.baseline_export before the window; runs refuse on pending"},
         "inputs": {  # AD-13: which corpus posture this campaign depends on
