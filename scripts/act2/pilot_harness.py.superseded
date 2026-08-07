@@ -19,7 +19,6 @@ manifest records that in print).
 from __future__ import annotations
 
 import json
-import subprocess
 import time
 from dataclasses import dataclass
 from hashlib import sha256
@@ -99,8 +98,8 @@ def advisory_score(patch_text: str) -> float:
     serves in production (probe-predictor-v0 from the node store)."""
     global _PREDICTOR
     if _PREDICTOR is None:
-        from gate.predict import PinnedPredictor
         from gate.ports import load_pinned_snapshot
+        from gate.predict import PinnedPredictor
 
         snap_dir = Path(__file__).resolve().parents[2] / "governance" / "act2" / "arm-artifacts"
         predictor = snap_dir / "predictor.json"  # the port's pinned layout name
@@ -133,8 +132,8 @@ def run_task_arm(task: Task, arm: str, work: Path) -> dict:
         record["flip_probability"] = p
         if p >= ADVISORY_THRESHOLD:
             prompt2 = prompt + (
-                "\n\n[Advisory] flip probability %.2f — the submitted patch probably "
-                "does not flip the failing tests. Rework within one attempt." % p
+                f"\n\n[Advisory] flip probability {p:.2f} — the submitted patch probably "
+                "does not flip the failing tests. Rework within one attempt."
             )
             out2 = call_model(prompt2)
             diff2 = extract_diff(out2["text"]) or diff

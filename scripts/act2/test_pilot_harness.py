@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 from scripts.act2.pilot_harness import advisory_score, extract_diff, pilot_tasks
 
 
