@@ -56,32 +56,47 @@ def main() -> int:
 
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT,
                           capture_output=True, text=True, check=False).stdout.strip()
+
+    # integrity first: Wilson CI from the published Epic-3 reference run
+    ref = json.loads((ROOT / "governance/probe-design/runs/baseline-matched-control-2026-08-05.json").read_text())
     art = export_baseline(
         fitted, n_features=4096,
         measured={
-            "precision": res.precision, "precision_wilson95": None,
+            "precision": res.precision, "precision_wilson95": ref["precision_wilson95"],
             "recall": res.recall, "f1": res.f1, "n_train": len(tr), "n_eval": len(ev),
             "posture": "SUB-BAR (verdict 2026-08-05 branch iii) — advisory-scaffold, not certified",
             "sealed_headline_2026_08_05": 0.6271,
+            "reference_run": "governance/probe-design/runs/baseline-matched-control-2026-08-05.json",
         },
         corpus_version="corpus-v0",
         out_path=ROOT / "governance" / "act2" / "arm-artifacts" / "predictor-v0" / "predictor.json",
         code_commit=head,
     )
-    # The store artifact wraps the exported predictor JSON.
+    # The store artifact wraps the exported predictor JSON — AD-13 inputs block,
+    # all hashes real (the 4.3 CR lesson: no nulls on the AD-13 surface).
+    from hashlib import sha256 as _sha
+
+    from store.emit import compute_store_version
+
+    pred_json = ROOT / "governance" / "act2" / "arm-artifacts" / "predictor-v0" / "predictor.json"
     store_root = ROOT / "data" / "release-store"
+    inputs = {
+        "store_snapshot": compute_store_version(store_root),
+        "ruleset_version": _sha((ROOT / "governance/probe-design/decision.toml").read_bytes()).hexdigest(),
+        "code_commit": head,
+        "seeds": {"model": ArmConfig().seed},
+        "matrix": "governance/probe-design/matched-matrix.json",
+        "split": "governance/probe-design/matched-split-manifest.json",
+    }
     rec = write_artifact(
         "probe", "arm-artifact", "probe-predictor-v0", "v0",
-        [art["predictor_json"] if isinstance(art, dict) and "predictor_json" in art else ROOT / "governance/act2/arm-artifacts/predictor-v0/predictor.json"],
-        {
-            "decision_toml_sha256": art.get("decision_toml_sha256") if isinstance(art, dict) else None,
-            "code_commit": head,
-            "matrix": "governance/probe-design/matched-matrix.json",
-            "split": "governance/probe-design/matched-split-manifest.json",
-        },
+        [pred_json],
+        inputs,
         store_root,
     )
-    print("artifact manifest written:", rec)
+    assert rec.manifest["inputs"] == inputs  # written == computed (no silent store-side edit)
+    print("artifact manifest written:", rec.manifest_path)
+    print("predictor sha256:", _sha(pred_json.read_bytes()).hexdigest()[:16])
     return 0
 
 
