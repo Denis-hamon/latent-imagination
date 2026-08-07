@@ -19,5 +19,5 @@ Real evaluation runs happen when a trained predictor exists (post-cycle); the ev
 
 ## Hash of record
 
-`sha256(consistency-protocol-v1.toml) = ce25f0db6b4bb580150113c17cbf59e08328b54f5e617e4ded25342f8c6d38c8` — computed at registration;
+`sha256(consistency-protocol-v1.toml) = b73b95dfd6a4db5779e9150058869c96e2eafd5e0365366e71f7130943e8dd05` — computed at registration;
 report artifacts cite it as `inputs.ruleset_version` (AD-13).

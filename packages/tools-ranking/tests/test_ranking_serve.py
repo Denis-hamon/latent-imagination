@@ -32,7 +32,7 @@ class TestOQ10:
         assert rec["payload"]["surface"] == "ranking"
 
     def test_designated_tier_ranks_and_logs_replayable_payload(self, tmp_path):
-        server = _server(tmp_path)
+        server = _server(tmp_path, user_test_selection="tests/")
         rows = server.rank(CANDS, prediction_target_tier="user_designated")
         rec = json.loads((tmp_path / "dep" / "decisions.jsonl").read_text().strip())
         assert rec["kind"] == "candidates_ranked"

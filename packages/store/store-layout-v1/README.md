@@ -73,6 +73,8 @@ Raw adapter deposits do NOT live here — they land in `data/landing/`
 | harness | figure, bundle |
 | prereg | prereg-commit |
 | publication | release-manifest |
+| corpus | corpus-item-set, corpus-release |
+| tools-ranking | ranking-report |
 
 ## Reading the store (reproducer path)
 
@@ -80,3 +82,4 @@ No library needed. Artifacts are parquet/json/png under the paths above; figure
 inputs are named in each figure's manifest `inputs` block. `packages/store/views.py`
 ships DuckDB views marked **convenience, never obligation** (AD-8): they read exactly
 the paths documented here — never anything else.
+

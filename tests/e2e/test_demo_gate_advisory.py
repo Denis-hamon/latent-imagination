@@ -36,3 +36,19 @@ def test_demo_reruns_and_the_record_is_sane(tmp_path_factory: TempPathFactory):
         assert ev["payload"]["candidate"]["wire_payload_sha256"]
         assert "note" in ev["payload"]["predictor_disclosure"]  # fixture marker survives
     assert before is None or json.loads(before)["items"][0]["instance_id"] == cap["items"][0]["instance_id"]
+
+
+def test_consistency_driver_reruns(tmp_path):
+    """Story 8.3: the evaluation driver runs end-to-end from a fresh clone
+    (fixture records, committed split manifest) and publishes a store artifact."""
+    import subprocess
+    import sys
+
+    drv = REPO / "scripts" / "ranking" / "run_consistency.py"
+    store = tmp_path / "store"
+    r = subprocess.run([sys.executable, str(drv), "--records",
+                        str(REPO / "governance" / "ranking" / "consistency-fixture.json"),
+                        "--store", str(store)],
+                       capture_output=True, text=True, cwd=REPO, check=False)
+    assert r.returncode == 0, r.stderr
+    assert (store / "canonical" / "ordering-consistency" / "v0" / "consistency-report.json").is_file()

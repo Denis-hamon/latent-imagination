@@ -17,12 +17,10 @@ from pathlib import Path
 from core_schema.errors import SchemaError
 from core_schema.events import StoreEvent
 from gate.decision_log import _inside_store_root, append_decision
-from gate.ports import PinnedSnapshot, load_pinned_snapshot
+from gate.ports import INTERFACE_VERSION, PinnedSnapshot, load_pinned_snapshot
 from gate.predict import PinnedPredictor
 
 from tools_ranking.core import Ranked, rank_candidates
-
-INTERFACE_VERSION = "gate-iface-v1"  # the ranking rides the gate's seam version
 
 
 @dataclass
@@ -52,6 +50,17 @@ class RankingServer:
 
     def rank(self, candidates: list[dict], *, prediction_target_tier: str | None) -> list[Ranked]:
         """OQ-10 for real: no tier → NO ranking; the abstention is recorded."""
+        if prediction_target_tier == "user_designated" and not self.user_test_selection:
+            ev = self._event("prediction_refused", {
+                "interface_version": INTERFACE_VERSION,
+                "predictor_hash": self.snapshot.predictor_hash,
+                "corpus_version": self.snapshot.corpus_version,
+                "candidate_count": len(candidates) if isinstance(candidates, list) else None,
+                "reason": "user_designated tier without LI_GATE_TEST_SELECTION",
+                "surface": "ranking",
+            })
+            append_decision(self.log_path, ev)
+            raise SchemaError("LI-RANK-002", "user_designated without a designated selection", {})
         if prediction_target_tier not in ("diff_touched", "user_designated"):
             ev = self._event("prediction_refused", {
                 "interface_version": INTERFACE_VERSION,
@@ -81,7 +90,7 @@ class RankingServer:
             "predictor_version": self.snapshot.predictor_version,
             "corpus_version": self.snapshot.corpus_version,
             "prediction_target_tier": prediction_target_tier,
-            "predictor_disclosure": (self.snapshot.manifest.get("measured") or {}),
+            "predictor_disclosure": (self.snapshot.manifest.get("measured") if isinstance(self.snapshot.manifest.get("measured"), dict) else {}),
         })
         append_decision(self.log_path, ev)
         return rows

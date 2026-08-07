@@ -3,6 +3,7 @@ degenerate rule enforced, split machinery deterministic and disjoint."""
 
 from __future__ import annotations
 
+import json
 from hashlib import sha256
 
 import pytest
@@ -71,7 +72,7 @@ def test_heldout_split_deterministic_and_disjoint():
     assert a == heldout_split(ids, seed=20260806, exclude=frozenset({"t1", "t2"}))
     assert "t1" not in a and "t2" not in a
     assert a != heldout_split(ids, seed=1)
-    assert len(a) == max(1, int(298 * 0.2))
+    assert len(a) == max(1, round(298 * 0.2))  # registered small-pool rule
 
 
 def test_publish_report_writes_store_artifact(tmp_path):
@@ -79,10 +80,13 @@ def test_publish_report_writes_store_artifact(tmp_path):
                            "realized": {"a": True, "b": False}}])
     proto = (tmp_path / "proto.toml")
     proto.write_text("[p]\nx = 1\n")
+    sm = tmp_path / "split.json"
+    sm.write_text(json.dumps({"split_id": "test"}))
     m = publish_consistency_report(rep, tmp_path / "store", report_version="v0",
                                    dataset_versions={"clean-tier": "clean-tier/v0"},
                                    protocol_sha256=sha256(proto.read_bytes()).hexdigest(),
-                                   corpus_version="corpus-v0", code_commit="c" * 40)
+                                   corpus_version="corpus-v0", code_commit="c" * 40,
+                                   split_manifest_path=sm)
     assert m["artifact_type"] == "ranking-report"
     assert m["producer"] == "tools-ranking"
     assert m["inputs"]["dataset_versions"]["clean-tier"] == "clean-tier/v0"
