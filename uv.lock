@@ -492,12 +492,14 @@ version = "0.1.0"
 source = { editable = "packages/publication" }
 dependencies = [
     { name = "li-core-schema" },
+    { name = "li-harness" },
     { name = "li-prereg" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "li-core-schema", editable = "packages/core-schema" },
+    { name = "li-harness", editable = "packages/harness" },
     { name = "li-prereg", editable = "packages/prereg" },
 ]
 
@@ -524,6 +526,12 @@ requires-dist = [
 name = "li-tools-ranking"
 version = "0.1.0"
 source = { editable = "packages/tools-ranking" }
+dependencies = [
+    { name = "li-core-schema" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "li-core-schema", editable = "packages/core-schema" }]
 
 [[package]]
 name = "li-traces-ingest"
