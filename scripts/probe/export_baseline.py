@@ -59,7 +59,7 @@ def main() -> int:
 
     # integrity first: Wilson CI from the published Epic-3 reference run
     ref = json.loads((ROOT / "governance/probe-design/runs/baseline-matched-control-2026-08-05.json").read_text())
-    art = export_baseline(
+    _art = export_baseline(
         fitted, n_features=4096,
         measured={
             "precision": res.precision, "precision_wilson95": ref["precision_wilson95"],

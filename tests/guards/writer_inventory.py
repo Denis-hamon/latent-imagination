@@ -42,8 +42,9 @@ WRITER_PACKAGES = _writer_packages()
 
 # scripts subtrees whose store-aimed writes are sanctioned ceremony surfaces:
 # prereg = ceremonies (story 2.6 design); act1 = Act-I field-run/campaign
-# orchestration writing occurrence-class outputs under a caller-passed store root.
-SCRIPT_SANCTIONED = ("prereg", "act1")
+# orchestration writing occurrence-class outputs under a caller-passed store root;
+# probe = the pinned arm-artifact re-export ceremony (Act II, story 6.2 machinery).
+SCRIPT_SANCTIONED = ("prereg", "act1", "probe")
 
 
 def _pkg_dir_name(path: Path, packages_dir: Path) -> str:
