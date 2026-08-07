@@ -7,15 +7,14 @@
 | Budget R10 Act II pré-enregistré (avant tout spend) | ✅ | `governance/act2/budget-v1.toml` |
 | HF Hub mirror (test avec vrai token) | ✅ | https://huggingface.co/datasets/denishamon/latent-imagination-releases (29 fichiers) |
 | HF README card (metadata citable) | ✅ | poussé via HfApi |
+| **DOI Zenodo minted** | ✅ | https://doi.org/10.5281/zenodo.21837153 |
 | Distribution block corpus-release v0 mis à jour | ✅ | `data/store/canonical/corpus-release-v0/v0/corpus-release.json` |
 | Pilote Kimi-K3 (1 appel borné sur budget) | ✅ | `governance/act2/family3-pilot/` — 1/2000 calls, false start honnête |
 | verify_offline OTS parse (deferred Epic-1 M-1) | ✅ | `packages/prereg/tests/test_verify.py` sur la vraie preuve |
 
 ## Non exécuté — tokens manquants (à fermer par l'humain)
 
-- **DOI Zenodo** : l'adapter est prêt et testé ; exécution = fournir `LI_ZENODO_TOKEN`
-  et lancer `scripts/prereg/release_ceremony.py --packets-gneration…` — je te tends le
-  guide quand tu l'as.
+- **DOI Zenodo** : ✅ minté le 2026-08-07 (token fourni par Denis).
 
 ## Reste post-fenêtre (discipline)
 
