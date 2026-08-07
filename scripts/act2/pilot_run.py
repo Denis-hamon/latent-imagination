@@ -213,8 +213,8 @@ def apply_and_export(loc_old: str, patch: str, rel: str) -> str | None:
 
 def buggy_src_path(task: dict) -> Path:
     """The post-bug-state file the agent actually sees inside the image."""
-    prefix = task["instance_id"].split("__")[0][:6]
-    return ROOT / "data" / "landing" / "act2-pilot" / f"{prefix}-{task['src_key']}.buggy.py"
+    key = task["instance_id"].replace("/", "_")
+    return ROOT / "data" / "landing" / "act2-pilot" / f"{key}.buggy.py"
 
 
 def gen_patch(task: dict) -> dict:

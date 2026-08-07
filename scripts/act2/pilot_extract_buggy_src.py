@@ -25,11 +25,16 @@ def sh(cmd: list[str]) -> subprocess.CompletedProcess:
 
 def run_one(task: dict) -> dict:
     iid = task["instance_id"]
+    maxwidew = f"{iid.replace('/', '_')}.buggy.py"  # clé stable : extract path pilot_run
+    out = JOBS / maxwidew
+    if out.is_file() and out.stat().st_size > 100:  # idempotent — skip
+        return {"task": iid, "skipped": "exists"}
     gold = GOLD / iid.replace("/", "_") / "gold.diff"
     img = task["image"]
     target = task.get("target")  # fichier touché par le bug (extrait du gold)
     box = f"li-bug-{iid.split('.')[0][:24].replace('/', '_')}"
     sh(["docker", "rm", "-f", box])
+    sh(["docker", "pull", img])
     up = sh(["docker", "run", "-d", "--name", box, img, "sleep", "600"])
     if up.returncode != 0:
         return {"task": iid, "error": "docker run failed", "stderr": up.stderr[-200:]}
@@ -46,10 +51,10 @@ def run_one(task: dict) -> dict:
         r = sh(["docker", "exec", box, "bash", "-c",
                 f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python -m pytest -x -q {t}"])
         f2p_rc = r.returncode
-        # export the buggy source
-        key = iid.split(".")[0].replace("/", "_")
         rc = sh(["docker", "exec", box, "cat", f"{repo}/{target}"])
-        (JOBS / f"{iid.split('__')[0][:6]}-{task['src_key']}.buggy.py").write_text(rc.stdout)
+        if not rc.stdout.strip():
+            return {"task": iid, "error": f"cat vide: {repo}/{target}", "cat_err": rc.stderr[-200:]}
+        out.write_text(rc.stdout)
         return {"task": iid, "bug_applied": True, "f2p_after_bug_rc": f2p_rc,
                 "buggy_src_path": target,
                 "f2p_tail": (r.stdout + r.stderr)[-400:]}

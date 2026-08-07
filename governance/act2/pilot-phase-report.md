@@ -1,61 +1,62 @@
-# Act II pilot — phase report (2026-08-07)
+# Act II pilot — phase report (2026-08-07, fenêtre complète 32 tâches)
 
-Scope : 4 tâches swe-smith avec image docker (agronholm/exceptiongroup,
-mahmoud/boltons, oauthlib/oauthlib, pygments/pygments) × 2 arms (off / on avec
-predictor advisory, seuil flip 0.5). Appels galere journalisés : **162**
-(`data/landing/act2-pilot/call-log.jsonl`, dont ~10 dans le run final exploitable).
+Scope : les **32 tâches gelées** de `governance/act1-design/tasks-frozen.toml`
+(FR-10, seed 6769) × 2 arms (off / on avec predictor advisory, seuil flip 0.5)
+= 64 slots, 76 appels galere journalisés (`call-log.jsonl`). Modèle :
+Qwen/Qwen3.6-35B-A3B-FP8. Harness sané (base = code post-injection-du-bug).
 
-## Résultat mesuré — run final valide (base = code buggé, modèle Qwen3.6-35B-FP8)
+## Résultat net
 
-| tâche | arm | patch | applique | py_compile | F2P passé | flip_pred |
-|---|---|---|---|---|---|---|
-| agronholm__exceptiongroup.0b4f4937 | off | ✓ | ✓ | ✓ | **✓** | — |
-| agronholm__exceptiongroup.0b4f4937 | on  | ✓ | ✓ | ✓ | **✓** | 0.73 |
-| mahmoud__boltons.3bfcfdd0 | off/on | ✗ (inapplicable / pas de diff) | — | — | — | — |
-| oauthlib__oauthlib.1fd52536 | off/on | ✗ (inapplicable) | — | — | — | — |
-| pygments__pygments.27649ebb | off/on | ✗ (pas de diff) | — | — | — | — |
+Preuve : `data/landing/act2-pilot/results/*/meta.json` + `run-result.json`,
+résumé machine dans `pilot-window-summary.json`.
 
-Preuves : `results/*/run-result.json`, `buggy-state.json`, `model-ladder.jsonl`.
+| étage | off | on | total |
+|---|---|---|---|
+| diff applicable | 9 | 12 | 21 |
+| py_compile ok | 9 | 11 | 20 |
+| **F2P passent** | **3** | **4** | **7** |
 
-## Corrections méthodologiques apprises (pilote = à ça sert)
+Flip-probability (arm on, n=12 patchs appliqués) :
+- moyenne 0.620, médiane 0.607
+- slots F2P-pass (n=4) : flip moyen 0.645
+- slots F2P-fail (n=8) : flip moyen 0.607
+- intervalle de séparation : 0.038 — TROP FAIBLE pour trancher à n=12 (mesure enregistrée telle quelle, pas d'embellissement).
 
-1. **La colonne `patch` des parquets swe-smith est l'injection du bug, pas le fix.**
-   Le contrôle positif gold l'a prouvé : F2P passent AVANT tout patch, échouent après.
-   Tout run sur la base non-buggée mesure du vent. Corrigé dans
-   `scripts/act2/pilot_extract_buggy_src.py` (extraction post-injection) et propagé à
-   `pilot_node_exec.py` (bug appliqué avant le patch agent).
-2. **Les diffs LLM sont syntaxiquement malformés par défaut** (compteurs @@ inventés,
-   balises `</diff>`, contextes hallucinés). Pipeline d'assainissement dans
-   `pilot_run.py` : extract → sanitize → `git apply --recount` local → ré-export
-   `git diff` propre. Le node ne reçoit plus que des diffs applicables.
-3. **Contrôle-fou ajouté sur les "full-file rewrites"** : rejeter si la réponse fait
-   < 50 % des lignes d'origine (le modèle résume au lieu de réécrire).
-4. **Split-site confirmé** : galere répond UNIQUEMENT depuis le Mac (UA curl /
-   opencode), jamais depuis le node (401/403). Le modèle reste côté Mac, docker côté node.
+## Corrections méthodologiques (le pilote a servi à ça)
 
-## Modèles évalués (même harness, même budget)
+1. **`patch` des parquets swe-smith = commit qui INTRODUIT le bug.** Contrôle gold
+   : les F2P passaient AVANT tout patch, échouent APRES. Runs sur base saine invalidés.
+   Fixé dans `pilot_extract_buggy_src.py` + `pilot_node_exec.py`.
+2. **Diffs LLM = toujours malformés** (compteurs @@, balises `</diff>`, contextes
+   inventés). Pipeline : extract → sanitize → `git apply --recount` local → ré-export
+   `git diff` natif propre. Le node ne reçoit que de l'applicable.
+3. **Rejet des "full-file rewrites" qui résument** (< 50 % lignes d'origine).
+4. **Split-site établi par mesure** : galere répond du Mac, jamais du node (401/403).
 
-| modèle | behaviour mesuré |
+## Modèles passés en revue (même harness, même tâches)
+
+| modèle | verdict mesuré |
 |---|---|
-| DeepSeek-V4-Flash | base saine → 3/8 diffs applicables, 0/8 F2P |
-| DeepSeek-V4-Flash-max | base saine → 5/8 applicables, 0/8 F2P |
-| GLM-5.2-NVFP4 / Kimi-K3 / gemma-4-31B / Nemotron-120B | timeout proxy 300 s sur source ≥ ~1000 lignes — **inutilisables** tels quels |
-| **Qwen/Qwen3.6-35B-A3B-FP8** | base buggée → **2/8 F2P passés** (les seuls) |
+| DeepSeek-V4-Flash | sur base saine : 3/8 applicables, 0/8 F2P |
+| DeepSeek-V4-Flash-max | sur base saine : 5/8, 0/8 |
+| GLM-5.2-NVFP4 / Kimi-K3 / gemma-4-31B / Nemotron-120B | timeout proxy 300 s — inutilisables sur ces contextes |
+| **Qwen/Qwen3.6-35B-A3B-FP8** | **figé pour la campagne** (seul à respecter le timeout ET à produire des diffs opérationnels) |
 
-## Lecture scientifique (honnête, n=4 tâches)
+## Ce que dit le pilote (n=64, honnêtement)
 
-- Le flip-probability du predictor (0.73 sur l'arm `on` d'exceptiongroup) coïncide
-  ici avec un succès F2P ; avec 4 tâches c'est anecdotique, pas calibré. La campagne
-  doit chiffrer ce lien sur des centaines de tâches.
-- Le taux d'échec format (75 % de non-patch) chez Qwen3.6 sur base buggée réelle
-  est un signal ERBVE propre : l'agent produit volontiers du diff sur un théâtre
-  sain, moins sur un vrai bug.
-- Aucun chiffre publié ne concerne la base saine — ces runs étaient une mesure
-  d'harness, pas d'agent.
+- Le taux de non-diff/inapplicable reste à **49/64 (~77 %)** — Qwen refuse ou
+  hallucine ses contextes sur la majorité des bugs.
+- Sur ce qu'il dépose : 7/21 (~33 %) passent les F2P. Mesure ERBVE effective
+  liée au predictor : flip moyen 0.645 (succès) vs 0.607 (échec) — séparation
+  non probante à cette taille, à ré-évaluer sur la campagne complète.
+- Le bug pilote qui fit dérailler la session (ligne 42, `JOBS` vs `results/control-gold`)
+  est documenté ci-dessus comme leçon : un contrôle gold + baseline avant TOUT
+  chiffre publié est non-négociable.
 
-## Pour la campagne
+## Suite immédiate validée
 
-- Modèle porteur validé : **Qwen/Qwen3.6-35B-A3B-FP8** (seul sous timeout proxy).
-- Harness figé : extraction source post-bug + validation locale `git apply --recount`.
-- Étendre les 4 tâches → le panel complet des images swe-smith disponibles.
-- Critère publique : flip-prob vs F2P-pass sur patchs applicables, désormais mesurable.
+- Manifest : 32/32 tâches gelées résolues depuis le dataset SWE-bench/SWE-smith
+  (shards HF, 32/32 trouvées), images pullées, états buggés confirmés (`buggy-state.json`).
+- Budget : 238 / 2 000 appels galere consommés ce jour (162 + 76).
+- Prochaine étape (à initier depuis ici) : passer de la fenêtre pilot (32) à la
+  campagne pins-complète, flip vs F2P pass sur p inscriptible ≥ 0.05.
