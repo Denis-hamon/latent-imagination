@@ -45,9 +45,11 @@
     "corpus_version": "corpus-v0"
   },
   "module": {
-    "advisory_predictor_hash": "pending-reexport",
+    "advisory_predictor_hash": "60e89c7c41125192ac22186550400d86b6a2b6ea0f98354241b874aaac24e3eb",
     "policy": "re-export via probe.arms.baseline_export before the window; runs refuse on pending",
-    "posture": "sub-bar advisory baseline (branch iii) \u2014 measured, NOT certified"
+    "posture": "sub-bar advisory baseline (branch iii) — measured, NOT certified",
+    "artifact_store_ref": "data/release-store/canonical/probe-predictor-v0/v0/",
+    "pin_updated": "2026-08-07 — vérifié sur le store du node (manifest cbea0111→60e89c7c aligné au ficher gouvernatif, même bytes)"
   },
   "protocol": {
     "file": "governance/probe-design/decision.toml",
