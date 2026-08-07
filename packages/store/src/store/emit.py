@@ -35,6 +35,7 @@ WRITERS: dict[str, tuple[str, ...]] = {
     "publication": ("release-manifest",),
     "corpus": ("corpus-item-set", "corpus-release"),
     "tools-ranking": ("ranking-report",),
+    "probe": ("arm-artifact",),
 }
 
 _DIR_BY_TYPE = {
@@ -50,6 +51,7 @@ _DIR_BY_TYPE = {
     "corpus-item-set": "canonical",
     "corpus-release": "canonical",
     "ranking-report": "canonical",
+    "arm-artifact": "canonical",
 }
 
 _SLUG = re.compile(r"^[a-z0-9][a-z0-9._-]*$")

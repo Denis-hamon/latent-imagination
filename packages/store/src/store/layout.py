@@ -14,6 +14,7 @@ REPRODUCIBLE_CLASSES = frozenset(
         "quarantine",
         "figure",
         "bundle",
+        "arm-artifact",
         "prereg-commit",
         "release-manifest",
         "corpus-item-set",
