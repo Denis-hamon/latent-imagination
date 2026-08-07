@@ -1,0 +1,22 @@
+{
+  "flipped": false,
+  "model": "moonshotai/Kimi-K3",
+  "patch_applied": false,
+  "prompt_hash": "5e9a41522d5c2e7ba03f20c9259aaf9c9b85c0193514939593b000e0f17aa9c4",
+  "reply_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "task": {
+    "fix_commit": "c1c25da365cf14878cf5317147e7a09b5d124df5",
+    "parent_commit": "e66cade323f5c11cebb4bd0f099e634b245adccd",
+    "src_file": "boltons/mathutils.py",
+    "test_files": [
+      "tests/test_mathutils.py"
+    ]
+  },
+  "usage": {
+    "completion_tokens": 1812,
+    "prompt_tokens": 355,
+    "prompt_tokens_details": null,
+    "total_tokens": 2167
+  },
+  "wall_s": 94.06
+}

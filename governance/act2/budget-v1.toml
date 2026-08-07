@@ -16,3 +16,8 @@ hf_hub_calls = "owner-run, tokens hors-repo"
 
 [disclosure]
 rule = "si un cap est atteint au milieu d'une série, la série se PUBLIE partielle avec le pourcentage couvert dans le header — jamais d'extension silencieuse"
+
+[usage_log]
+# 2026-08-07: 1 appel consommé (pilote Kimi-K3, boltons c1c25da, résultat: false start, 94 s).
+galere_kimi_k3_used = 1
+hf_hub_used = "1 mirror op (28 fichiers, denishamon/latent-imagination-releases)"

@@ -30,3 +30,13 @@ manifest at campaign-run assembly (window step) — present-tense refusal begins
 
 **Budget note (R10):** the campaign spend ceiling belongs to the window's pre-registration
 (step before ANY paid run), same posture as the 4.1 harvest caps.
+
+## Family-3 pilot evidence (2026-08-07)
+
+- Endpoint galere (`https://ai.galere.org/v1`, opencode provider) reachable sans clé; first
+  recorded attempt: `family3-pilot/kimi-k3-boltons-c1c25da-attempt0.json` —
+  model `moonshotai/Kimi-K3`, task `boltons/mathutils.py` fix commit `c1c25da…`,
+  outcome: **false start** (patch_applied=false, flipped=false — valeur honnête, c'était
+  le jour 1 du endpoint), wall 94 s, 2 167 tokens.
+- 1 / 2 000 calls consommés (usage_log in budget-v1.toml). La série complète
+  (≥50 tâches) passe par la fenêtre node, pas par un laptop.
