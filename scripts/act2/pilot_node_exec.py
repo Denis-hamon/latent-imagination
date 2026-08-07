@@ -39,10 +39,24 @@ def run_one(iid: str, arm: str) -> dict:
         if repo_dir:
             repo = str(Path(repo_dir).parent)
             sh(["docker", "cp", str(d / "patch.diff"), f"{box}:/tmp/patch.diff"])
+            gold = JOBS.parent / "control-gold" / iid.replace("/", "_") / "gold.diff"
+            sh(["docker", "cp", str(gold), f"{box}:/tmp/bug.diff"])
+            bg = sh(["docker", "exec", box, "git", "-C", repo, "apply", "/tmp/bug.diff"])
+            meta["bug_applied"] = bg.returncode == 0
             ap = sh(["docker", "exec", box, "git", "-C", repo, "apply", "--verbose", "/tmp/patch.diff"])
-            meta["patch_applied"] = ap.returncode == 0
+            meta["patch_applied"] = ap.returncode == 0 and meta["bug_applied"]
+            if not meta["patch_applied"] and meta["bug_applied"]:
+                meta["apply_err"] = ap.stderr[-400:]
+            if ap.returncode == 0:
+                target = task.get("target") or (f2p and "")
+                if target:
+                    cp = sh(["docker", "exec", box, "/opt/miniconda3/envs/testbed/bin/python",
+                             "-m", "py_compile", f"{repo}/{target}"])
+                    meta["py_compiles"] = cp.returncode == 0
+                    if cp.returncode != 0:
+                        meta["py_compile_err"] = cp.stderr[-300:]
             if ap.returncode == 0 and f2p:
-                r = sh(["docker", "exec", box, "bash", "-c", f"cd {repo} && python -m pytest -x -q {' '.join(f2p[:4])}"])
+                r = sh(["docker", "exec", box, "bash", "-c", f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python -m pytest -x -q {' '.join(f2p[:4])}"])
                 meta["f2p_pass"] = r.returncode == 0
                 meta["f2p_tail"] = r.stdout[-600:]
     finally:
