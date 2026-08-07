@@ -17,6 +17,10 @@ zero custody. The committed record is sanitized with the frozen patterns
 - `predictor_disclosure` — the pinned manifest's measured block, verbatim (incl.
   fixture notes — a demo artifact never dresses up as a trained one).
 
+**Mixed producers (story 8.2):** the log also carries `candidates_ranked` (ranking
+tool) — analytics queries filter per kind (`where kind = 'gate_annotated'` for the
+flip/latency distributions; ranking rows carry no flip_probability).
+
 **Bit-rot policy:** demo = time-stamped artifact; re-running regenerates the record
 (wall-clock fields vary by design); tripwire = `tests/e2e/test_demo_gate_advisory.py`
 (skip-gated when the landing parquet is absent).
