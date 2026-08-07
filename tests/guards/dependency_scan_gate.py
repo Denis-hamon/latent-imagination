@@ -38,10 +38,12 @@ def _deps(pyproject: Path) -> set[str]:
 
 
 def find_gate_llm_violations(packages_dir: Path = PACKAGES) -> list[str]:
+    # story 8.1 CR: AD-14's no-LLM-client discipline extends to the ranking tool
+    # (it ranks on the gate's predictions; an LLM client there is the same breach)
     violations = []
     for pyproject in sorted(packages_dir.glob("**/pyproject.toml")):
         pkg = pyproject.parent.name
-        if not pkg.startswith("gate"):
+        if not (pkg.startswith("gate") or pkg == "tools-ranking"):
             continue
         hit = _deps(pyproject) & LLM_CLIENTS
         for dep in sorted(hit):

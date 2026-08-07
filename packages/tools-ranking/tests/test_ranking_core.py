@@ -6,7 +6,7 @@ import random
 
 import pytest
 from core_schema.errors import SchemaError
-from tools_ranking.core import rank_candidates, serialize_ordering
+from tools_ranking.core import TIE_BREAK_NAME, rank_candidates, serialize_ordering
 
 
 class _ConstScorer:  # deterministic stand-in
@@ -32,7 +32,7 @@ def test_order_and_explicit_ties():
     tied = [r for r in rows if r.tie_group]
     assert {r.candidate_id for r in tied} == {"a", "b"}
     assert all(r.rank == 2 for r in tied)
-    assert all(r.tie_break == "patch_sha256 ascending" for r in tied)
+    assert all(r.tie_break == TIE_BREAK_NAME for r in tied)
     # tie-break actually deterministic: sha( "diff-a" ) vs sha( "diff-b" ) order decides placement
 
 
@@ -68,3 +68,51 @@ def test_distinct_scores_full_order():
     assert [r.candidate_id for r in rows] == ["b", "c", "a"]
     assert [r.rank for r in rows] == [1, 2, 3]
     assert all(not r.tie_group for r in rows)
+
+
+def test_duplicate_content_under_different_ids_stays_byte_deterministic():
+    """CR 8.1 HIGH: identical patch text under two ids — tie chain ends on id."""
+    scorer = _ConstScorer({"SAME": 0.5})
+    a = {"id": "a", "patch_diff": "SAME"}
+    b = {"id": "b", "patch_diff": "SAME"}
+    c = {"id": "c", "patch_diff": "SAME"}
+    base = serialize_ordering(rank_candidates(scorer, [a, b, c]))
+    for perm in ([a, c, b], [b, a, c], [c, b, a]):
+        assert serialize_ordering(rank_candidates(scorer, perm)) == base
+    rows = rank_candidates(scorer, [b, a, c])
+    assert [r.candidate_id for r in rows] == ["a", "b", "c"]  # id breaks the full tie
+    assert all(r.tie_break == TIE_BREAK_NAME for r in rows)
+
+
+def test_scorer_bool_or_garbage_coded():
+    import pytest as pt
+    from core_schema.errors import SchemaError as SE
+    a, b = {"id": "a", "patch_diff": "x"}, {"id": "b", "patch_diff": "y"}
+    with pt.raises(SE):
+        rank_candidates(_ConstScorer({"x": True, "y": 0.3}), [a, b])
+    with pt.raises(SE):
+        rank_candidates(_ConstScorer({"x": float("nan"), "y": 0.3}), [a, b])
+    with pt.raises(SE):
+
+        class _Boom:
+            def score(self, d):
+                raise RuntimeError("nope")
+
+        rank_candidates(_Boom(), [a, b])
+
+
+def test_tie_break_order_is_actually_sha_then_id():
+    scorer = _ConstScorer({"p": 0.5, "q": 0.5})
+    rows = rank_candidates(scorer, [{"id": "z", "patch_diff": "q"}, {"id": "y", "patch_diff": "p"}])
+    shas = [r.patch_sha256 for r in rows]
+    assert shas == sorted(shas)  # intra-bucket sha ascending, asserted for real
+
+
+def test_empty_patch_and_non_dict_coded():
+    import pytest as pt
+    from core_schema.errors import SchemaError as SE
+    with pt.raises(SE):
+        rank_candidates(_ConstScorer({}), [{"id": "a", "patch_diff": "  "},
+                                           {"id": "b", "patch_diff": "y"}])
+    with pt.raises(SE):
+        rank_candidates(_ConstScorer({}), [None, {"id": "b", "patch_diff": "y"}])
