@@ -3,7 +3,7 @@ name = "li-tools-ranking"
 version = "0.1.0"
 requires-python = ">=3.14"
 description = "Latent Imagination — candidate ranking (Story 8.1)"
-dependencies = ["li-core-schema"]
+dependencies = ["li-core-schema", "li-gate"]
 
 
 [build-system]
@@ -12,6 +12,7 @@ build-backend = "uv_build"
 
 [tool.uv.sources]
 li-core-schema = { workspace = true }
+li-gate = { workspace = true }
 
 [tool.uv.build-backend]
 module-name = "tools_ranking"

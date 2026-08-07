@@ -528,10 +528,14 @@ version = "0.1.0"
 source = { editable = "packages/tools-ranking" }
 dependencies = [
     { name = "li-core-schema" },
+    { name = "li-gate" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "li-core-schema", editable = "packages/core-schema" }]
+requires-dist = [
+    { name = "li-core-schema", editable = "packages/core-schema" },
+    { name = "li-gate", editable = "packages/gate" },
+]
 
 [[package]]
 name = "li-traces-ingest"

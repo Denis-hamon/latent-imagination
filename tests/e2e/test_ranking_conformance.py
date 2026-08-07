@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 from hashlib import sha256
-from pathlib import Path
 
 from gate.ports import load_pinned_snapshot
 from gate.predict import PinnedPredictor
