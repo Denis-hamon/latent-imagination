@@ -1,0 +1,62 @@
+{
+  "agents": [
+    {
+      "evidence": {
+        "file": "governance/public-measurement-2026-08-06.json",
+        "sha256": "74518f27d34484db6d3c4de8c3bd2081c2d4dc1040a90705fde63bae7fa6b463"
+      },
+      "mismatch_policy": "re-collect the un-augmented arm alongside, disclose the drift in the paired publication",
+      "model": "claude-3-5-sonnet-20241022",
+      "vendor_generation": "claude",
+      "verified_at": "2026-08-06"
+    },
+    {
+      "evidence": {
+        "file": "governance/public-measurement-2026-08-06.json",
+        "sha256": "74518f27d34484db6d3c4de8c3bd2081c2d4dc1040a90705fde63bae7fa6b463"
+      },
+      "mismatch_policy": "re-collect the un-augmented arm alongside, disclose the drift in the paired publication",
+      "model": "gpt-4o-2024-08-06",
+      "vendor_generation": "openai",
+      "verified_at": "2026-08-06"
+    },
+    {
+      "evidence": {
+        "file": "governance/act2/family3-pilot/kimi-k3-boltons-c1c25da-attempt0.json",
+        "sha256": "84fadbb3e7043f28a6ccddc382ac486d0224656844aa7d94d379e22b70107b93"
+      },
+      "mismatch_policy": "re-collect the un-augmented arm alongside, disclose the drift in the paired publication",
+      "model": "moonshotai/Kimi-K3",
+      "vendor_generation": "kimi",
+      "verified_at": "2026-08-07"
+    }
+  ],
+  "campaign": "act2-intervention",
+  "design": {
+    "file": "governance/act1-design/design.toml",
+    "sha256": "a8449d9df9843676effba3c4cdd96a087756b71d795d702ec6568950d3181a61"
+  },
+  "harness": {
+    "name": "harbor + our trace wrapper",
+    "version_locked_by": "git sha of latent-imagination at freeze time"
+  },
+  "inputs": {
+    "clean_tier": "clean-tier/v0",
+    "corpus_version": "corpus-v0"
+  },
+  "module": {
+    "advisory_predictor_hash": "pending-reexport",
+    "policy": "re-export via probe.arms.baseline_export before the window; runs refuse on pending",
+    "posture": "sub-bar advisory baseline (branch iii) \u2014 measured, NOT certified"
+  },
+  "protocol": {
+    "file": "governance/probe-design/decision.toml",
+    "sha256": "6b63eeb0702ae45dbb723e91abf9a22395a7aeaf77ff504eeec024e7966943d5"
+  },
+  "task_set": {
+    "file": "governance/act1-design/tasks-frozen.toml",
+    "n": 32,
+    "sha256": "1895cda24793e3279a181ada273a17497a73caf3278110aebc97f2aedf7d424d",
+    "status": "frozen"
+  }
+}

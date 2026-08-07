@@ -1,0 +1,168 @@
+# tasks-frozen.toml — Act II (FR-10). Le task set gelé = ce que l Act I a mesuré.
+# seed = 6769 (engagé dans design.toml). Pilot window = ces 32 [[task]] (déterministes).
+seed = 6769
+source = "data/landing/swe-smith-trajectories/smith-matched-full/raw/ticks-00000.parquet"
+n_act1 = 2546
+
+[pilot]
+note = "première fenêtre exécutable (32); la campagne complète référence le parquet pinné"
+
+[[task]]
+instance_id = "Mimino666__langdetect.a1598f1a.combine_file__coepipoj"
+suite = "Mimino666"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "Mimino666__langdetect.a1598f1a.combine_module__7yc6ul9i"
+suite = "Mimino666"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "agronholm__exceptiongroup.0b4f4937.func_pm_remove_loop__5rijazp0"
+suite = "agronholm"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "cloudpipe__cloudpickle.6220b0ce.func_pm_ctrl_shuffle__tujp0pfa"
+suite = "cloudpipe"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "dask__dask.5f61e423.pr_8920"
+suite = "dask"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "davidhalter__parso.338a5760.lm_rewrite__g7uqegw9"
+suite = "davidhalter"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "gawel__pyquery.811cd048.func_pm_ctrl_invert_if__g4sbp0mm"
+suite = "gawel"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "gawel__pyquery.811cd048.lm_rewrite__19920t4p"
+suite = "gawel"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "getmoto__moto.694ce1f4.pr_6854"
+suite = "getmoto"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "gruns__icecream.f76fef56.func_pm_ctrl_invert_if__sy2hagpa"
+suite = "gruns"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "jawah__charset_normalizer.1fdd6463.func_basic__xqzokqjz"
+suite = "jawah"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "keleshev__schema.24a30457.pr_330"
+suite = "keleshev"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "kurtmckee__feedparser.cad965a3.pr_417"
+suite = "kurtmckee"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "mahmoud__boltons.3bfcfdd0.lm_rewrite__or6ab7bk"
+suite = "mahmoud"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "mahmoud__glom.fb3c4e76.lm_rewrite__ejlv6atx"
+suite = "mahmoud"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "marshmallow-code__marshmallow.9716fc62.combine_module__kiedd2zn"
+suite = "marshmallow-code"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "marshmallow-code__webargs.dbde72fe.combine_file__nz2krewn"
+suite = "marshmallow-code"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "marshmallow-code__webargs.dbde72fe.combine_module__ylvg44wf"
+suite = "marshmallow-code"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "mido__mido.a0158ff9.combine_file__lhvq9d26"
+suite = "mido"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "oauthlib__oauthlib.1fd52536.combine_file__yw3j2d3s"
+suite = "oauthlib"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pallets__click.fde47b4b.lm_rewrite__nyegudw2"
+suite = "pallets"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pandas-dev__pandas.95280573.func_pm_ctrl_shuffle__0riwwnip"
+suite = "pandas-dev"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pandas-dev__pandas.95280573.func_pm_ctrl_shuffle__xjpharqb"
+suite = "pandas-dev"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pandas-dev__pandas.95280573.func_pm_remove_assign__9nupdtgr"
+suite = "pandas-dev"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pandas-dev__pandas.95280573.pr_50331"
+suite = "pandas-dev"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pandas-dev__pandas.95280573.pr_53418"
+suite = "pandas-dev"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pandas-dev__pandas.95280573.pr_57665"
+suite = "pandas-dev"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pydantic__pydantic.acb0f10f.func_pm_remove_cond__rfnjafzv"
+suite = "pydantic"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "pygments__pygments.27649ebb.lm_rewrite__f0ohbwg2"
+suite = "pygments"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "python-jsonschema__jsonschema.93e0caa5.lm_rewrite__4j2okju6"
+suite = "python-jsonschema"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "python-trio__trio.cfbbe2c1.func_pm_op_break_chains__wzow235l"
+suite = "python-trio"
+probe_note = "frozen from Act I measured population (FR-10)"
+
+[[task]]
+instance_id = "tobymao__sqlglot.036601ba.func_pm_op_swap__ge232489"
+suite = "tobymao"
+probe_note = "frozen from Act I measured population (FR-10)"
