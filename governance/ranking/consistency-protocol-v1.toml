@@ -1,0 +1,10 @@
+# Ordering-consistency protocol v1 — pre-registered (story 8.3, FR-24)
+
+[protocol]
+version = 1
+registered_at = "2026-08-06"
+statistic = "kendall-tau-b per task (predicted flip-prob order ascending vs realized validity order), macro mean over defined tasks"
+degenerate_rule = "a side with ALL candidates tied makes tau-b undefined for that task: recorded as undefined, COUNTED, never coerced; a split fully degenerate publishes with a header caveat"
+split = "held-out, seeded (seed 20260806), disjoint from any calibration split BY CONSTRUCTION (exclusion set in the manifest)"
+realized = "candidate validity = the task's F2P tests flip (the only arbiter, FR-9)"
+honesty = "below-floor or degenerate-dominant splits publish with the caveat in the header — never dropped"

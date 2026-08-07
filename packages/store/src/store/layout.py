@@ -18,6 +18,7 @@ REPRODUCIBLE_CLASSES = frozenset(
         "release-manifest",
         "corpus-item-set",
         "corpus-release",
+        "ranking-report",
     }
 )
 

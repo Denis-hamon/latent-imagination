@@ -30,17 +30,15 @@ WRITE_MARKERS = (
     "os.remove(",
 )
 
-# which packages may contain write markers at all ("adapters" covers the edge set)
-WRITER_PACKAGES = {
-    "store",          # the helper itself
-    "traces-ingest",  # canonical snapshots
-    "labeling",       # labels + quarantine
-    "harness",        # figures + bundles
-    "prereg",         # ledger/commit writes
-    "publication",    # releases
-    "corpus",         # corpus item-sets (AD-4 row, story 4.1)
-    "adapters",       # landing-zone deposits (occurrence artifacts)
-}
+# Single source of truth: the package set derives from the store's own table
+# (AD-4) — extending one without the other was a real drift source (8.3 CR).
+def _writer_packages() -> set[str]:
+    from store.emit import WRITERS
+
+    return set(WRITERS) | {"store", "adapters"}
+
+
+WRITER_PACKAGES = _writer_packages()
 
 # scripts subtrees whose store-aimed writes are sanctioned ceremony surfaces:
 # prereg = ceremonies (story 2.6 design); act1 = Act-I field-run/campaign

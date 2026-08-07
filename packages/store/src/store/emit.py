@@ -34,6 +34,7 @@ WRITERS: dict[str, tuple[str, ...]] = {
     "prereg": ("prereg-commit",),
     "publication": ("release-manifest",),
     "corpus": ("corpus-item-set", "corpus-release"),
+    "tools-ranking": ("ranking-report",),
 }
 
 _DIR_BY_TYPE = {
@@ -48,6 +49,7 @@ _DIR_BY_TYPE = {
     # content-addressed store_version covers them (AD-13 citations hold).
     "corpus-item-set": "canonical",
     "corpus-release": "canonical",
+    "ranking-report": "canonical",
 }
 
 _SLUG = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
