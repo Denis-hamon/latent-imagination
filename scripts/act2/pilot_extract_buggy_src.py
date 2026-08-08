@@ -14,13 +14,14 @@ import subprocess
 from pathlib import Path
 
 WOOD = Path(__file__).resolve().parents[2]
-JOBS = WOOD / "data" / "landing" / "act2-pilot"
+import os
+JOBS = WOOD / "data" / "landing" / "act2-pilot" / os.environ.get("PILOT_CAMPAIGN_DIR", "")
 TASKS = JOBS / "pilot-tasks.json"
 GOLD = JOBS / "control-gold"
 
 
-def sh(cmd: list[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+def sh(cmd: list[str], timeout: int = 900) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=timeout)
 
 
 def run_one(task: dict) -> dict:
@@ -34,7 +35,9 @@ def run_one(task: dict) -> dict:
     target = task.get("target")  # fichier touché par le bug (extrait du gold)
     box = f"li-bug-{iid.split('.')[0][:24].replace('/', '_')}"
     sh(["docker", "rm", "-f", box])
-    sh(["docker", "pull", img])
+    pul = sh(["docker", "pull", img], timeout=1800)
+    if pul.returncode != 0:
+        return {"task": iid, "error": "docker pull failed", "stderr": pul.stderr[-200:]}
     up = sh(["docker", "run", "-d", "--name", box, img, "sleep", "600"])
     if up.returncode != 0:
         return {"task": iid, "error": "docker run failed", "stderr": up.stderr[-200:]}

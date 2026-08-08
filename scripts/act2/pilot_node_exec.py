@@ -11,8 +11,12 @@ import json
 import subprocess
 from pathlib import Path
 
-JOBS = Path("/home/ubuntu/latent-imagination/data/landing/act2-pilot/results")
-TASKS = json.loads(Path("/home/ubuntu/latent-imagination/data/landing/act2-pilot/pilot-tasks.json").read_text())
+import os
+
+CAMPAIGN = os.environ.get("PILOT_CAMPAIGN_DIR", "")
+BASE = Path(f"/home/ubuntu/latent-imagination/data/landing/act2-pilot/{CAMPAIGN}")
+JOBS = BASE / "results"
+TASKS = json.loads((BASE / "pilot-tasks.json").read_text())
 BY_ID = {t["instance_id"]: t for t in TASKS}
 
 
@@ -59,6 +63,17 @@ def run_one(iid: str, arm: str) -> dict:
                 r = sh(["docker", "exec", box, "bash", "-c", f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python -m pytest -x -q {' '.join(f2p[:4])}"])
                 meta["f2p_pass"] = r.returncode == 0
                 meta["f2p_tail"] = r.stdout[-600:]
+                if meta["f2p_pass"] and task.get("p2p"):  # régression-check uniquement sur les vrais succès
+                    rp = sh(["docker", "exec", box, "bash", "-c",
+                             f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python -m pytest -q {' '.join(task['p2p'][:30])}"])
+                    meta["p2p_pass"] = rp.returncode == 0
+                    meta["p2p_tail"] = (rp.stdout + rp.stderr)[-300:]
+                p2p = task.get("p2p") or []
+                if meta["f2p_pass"] and p2p:  # régression-check uniquement sur les slots verts
+                    rr = sh(["docker", "exec", box, "bash", "-c",
+                             f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python -m pytest -q {' '.join(p2p[:20])}"])
+                    meta["p2p_pass"] = rr.returncode == 0
+                    meta["p2p_tail"] = (rr.stdout + rr.stderr)[-400:]
     finally:
         sh(["docker", "rm", "-f", box])
     return meta

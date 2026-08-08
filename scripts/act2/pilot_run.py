@@ -19,7 +19,7 @@ GALERE = "https://ai.galere.org/v1/chat/completions"
 MODEL = os.environ.get("PILOT_MODEL", "DeepSeek-V4-Flash")  # 2026-08-07: L4 sleeves switch — Kimi rambles (UA callback timeout); Flash is the fastest family at galere and syntaxes true diffs
 THRESH = 0.5
 ROOT = Path(__file__).resolve().parents[2]
-PILOT = ROOT / "data" / "landing" / "act2-pilot"
+PILOT = ROOT / "data" / "landing" / "act2-pilot" / os.environ.get("PILOT_CAMPAIGN_DIR", "")
 TASKS = PILOT / "pilot-tasks.json"
 RESULTS = PILOT / "results"
 LOG = PILOT / "call-log.jsonl"
@@ -212,7 +212,8 @@ def apply_and_export(loc_old: str, patch: str, rel: str) -> str | None:
 def buggy_src_path(task: dict) -> Path:
     """The post-bug-state file the agent actually sees inside the image."""
     key = task["instance_id"].replace("/", "_")
-    return ROOT / "data" / "landing" / "act2-pilot" / f"{key}.buggy.py"
+    campaign = os.environ.get("PILOT_CAMPAIGN_DIR", "")
+    return ROOT / "data" / "landing" / "act2-pilot" / campaign / f"{key}.buggy.py"
 
 
 def gen_patch(task: dict, feedback: str = "") -> dict:

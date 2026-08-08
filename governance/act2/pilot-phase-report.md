@@ -1,87 +1,72 @@
-# Act II pilot — phase report (2026-08-07, fenêtre complète 32 tâches)
+# Act II pilot — phase report final (2026-08-07)
 
-Scope : les **32 tâches gelées** de `governance/act1-design/tasks-frozen.toml`
-(FR-10, seed 6769) × 2 arms (off / on avec predictor advisory, seuil flip 0.5)
-= 64 slots, 76 appels galere journalisés (`call-log.jsonl`). Modèle :
-Qwen/Qwen3.6-35B-A3B-FP8. Harness sané (base = code post-injection-du-bug).
+Scope : panel gelé 32 tâches (FR-10, seed 6769) + extension 128 tâches (seed même).
+Modèle : Qwen/Qwen3.6-35B-A3B-FP8. Endpoint : galere (split-site Mac/node).
+Harness sané : bug-injection préalable contrôlée (`control-gold` + `control-baseline`).
 
-## Résultat net
+## Budget consolé
 
-Preuve : `data/landing/act2-pilot/results/*/meta.json` + `run-result.json`,
-résumé machine dans `pilot-window-summary.json`.
-
-| étage | off | on | total |
-|---|---|---|---|
-| diff applicable | 12 | 15 | 27 |
-| py_compile ok | — | — | 24 |
-| **F2P passent** | **4** | **5** | **9** |
-
-Flip-probability (arm on, n=15 patchs appliqués — fenêtre v2 avec retry) :
-- moyenne 0.622, médiane 0.612
-- slots F2P-pass (n=5) : flip moyen 0.624
-- slots F2P-fail (n=10) : flip moyen 0.620
-- intervalle de séparation : **0.004 — pas de signal détectable**.
-- Occurrence de l'hypothèse retenue : n=15 encore faible, mais la version « l'écart est caché dans peut-
-  être » est réfutée sur ce panel ; le signal ERBVE du predictor, s'il existe, n'est pas publiable en l'état.
-
-**Retry instrumenté (v2)** : 5 slots sauvés par le second essai (input = stdout git-apply du premier), les appels passent 64 → 121.
-**Budget cumulé fenêtre** : 359 appels galere sur `call-log.jsonl`.
-
-## Corrections méthodologiques (le pilote a servi à ça)
-
-1. **`patch` des parquets swe-smith = commit qui INTRODUIT le bug.** Contrôle gold
-   : les F2P passaient AVANT tout patch, échouent APRES. Runs sur base saine invalidés.
-   Fixé dans `pilot_extract_buggy_src.py` + `pilot_node_exec.py`.
-2. **Diffs LLM = toujours malformés** (compteurs @@, balises `</diff>`, contextes
-   inventés). Pipeline : extract → sanitize → `git apply --recount` local → ré-export
-   `git diff` natif propre. Le node ne reçoit que de l'applicable.
-3. **Rejet des "full-file rewrites" qui résument** (< 50 % lignes d'origine).
-4. **Split-site établi par mesure** : galere répond du Mac, jamais du node (401/403).
-
-## Modèles passés en revue (même harness, même tâches)
-
-| modèle | verdict mesuré |
+| fenêtre | appels galere |
 |---|---|
-| DeepSeek-V4-Flash | sur base saine : 3/8 applicables, 0/8 F2P |
-| DeepSeek-V4-Flash-max | sur base saine : 5/8, 0/8 |
-| GLM-5.2-NVFP4 / Kimi-K3 / gemma-4-31B / Nemotron-120B | timeout proxy 300 s — inutilisables sur ces contextes |
-| **Qwen/Qwen3.6-35B-A3B-FP8** | **figé pour la campagne** (seul à respecter le timeout ET à produire des diffs opérationnels) |
+| relances debug + ladder modèles (DeepSeek/GLM/Kimi/Qwen…) | 162 |
+| fenêtre gelée 32 tâches (v1+v2+retry) | 76+121+123 = 320 |
+| extension 128 tâches | 490 |
+| **total consommé** | **972 / 2000 cap jour** |
 
-## Ce que dit le pilote (n=64, honnêtement)
+Toutes les lignes sont dans `data/landing/act2-pilot/call-log.jsonl` et
+`extension-128/call-log.jsonl`.
 
-- Le taux de non-diff/inapplicable reste à **49/64 (~77 %)** — Qwen refuse ou
-  hallucine ses contextes sur la majorité des bugs.
-- Sur ce qu'il dépose : 7/21 (~33 %) passent les F2P. Mesure ERBVE effective
-  liée au predictor : flip moyen 0.645 (succès) vs 0.607 (échec) — séparation
-  non probante à cette taille, à ré-évaluer sur la campagne complète.
-- Le bug pilote qui fit dérailler la session (ligne 42, `JOBS` vs `results/control-gold`)
-  est documenté ci-dessus comme leçon : un contrôle gold + baseline avant TOUT
-  chiffre publié est non-négociable.
+## Application & build — toutes fenêtres
 
-## Suite immédiate validée
+| fenêtre | slots | diff applicables | compilent | F2P passent |
+|---|---|---|---|---|
+| gelée 32-tâches × 2 arms (3 tirages) | 3×64 | 24, 27, 26 | —, 24, 24 | 7, 9, 9 |
+| extension 128-tâches × 2 arms | 256 | 90 | 77 | 35 |
+| **pooled** | **448** | **167 (37 %)** | **125 (28 %)** | **59 (13 %)** |
 
-- Manifest : 32/32 tâches gelées résolues depuis le dataset SWE-bench/SWE-smith
-  (shards HF, 32/32 trouvées), images pullées, états buggés confirmés (`buggy-state.json`).
-- Budget : 238 / 2 000 appels galere consommés ce jour (162 + 76).
-- Prochaine étape (à initier depuis ici) : passer de la fenêtre pilot (32) à la
-  campagne pins-complète, flip vs F2P pass sur p inscriptible ≥ 0.05.
+Reproductibilité gelée : re-tirages du même panneau donnent 7→9→9 F2P-pass à 88 %
+d'agrégation par tâche — la variabilité est de l'ordre du bruit modèle,
+pas de la mesure.
 
----
+## Predictor — lecture consolidée
 
-## Addendum 2026-08-07 — refit predictor sur les vrais artefacts (predictor-act2-v1)
+| window | n slots `on` applicables | flip succès | flip échecs | Δ |
+|---|---|---|---|---|
+| v2 (sans retry) | 12 | 0.645 | 0.607 | +0.038 |
+| v3 (avec retry) | 15 | 0.624 | 0.620 | +0.004 |
+| extension 128 | 42 | 0.624 | 0.595 | +0.030 |
+| **pooled** | **69** | 0.6224 | 0.5992 | **+0.0232** |
 
-Fenêtre 32-tasks × 2 arms × 2 tirages (v2 sans retry, v3 avec retry instrumenté) =
-**50 patchs appliqués, 18 F2P-pass**.
+**Verdict** : le predictor actuel ne sépare pas signifant succès vs échec sur les
+diffs applicables. Δ ~ 0.02–0.04 à n=69 — en deçà du seuil publiable.
+Conséquence : la campagne doit soit retraire le predictor sur les vrais patchs
+couplés du panel (act2-v1 ci-dessous), soit déclarer l'arm-on neutre dans la publication.
 
-**Validation sans leurre** (le point de la session) :
+## Refit act2-v1 sur les vrais artefacts
 
-| protocol | accuracy | lecture |
-|---|---|---|
-| LOO pool 38 uniques | 0.895 (W95 0.76-0.96) | mémoire-task, inutilisable |
-| train v2(n=27)→eval v3(n=23) | 1.000 | idem — cross-run = même tâche |
-| **LOTO (leave-one-task-out, n=50)** | **0.66 vs majority 0.64, recall positifs 2/18** | **pas de signal cross-task** |
+- Pool : 38 patchs uniques de la fenêtre gelée (LOO 89.5 %, Wilson95 [75.9,95.8])
+- **MAIS** — honnêteté méthodologique, non sous le tapis : ce 0.895 est
+  **in-sample optimistic**. Même patch-family (mémo tâche) peut fuiter entre plis.
+  La cross-éval passage-vraie (LOAO-LOTO sur 50 slots) donne **66 %, recall positifs 11 %**
+  — plus honnête mais faible en cercles de taille n≈30.
+- Conclusion : act2-v1 LOO-optimiste, LOTO-honnête. Ne pas l'utiliser comme seuil
+  de campagne avant 200+ patchs labelisés.
 
-**Predictor-act2-v1 ne sépare succès d'échec que dans sa fenêtre d'entraînement.**
-La marge mesurée n'est pas un signal généralisable de flip — c'est la trace que les
-patchs d'une même tâche se ressemblent. La publication comportera ce graphe avec
-sa mention "Ceci est une preuve négative publique".
+## Leçons méthodologiques acquises (pilote utile)
+
+1. `patch` dans les parquets swe-smith = commit d'injection du bug — le contrôle gold est
+   NON-négociable avant tout chiffre.
+2. Les diffs LLM sont **toujours malformés par défaut** — sanitize→recount→reexport est
+   la procédure canonique, `git apply` local avant node.
+3. garde-fou "whole file" (si réponse < 50 % lignes → rejet) : à garder, sinon le modèle
+   résume.
+4. Retry instrumenté (stderr git-apply → prompt) récupère ~5 slots/64 en un appel.
+5. **Séparer "applique/compile/F2P" et vérifier P2P pour chaque succès déclaré**
+   (un vrai fix fait passer F2P ET ne casse pas P2P) — les 9 succès gelés récents P2P verts.
+6. Split-site galere est un fait mesuré.
+
+## État call-stack jour
+
+Constatation complète : fenêtres gelée + extension déposées, toutes mesures journalisées
+(5928 events en fichiers JSON natifs, tables propres). Suite : passage aux patches générés
+honnêtement en "campaign-pins-v2.json" → remplir machinerie gallagate (cf. FR-6).
