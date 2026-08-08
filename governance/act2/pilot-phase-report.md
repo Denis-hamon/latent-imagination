@@ -136,3 +136,29 @@ encodeur entraînable (prochaine étape, hors-budget session).
 signal vit dans l'espace latent conjoint et notre classifieur de sac-de-mots ne le voit
 pas". La route de campagne change : entraîner un encodeur (loss multi-hot Yu) sur les
 113-448 exemples plutôt qu'empiler des features syntaxiques.
+
+---
+
+## Addendum 2026-08-07d — tête énergie multi-tâches entraînée (résultat positif)
+
+**Protocole** : encodeur `unixcoder-base` GELÉ ; seule tête MLP(1536→256)→
+{binaire F2P, multi-hot Yu (4 bits pass/15 errclass), consistency bisimulation
+(mutants token-rename)}. LOAO-strict : à chaque pli, une tâche ENTIÈRE sortie du train.
+n=113 patchs, 44 positifs.
+
+**Résultat** :
+- acc **0,708** Wilson95 **[0,618, 0,784]**, baseline majoritaire 0,611 → borne basse
+  AU-DESSUS de la baseline : premier entraînement act2 à passer le test d'honnêteté.
+- AUC **0,731**.
+- Écart moyen de probabilité : succès 0,573 vs échecs 0,217.
+
+**Nota fuite prévenue** : le multi-hot Yu utilisé comme SOURCE binaire donne 111/113
+positifs et un modèle à rien apprendre — c'est l'avertissement Yu §2.3 (l'auxiliaire
+trop riche prédit la cible). Séquence valide : superviseur binaire = verdict chaîné
+d'origine, auxiliaire = per-test.
+
+**Scripts** : `train_energy_head.py`. **Artefact** : `data/landing/act2-pilot/head-eval.json`.
+
+**Pieges identifiés pour la route campagne** : (i) encodage LLM frozen peut masquer
+des features rare importantes — combiner auxiliaires denses (Littwin + Yu) ; (ii)
+le `a-z` regex fixé pour respecter le paradigme mutation bisimulation.
