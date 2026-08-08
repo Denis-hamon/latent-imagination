@@ -65,3 +65,23 @@ Flip-probability (arm on, n=15 patchs appliqués — fenêtre v2 avec retry) :
 - Budget : 238 / 2 000 appels galere consommés ce jour (162 + 76).
 - Prochaine étape (à initier depuis ici) : passer de la fenêtre pilot (32) à la
   campagne pins-complète, flip vs F2P pass sur p inscriptible ≥ 0.05.
+
+---
+
+## Addendum 2026-08-07 — refit predictor sur les vrais artefacts (predictor-act2-v1)
+
+Fenêtre 32-tasks × 2 arms × 2 tirages (v2 sans retry, v3 avec retry instrumenté) =
+**50 patchs appliqués, 18 F2P-pass**.
+
+**Validation sans leurre** (le point de la session) :
+
+| protocol | accuracy | lecture |
+|---|---|---|
+| LOO pool 38 uniques | 0.895 (W95 0.76-0.96) | mémoire-task, inutilisable |
+| train v2(n=27)→eval v3(n=23) | 1.000 | idem — cross-run = même tâche |
+| **LOTO (leave-one-task-out, n=50)** | **0.66 vs majority 0.64, recall positifs 2/18** | **pas de signal cross-task** |
+
+**Predictor-act2-v1 ne sépare succès d'échec que dans sa fenêtre d'entraînement.**
+La marge mesurée n'est pas un signal généralisable de flip — c'est la trace que les
+patchs d'une même tâche se ressemblent. La publication comportera ce graphe avec
+sa mention "Ceci est une preuve négative publique".
