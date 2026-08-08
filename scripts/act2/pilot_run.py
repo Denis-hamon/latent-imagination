@@ -143,41 +143,40 @@ def _predictor():
 def apply_diff(loc_old: str, patch: str, rel: str) -> bool:
     """True iff the diff applies cleanly to loc_old using git apply --check
     (p1-style paths)."""
-    import subprocess, tempfile
+    import subprocess
+    import tempfile
 
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / rel
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(loc_old)
-        subprocess.run(["git", "-C", td, "init", "-q"], capture_output=True)
+        subprocess.run(["git", "-C", td, "init", "-q"], check=False, capture_output=True)
         # retry 1: strict. retry 2: --recount tolerates LLM's hallucinated @@ counts
         for args in (["apply", "--recount", "-"], ["apply", "-"]):
-            r = subprocess.run(["git", "-C", td, *args], input=patch, capture_output=True, text=True)
+            r = subprocess.run(["git", "-C", td, *args], input=patch, check=False, capture_output=True, text=True)
             if r.returncode == 0:
-                d = subprocess.run(["git", "-C", td, "diff", "--stat"], capture_output=True, text=True)
                 return True
         return False
 
 
 def apply_and_export_debug(loc_old: str, patch: str, rel: str) -> tuple[str | None, str]:
     """Like apply_and_export but returns (clean_diff, stderr_or_empty)."""
-    import subprocess, tempfile
+    import subprocess
+    import tempfile
 
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / rel
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(loc_old)
-        subprocess.run(["git", "-C", td, "init", "-q"], capture_output=True)
-        subprocess.run(["git", "-C", td, "add", "-f", rel], capture_output=True)
-        r = subprocess.run(
-            ["git", "-C", td, "apply", "--recount", "-"],
-            input=patch, capture_output=True, text=True,
+        subprocess.run(["git", "-C", td, "init", "-q"], check=False, capture_output=True)
+        subprocess.run(["git", "-C", td, "add", "-f", rel], check=False, capture_output=True)
+        r = subprocess.run(["git", "-C", td, "apply", "--recount", "-"],
+            input=patch, check=False, capture_output=True, text=True,
         )
         if r.returncode != 0:
             return None, r.stderr
-        out = subprocess.run(
-            ["git", "-C", td, "diff", "--no-color", "--no-ext-diff", "--", rel],
-            capture_output=True, text=True,
+        out = subprocess.run(["git", "-C", td, "diff", "--no-color", "--no-ext-diff", "--", rel],
+            check=False, capture_output=True, text=True,
         )
         if not out.stdout.strip():
             return None, "diff empty after apply (no net change)"
@@ -187,23 +186,22 @@ def apply_and_export_debug(loc_old: str, patch: str, rel: str) -> tuple[str | No
 def apply_and_export(loc_old: str, patch: str, rel: str) -> str | None:
     """Apply model diff locally, re-emit as clean `git diff` (correct hunks).
     None if patch fails even with --recount."""
-    import subprocess, tempfile
+    import subprocess
+    import tempfile
 
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / rel
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(loc_old)
-        subprocess.run(["git", "-C", td, "init", "-q"], capture_output=True)
-        r = subprocess.run(
-            ["git", "-C", td, "apply", "--recount", "-"],
-            input=patch, capture_output=True, text=True,
+        subprocess.run(["git", "-C", td, "init", "-q"], check=False, capture_output=True)
+        r = subprocess.run(["git", "-C", td, "apply", "--recount", "-"],
+            input=patch, check=False, capture_output=True, text=True,
         )
         if r.returncode != 0:
             return None
         # produce a clean diff relative to the baseline content
-        out = subprocess.run(
-            ["git", "-C", td, "diff", "--no-color", "--no-ext-diff", "--", rel],
-            capture_output=True, text=True,
+        out = subprocess.run(["git", "-C", td, "diff", "--no-color", "--no-ext-diff", "--", rel],
+            check=False, capture_output=True, text=True,
         )
         if not out.stdout.strip():
             return None
@@ -217,18 +215,22 @@ def buggy_src_path(task: dict) -> Path:
     return ROOT / "data" / "landing" / "act2-pilot" / f"{key}.buggy.py"
 
 
-def gen_patch(task: dict) -> dict:
+def gen_patch(task: dict, feedback: str = "") -> dict:
     p = buggy_src_path(task)
     src = p.read_text() if p.is_file() else ""
     target = task.get("target", "the affected file")
     prompt = (
-        "Fix failing tests. Think briefly, then output EXACTLY ONE block: a unified "
-        "diff inside ```diff fences (paths a/<file> b/<file>). No reasoning text "
-        "outside the fences.\n"
+        "Fix failing tests. Output ONLY a unified diff inside ```diff fences "
+        "(paths a/<file> b/<file>). The diff must apply with `git apply`. No prose.\n"
         f"File to patch: {target}\n\n"
         f"TASK: {task['problem'][:1200]}\n\nFAILING TESTS: {'; '.join(task['f2p'][:6])}\n\n"
         f"CURRENT CONTENT (verbatim):\n```python\n{src}\n```"
     )
+    if feedback:
+        prompt += (
+            "\n\nYOUR PREVIOUS ATTEMPT FAILED — verbatim git-apply feedback:\n"
+            f"```\n{feedback[:800]}\n```\nProduce a corrected diff."
+        )
     out = call_model(prompt)
     return {"prompt_sha256": sha256(prompt.encode()).hexdigest(),
             "reply_sha256": sha256(out["text"].encode()).hexdigest(),
@@ -244,37 +246,47 @@ def main() -> int:
         iid = task["instance_id"]
         for arm in ("off", "on"):
             rec: dict = {"task": iid, "arm": arm, "run_at": datetime.now(UTC).isoformat()}
-            g = gen_patch(task)
-            calls += 1
             _p = buggy_src_path(task)
             original = _p.read_text() if _p.is_file() else ""
-            edited = extract_full_file(g["raw_reply"])
-            if edited and original:
-                orig_lines = len(original.splitlines())
-                edit_lines = len(edited.splitlines())
-                # flag rewrites that destroy >50% of the file — the model lied about "whole file"
-                if edit_lines < orig_lines * 0.5:
-                    rec["rewrite_suspect"] = f"orig={orig_lines} edited={edit_lines}"
-                    edited = None  # fall through to raw extraction
-                rec["edited_lines"] = edit_lines
-            if edited and original and edited.strip() != original.strip():
-                diff = make_diff(original, edited, task["target"])
-                rec["diff_mode"] = "regenerated"
-            else:
-                raw = extract_diff_sanitized(g["raw_reply"])
-                if raw and original:
-                    diff, err = apply_and_export_debug(original, raw + "\n", task["target"])
-                    if diff is None:
-                        rec["apply_stderr"] = err[-400:]
+            attempts = []
+            diff = None
+            feedback = ""
+            # 2 attempts max par slot : brute puis retry avec feedback git-apply
+            for attempt_n in (1, 2):
+                g = gen_patch(task, feedback)
+                calls += 1
+                edited = extract_full_file(g["raw_reply"])
+                if edited and original:
+                    orig_lines = len(original.splitlines())
+                    edit_lines = len(edited.splitlines())
+                    if edit_lines < orig_lines * 0.5:
+                        edited = None
+                this_diff = None
+                this_err = ""
+                if edited and original and edited.strip() != original.strip():
+                    this_diff = make_diff(original, edited, task["target"])
+                    mode = "regenerated"
                 else:
-                    diff = None
-                rec["diff_mode"] = (
-                    "model-applied-reexport" if diff is not None
-                    else ("unappliable" if raw else "no-diff")
-                )
+                    raw = extract_diff_sanitized(g["raw_reply"])
+                    if raw and original:
+                        this_diff, this_err = apply_and_export_debug(original, raw + "\n", task["target"])
+                        mode = "model-applied-reexport" if this_diff else "unappliable"
+                    else:
+                        mode = "no-diff"
+                attempts.append({"n": attempt_n, "mode": mode,
+                                 "prompt_sha256": g["prompt_sha256"],
+                                 "reply_sha256": g["reply_sha256"],
+                                 "patch_sha256": sha256((this_diff or "").encode()).hexdigest() if this_diff else None,
+                                 "apply_stderr": this_err[-400:] if not this_diff and this_err else ""})
+                if this_diff:
+                    diff = this_diff
+                    rec["diff_mode"] = f"{mode}-a{attempt_n}"
+                    break
+                feedback = this_err or "no parseable diff found in your reply (must contain one ```diff block)"
+            rec["attempts"] = attempts
             rec["patch_sha256"] = sha256((diff or "").encode()).hexdigest() if diff else None
-            rec["prompt_sha256"] = g["prompt_sha256"]
-            rec["reply_sha256"] = g["reply_sha256"]
+            rec["prompt_sha256"] = attempts[-1]["prompt_sha256"]
+            rec["reply_sha256"] = attempts[-1]["reply_sha256"]
             if not diff:  # the extract-miss keeps the raw reply for the audit trail
                 rec["reply_preview"] = g["raw_reply"][:600]
             if arm == "on" and diff:
@@ -290,9 +302,10 @@ def main() -> int:
                     g2 = call_model(regen_prompt)
                     calls += 1
                     rec["regen_reply_sha256"] = sha256(g2["text"].encode()).hexdigest()
-                    edited2 = extract_full_file(g2["text"])
-                    diff2 = make_diff(original, edited2, task["target"]) if (edited2 and original) else None
-                    rec["patch_sha256"] = sha256((diff2 or diff or "").encode()).hexdigest() if (diff2 or diff) else None
+                    raw2 = extract_diff_sanitized(g2["text"])
+                    diff2, _e2 = (apply_and_export_debug(original, raw2 + "\n", task["target"])
+                                  if raw2 and original else (None, ""))
+                    rec["patch_sha256"] = sha256((diff2 or diff).encode()).hexdigest()
                     rec["advisory_regen"] = diff2 is not None
             # write patch + task meta to be executed on the node
             work = RESULTS / f"{iid.replace('/', '_')}-{arm}"

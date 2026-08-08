@@ -12,15 +12,20 @@ résumé machine dans `pilot-window-summary.json`.
 
 | étage | off | on | total |
 |---|---|---|---|
-| diff applicable | 9 | 12 | 21 |
-| py_compile ok | 9 | 11 | 20 |
-| **F2P passent** | **3** | **4** | **7** |
+| diff applicable | 12 | 15 | 27 |
+| py_compile ok | — | — | 24 |
+| **F2P passent** | **4** | **5** | **9** |
 
-Flip-probability (arm on, n=12 patchs appliqués) :
-- moyenne 0.620, médiane 0.607
-- slots F2P-pass (n=4) : flip moyen 0.645
-- slots F2P-fail (n=8) : flip moyen 0.607
-- intervalle de séparation : 0.038 — TROP FAIBLE pour trancher à n=12 (mesure enregistrée telle quelle, pas d'embellissement).
+Flip-probability (arm on, n=15 patchs appliqués — fenêtre v2 avec retry) :
+- moyenne 0.622, médiane 0.612
+- slots F2P-pass (n=5) : flip moyen 0.624
+- slots F2P-fail (n=10) : flip moyen 0.620
+- intervalle de séparation : **0.004 — pas de signal détectable**.
+- Occurrence de l'hypothèse retenue : n=15 encore faible, mais la version « l'écart est caché dans peut-
+  être » est réfutée sur ce panel ; le signal ERBVE du predictor, s'il existe, n'est pas publiable en l'état.
+
+**Retry instrumenté (v2)** : 5 slots sauvés par le second essai (input = stdout git-apply du premier), les appels passent 64 → 121.
+**Budget cumulé fenêtre** : 359 appels galere sur `call-log.jsonl`.
 
 ## Corrections méthodologiques (le pilote a servi à ça)
 
