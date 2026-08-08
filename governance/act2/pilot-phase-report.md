@@ -70,3 +70,25 @@ couplés du panel (act2-v1 ci-dessous), soit déclarer l'arm-on neutre dans la p
 Constatation complète : fenêtres gelée + extension déposées, toutes mesures journalisées
 (5928 events en fichiers JSON natifs, tables propres). Suite : passage aux patches générés
 honnêtement en "campaign-pins-v2.json" → remplir machinerie gallagate (cf. FR-6).
+
+---
+
+## Addendum 2026-08-07b — refit act2-v2 (pool unifié, LOTO)
+
+**Pool** : 111 patchs applicables, dédupliqués (tâche, diff) — frozen32 3 fenêtres + extension-128 — 41 positifs (F2P-pass), 71 tâches distinctes.
+
+**Éval leave-one-task-out (le seul protocole qui prouve la généralisation)** :
+
+| métrique | act2-v2 (n=111, 71 tâches) |
+|---|---|
+| accuracy | 0.676 (Wilson95 [0.584, 0.756]) |
+| baseline majoritaire | 0.631 |
+| recall positifs | 34 % (14/41) |
+| précision positifs | 61 % (14/23 annoncés) |
+| score_gap (succès−échecs) | +0.127 |
+| confusion | TP=14 FP=9 FN=27 TN=61 |
+
+**Lecture** : le score gap existe et n'est plus dans le bruit nul (v0 : +0.023 → v2 : +0.127), mais l'accuracy LOTO reste dans l'overlap de la baseline majoritaire.
+**Verdict** : predictor-act2-v2 = advisory mesuré (pas un instrument certifié). Doctrine branch-iii confirmée, on ne passe pas sub-bar → certified.
+
+**Fichier** : `governance/act2/arm-artifacts/predictor-act2-v2.json` (sha256 `0a0604e06d78625e`, pinned).
