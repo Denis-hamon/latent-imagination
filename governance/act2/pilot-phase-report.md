@@ -92,3 +92,47 @@ honnêtement en "campaign-pins-v2.json" → remplir machinerie gallagate (cf. FR
 **Verdict** : predictor-act2-v2 = advisory mesuré (pas un instrument certifié). Doctrine branch-iii confirmée, on ne passe pas sub-bar → certified.
 
 **Fichier** : `governance/act2/arm-artifacts/predictor-act2-v2.json` (sha256 `0a0604e06d78625e`, pinned).
+
+---
+
+## Addendum 2026-08-07c — pont vers la littérature world-models : l'énergie latente
+
+**Méthode** : plutôt que d'ajouter des paramètres à un classifieur, nous avons évalué
+ce que la lecture JEPA prescrit : une **énergie** = distance latente entre
+`embed(state ∘ diff_candidat)` et `embed(state ∘ diff_gold)` (le "but" latent).
+Encodeur : `microsoft/unixcoder-base` gelé, CLS-pooling, L2-normé, calculé sur le node
+(GPU). Pool : 113 patchs applicables des campagnes frozen32+extension-128 (69 tâches,
+44 positifs F2P au protocole chaîné d'origine).
+
+**Mesures** (LOAO-strict où entraînement, sinon aucun) :
+
+| mesure | valeur | statut |
+|---|---|---|
+| état seul (probe LOAO) | AUC 0,684 | contrôle (pas de prétexte dominant |
+| diff seul (probe LOAO) | AUC 0,737 | classe-hash classique |
+| état+diff concat (LOAO) | AUC 0,742 | bruit/représentation |
+| **énergie latente, AUCUN entraînement** | **AUC 0,817** | **le meilleur signal de la journée** |
+| diff↔gold seul | AUC 0,174 | pas de corrélation naïve u→û |
+| état↔gold seul | AUC 0,543 | pas de leak tâche |
+| buts permutés (contrôle négatif) | AUC 0,567 | ≈0,5 attendu — vérifié |
+
+**Lecture** : ce n'est pas la distance "ses diff à gold" qui porte le signal (0,174) mais
+l'espace conjoint (état, action) — exactement la structure que demande IWM (conditionner
+sur l'action) et que LeCun formalise. L'attention analysée ne récompense pas visuellement
+les bons patchs (top-tokens CLS ≃ tokens-structure identiques pour succès/échec) : le signal
+est distributionnel, pas lexical.
+
+**Correctif protocole (multi-hot per-test)** : la capture par-test a montré un écart de
+protocole — 98,2 % des slots passent en exécution **individuelle** par test vs le verdict
+chaîné `-x -q` (44/113). Le multi-hot n'est **PAS** feature (il contient le label —
+tautologie, AUC 1,000 écartée comme fake) ; c'est un **auxiliaire de training** pour un
+encodeur entraînable (prochaine étape, hors-budget session).
+
+**Scripts** : `embed_pool.py`, `latent_energy_eval.py`, `probe_latent.py`, `per_test_results.py`.
+**Artefacts** : `latent-pool.npz`, `latent-pool.json`, `per-test.json`, `latent-eval.json`
+(sous `data/landing/act2-pilot/`, git-ignorés, reproductibles).
+
+**Conséquence doctrine** : l'argument branch-iii n'est plus "le signal est nul" mais "le
+signal vit dans l'espace latent conjoint et notre classifieur de sac-de-mots ne le voit
+pas". La route de campagne change : entraîner un encodeur (loss multi-hot Yu) sur les
+113-448 exemples plutôt qu'empiler des features syntaxiques.
