@@ -1,0 +1,17 @@
+{
+ "w": -6.490975693850533,
+ "b": -0.2680645737671685,
+ "mu": 0.028668459010335195,
+ "n_fit": 113,
+ "n_pos": 44,
+ "energy_threshold_median": 0.0186803936958313,
+ "energy_threshold_youden": 0.02327794134616851,
+ "threshold_rule": "median(train-energies) per fold \u2014 outcome verdict E4",
+ "loao_acc": 0.7345132743362832,
+ "loao_ci95": [
+  0.6530919654332636,
+  0.8159345832393028
+ ],
+ "majority": 0.6106194690265486,
+ "source": "latent-energy-act2-pool-fitted"
+}
