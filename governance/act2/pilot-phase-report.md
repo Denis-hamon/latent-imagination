@@ -198,3 +198,23 @@ le même paysage). Distances latentes : succès moy `0.011`, échecs moy `0.040`
 **Ce qu'on a gagné** : l'objet "world model" n'est plus un classif — c'est une métrique
 dans un espace qu'on peut marcher (CEM/MPPI carrhugement). Le fixed pointe "le plus proche
 du but en distance latente" mérite E1. Artefact : `e4-critic-eval.json`.
+
+---
+
+## Addendum 2026-08-09c — E1 boltzmann-échantillonneur : égalité propre (rejet)
+
+**Protocole** : 32 tâches gelées × 4 candidats modèle à T=0.7 → encodeur (uniXCoder
+gelé) → sélection = argmin énergie latente (1 − cos(state+diff, state+gold)) vs
+sélection = uniforme — même harness docker, même gold-apply, F2P mesuré.
+
+**Résultat** : théorie **1/32** F2P-pass | random **1/32**. Les deux succès sont sur
+des tâches distinctes (getmoto vs feedparser) — pas de biais de difficulté évitée.
+
+**Interprétation honnête** : l'énergie mesure 0.817-AUC sur le pool observé (état,diff),
+mais au point de décision "lequel de ces 4 cracha va passer" elle ne départage **pas
+mieux que le hasard** à n=32. C'est la limite de l'objet sans entraînement : la distance
+latente est informative au sens populationnel (LOAO) mais pas en choix discret par tâche
+avec K=4 voisins. Pour marcher, il faut soit un ε-greedy learné de la table d'énergie,
+soit un scorer affiné sur P(traj complet) — ni l'un ni l'autre n'est aujourd'hui à portée
+de 24 h runtime restant. **Conclusion : tout l'exploit ici est dans "avoir une mesure de
+risque au niveau population", pas "guider le choix ponctuel" — publier ce NON.**
