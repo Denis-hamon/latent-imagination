@@ -162,3 +162,23 @@ d'origine, auxiliaire = per-test.
 **Pieges identifiés pour la route campagne** : (i) encodage LLM frozen peut masquer
 des features rare importantes — combiner auxiliaires denses (Littwin + Yu) ; (ii)
 le `a-z` regex fixé pour respecter le paradigme mutation bisimulation.
+
+---
+
+## Addendum 2026-08-09 — verdict E2 (encoder fine-tuné Yu-aux) : REJET, partial honnête
+
+**Protocole** : LoRA rank-8 (2 derniers blocs unixcoder) + tête multi-hot Yu superviseur
+principal + binaire témoin — LOAO-compartimenté. 32/69 folds exécutés (arrêt volontaire
+constaté quand le signal ne pouvait plus retourner : AUC max théorique ≤ 0.59 vu les 48
+folds partials enregistrés).
+
+**Partielle** (n=48, WARN: ordre alphabétique des tâches — PAS représetatif des 128) :
+acc 0.792 = classe-majorité 0.792 ; AUC **0.513** ≈ hasard ; succès 0.361 vs échecs 0.364.
+
+**Enseignement négatif mesuré** : à notre n=113 et avec un superviseur multi-hot dense,
+fine-tuner l'encodeur **détruit** la séparabilité du verdict-binaire présente chez la tête
+standalone entraînée sur l'encodeur gelé (acc 0.708/AUC 0.731). Conjecture (pas un fait) :
+l'auxiliaire riche rend l'embedding spécialisé sur la surface du texte de test, effaçant
+le pixop généraliste que le gel conservait — à publier comme négatif.
+**Artefact** : `data/landing/act2-pilot/embedder-yu-eval.partial32folds.json` + loig
+`e2-train.log`.
