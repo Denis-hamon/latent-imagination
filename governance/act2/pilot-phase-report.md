@@ -182,3 +182,19 @@ l'auxiliaire riche rend l'embedding spécialisé sur la surface du texte de test
 le pixop généraliste que le gel conservait — à publier comme négatif.
 **Artefact** : `data/landing/act2-pilot/embedder-yu-eval.partial32folds.json` + loig
 `e2-train.log`.
+
+---
+
+## Addendum 2026-08-09b — E4 Destrade critic : paysage mesuré, marche réelle
+
+**Protocole** : distance latente `1 − cos(state+diff, state+gold)` par uniXCoder figé,
+LOAO par tâche, seuil = médiane train (un seul hyperparam, appris à chaque fold).
+
+**Résultat** : n=113, LOAO acc **0.735** Wilson95 **[0.646,0.807]** vs maj 0.611 — borne basse
+au-dessus de la baseline. **AUC 0.817** identique au probe non-entraîné (la secular louds
+le même paysage). Distances latentes : succès moy `0.011`, échecs moy `0.040` (~4×)
+— l'énergie n'est pas binaire-able à l'espoir, elle quadrit.
+
+**Ce qu'on a gagné** : l'objet "world model" n'est plus un classif — c'est une métrique
+dans un espace qu'on peut marcher (CEM/MPPI carrhugement). Le fixed pointe "le plus proche
+du but en distance latente" mérite E1. Artefact : `e4-critic-eval.json`.
