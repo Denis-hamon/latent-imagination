@@ -290,5 +290,5 @@ des cinq « raffinements de haute voltige » issus de la littérature ne le modi
 et E5 montre qu'au moins deux familles de papiers y mesurent des choses **différentes**.
 Scripts : `e2_discrete_latent.py`, `e6_aux_ablation.py`, `e5_iql_vs_bisim.py`,
 `e3_macro_action.py`. Artefacts : `data/landing/act2-pilot/e{2,3,5,6}-*.json` (git-ignorés,
-reproductibles). Piste E4-synthèse (le texte « World Model of Software ») : matériel
-complet = les 10 addenda de ce rapport ; rédaction hors scope de cette session.
+reproductibles). Piste E4-synthèse (le texte « World Model of Software ») : **rédigé** —
+`docs/world-model-of-software-e4.md`, construit sur les 10 addenda de ce rapport.
