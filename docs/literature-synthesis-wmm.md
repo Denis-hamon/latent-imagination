@@ -46,6 +46,8 @@ Celles requièrent toutes peu de dépense supplémentaire à notre pool déjà c
 
 **Ces pistes = le graph de la shareable "ailleurs"** — données déjà collectées (111 patches / 71 tasks), invariants mesurables sans dépasser le budget actuel (247 galere calls restants sont intacts).
 
+**État 2026-08-10 : E1/E2/E5/E6 mesurées (égalités propres + orthogonalité E5), E3 irrecevable sur ce pool (mono-hunk 95 %) — verdicts et artefacts : `governance/act2/pilot-phase-report.md`, addendum 2026-08-10.**
+
 ## 4. Limites honnêtes (quatre paris supportés, pas prouvés)
 
 1. **Tout le domaine vision n=large s'applique à n=500** — LeJEPA in-domain fait ses preuves à n≥1k ; notre n subsiste au-dessous de tout bench étudié. Gaffe au tune : full-batch SIGReg fait même maths de l'espace O(1/N), pas celui de la valeur.

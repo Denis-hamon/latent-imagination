@@ -218,3 +218,77 @@ avec K=4 voisins. Pour marcher, il faut soit un ε-greedy learné de la table d'
 soit un scorer affiné sur P(traj complet) — ni l'un ni l'autre n'est aujourd'hui à portée
 de 24 h runtime restant. **Conclusion : tout l'exploit ici est dans "avoir une mesure de
 risque au niveau population", pas "guider le choix ponctuel" — publier ce NON.**
+
+---
+
+## Addendum 2026-08-10 — clôture des 6 pistes « haute voltige » (synthèse WMM §3)
+
+**Collision de numérotation, d'abord** : les addenda 08-09 ont réutilisé les labels E1/E2/E4
+pour boltzmann/Yu-aux/Destrade. Ci-dessous, « E1…E6 » désignent les **pistes du document de
+synthèse** (`docs/literature-synthesis-wmm.md` §3) — les seules que ces addenda clôturent.
+
+Pool commun aux 5 expériences : 113 patchs, 69 tâches, LOAO-strict, embeddings uniXCoder
+gelés (`latent-pool.npz`), même règle de seuil médiane-train. Tout calculé localement
+(encodeur en cache HF, CPU) — zéro appel galere consommé.
+
+### E1-synthèse — mutation-syntax comme supervision bisimulation : **égalité propre**
+
+Contraste isolé à tête et init identiques, LOAO apparié : binaire seul **0.726**
+[0.637,0.799] vs binaire + λ·L_bisim (mutants token-rename, λ=0.3) **0.717** — McNemar
+b=5/c=4, p=1.0. AUC 0.749→0.759 (n.s.). Le terme bisimulation, noyé dans la loss à 3
+composantes du 08-07d, n'y portait rien de mesurable non plus. **Verdict : à n=113, la
+supervision par mutants syntaxiques n'ajoute ni ne retire — Toso non infirmé, non confirmé.**
+
+### E2-synthèse — latent Bernoulli vs gaussien : **égalité propre (contradiction littérature non tranchée)**
+
+Même composition E4, seule la nature de z change : continu **0.735** [0.646,0.807]
+(reproduction exacte du contrôle publié) ; 1-bit médiane-train **0.743** (McNemar p=1.0) ;
+2-bit quartiles **0.752** (p=0.754). AUC 0.817 → 0.801/0.815. **Verdict : discrétiser ne
+détruit pas le signal à n=113 — le débat LeCun §4.2 (z discret) vs Var-JEPA (z gaussien)
+est empiriquement muet sur notre modalité à ce régime.**
+
+### E3-synthèse — macro-action hiérarchique : **irrecevable sur ce pool (mesuré)**
+
+Les actions du pool sont mono-hunk à 95 % (médiane 1, max 2) : la hiérarchie dégénère en
+lecture plate. Mean-pool d'hunks : 0.761 vs flat 0.735 (p=0.549, n.s.) ; bottom-only
+0.611 = majorité (AUC 0.722 résiduelle). **Verdict : la question HWM-sur-code exige des
+diffs multi-étapes ; notre pool ne les fournit pas. À reposer sur corpus de PR multi-commits.**
+
+### E5-synthèse — métrique expectile (Destrade) ≈ métrique bisimulation (Toso) ? : **orthogonalité mesurée**
+
+d_IQL (−V̂ expectile τ=0.9, LOAO) sépare y proprement (AUC 0.737) ; d_bisim (couplage
+mutants) faiblement (succ 0.184 vs fail 0.173, AUC 0.600 — les *succès* se couplent
+davantage à la surface, contresens noté sans l'embellir). Et Spearman(d_IQL, d_bisim) = **−0.10**
+(τ=0.9) / **−0.04** (τ=0.5), IC95 Fisher ⊂ [−0.28, +0.15]. **Verdict : deux axes
+orthogonaux à n=113 — le pont « objectif fusionné Destrade × Toso » n'est PAS supporté
+par nos données. C'est le résultat de pont le plus net de la session : les deux papiers
+peuvent être vrais chacun sans jamais parler de la même chose.**
+
+### E6-synthèse — auxiliaire multi-graine vs binaire : **égalité propre**
+
+Binaire seul vs binaire + multi-hot Yu (4 bits + 15 errclass) : **0.726 / 0.726**, McNemar
+0 discordance sur 113, AUC +0.003. **Verdict : l'enrichissement Yu est neutre à ce régime ;
+le garde-fou de l'addendum 08-07d (aux-trop-riche → tautologie) reste la leçon active.**
+
+### Bilan campagne
+
+| piste | verdict | chiffre clé |
+|---|---|---|
+| énergie latente no-train (08-07c) | **positif** | AUC 0.817 |
+| tête énergie multi-tâches (08-07d) | **positif** | LOAO 0.708 |
+| Yu fine-tune encodeur (08-09) | **rejet** | AUC 0.513 |
+| Destrade critic (08-09b) | **positif** | LOAO 0.735 |
+| boltzmann sampler (08-09c) | **NON honnête** | 1/32 = 1/32 |
+| E1 bisim isolée | égalité | p=1.0 |
+| E2 discret vs gaussien | égalité | 0.743/0.752 vs 0.735 |
+| E3 macro-action | irrecevable ici | mono-hunk 95 % |
+| E5 IQL vs bisim | **orthogonalité** | ρ≈−0.1, CI serre 0 |
+| E6 aux dense | égalité | p=1.0 |
+
+Lecture doctrine : le paysage latent porte le verdict (3 positifs convergents), mais aucune
+des cinq « raffinements de haute voltige » issus de la littérature ne le modifie à n=113 —
+et E5 montre qu'au moins deux familles de papiers y mesurent des choses **différentes**.
+Scripts : `e2_discrete_latent.py`, `e6_aux_ablation.py`, `e5_iql_vs_bisim.py`,
+`e3_macro_action.py`. Artefacts : `data/landing/act2-pilot/e{2,3,5,6}-*.json` (git-ignorés,
+reproductibles). Piste E4-synthèse (le texte « World Model of Software ») : matériel
+complet = les 10 addenda de ce rapport ; rédaction hors scope de cette session.
