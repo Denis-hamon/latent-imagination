@@ -281,13 +281,24 @@ def handle(msg: dict) -> dict | None:
             E_s, E_g = norm(E_s), norm(E_g)
             q = norm(_np.array(embed(args["state_text"]))[None, :])
             sims = (E_s * q).sum(-1)
-            top = sims.argsort()[-int(args.get("k", 3)):][::-1]
-            rows = [{
-                "task": pool[int(i)]["task"],
-                "arm": pool[int(i)]["arm"],
-                "y": pool[int(i)]["y"],
-                "sim": float(sims[int(i)]),
-            } for i in top]
+            k = int(args.get("k", 3))
+            # dédup par tâche : si deux top-hits sont les bras on/off de la même
+            # tâche, on n'en garde qu'un — chaque voisin doit être une tâche distincte
+            order = sims.argsort()[::-1]
+            rows, seen = [], set()
+            for i in order:
+                task = pool[int(i)]["task"]
+                if task in seen:
+                    continue
+                seen.add(task)
+                rows.append({
+                    "task": task,
+                    "arm": pool[int(i)]["arm"],
+                    "y": pool[int(i)]["y"],
+                    "sim": float(sims[int(i)]),
+                })
+                if len(rows) >= k:
+                    break
             call_id = sha256(f"{time.time()}:{args['state_text'][:80]}".encode()).hexdigest()[:12]
             _log({"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ"), "call_id": call_id,
                   "type": "near-mis", "top": rows})
