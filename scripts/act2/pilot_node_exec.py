@@ -87,6 +87,8 @@ def main():
             d = JOBS / f"{iid.replace('/', '_')}-{arm}"
             if not (d / "patch.diff").exists():
                 continue
+            if (d / "run-result.json").exists():
+                continue  # reprise idempotente : slot déjà mesuré (même image/patch/tests)
             r = run_one(iid, arm)
             (d / "run-result.json").write_text(json.dumps(r, indent=1, sort_keys=True) + "\n")
             print(iid[:40], arm, r.get("f2p_pass"), r.get("patch_applied"))

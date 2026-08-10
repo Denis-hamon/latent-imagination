@@ -318,3 +318,46 @@ retrieval vanilla (+0.042 AUC) ; (iii) l'instrument production = **deux axes**
 Conséquence produit et plan RCT pré-enregistré (A/B agent ± contexte-conséquence) :
 `docs/world-model-mcp-design.md`. Script : `g1_goal_free_energy.py`.
 Artefact : `data/landing/act2-pilot/g1-goal-free.json`. Zéro appel galere consommé.
+
+---
+
+## Addendum 2026-08-10c — RCT « consequence-context » : NÉGATIF honnête (pré-enregistré, 5 amendements scellés OTS)
+
+**Question** (rct-prereg-v1, chaîne dae108b1→a0a5ec3d ancrée OpenTimestamps) :
+un bloc contexte-conséquence world-model (attracteur F1 + near-miss outcomes, sans
+gold) injecté à la régénération améliore-t-il le F2P ?
+
+**Protocole exécuté** : fork apparié du draft draw-3 par tâche (frozen 32) —
+b0 = régénération neutre, b1 = même fork + bloc WM ; modèles : Qwen3.6-35B (48 premiers
+slots) puis substitut roster MLX-Qwen3.5-35B (16 derniers) — co-modèle garanti par
+paire tâche. Fenêtres 1-3 écartées (bugs extraction découverts et documentés dans les
+amendements : premier-bloc-fenced, troncature ligne-vide, hunks alignés sur version
+upstream mémorisée) — spend debug 65 calls R10 séparé. Série : arrêt exact au **cap 100**.
+
+**Résultat primaire — ITT (slot sans candidat = échec), n=32 tâches** :
+
+| arm | F2P | vs |
+|---|---|---|
+| A (draft seul) | 4/32 = 0.125 | — |
+| B0 (regen neutre) | 3/32 = 0.094 | vs A : p=1.0 |
+| B1 (regen + contexte WM) | 2/32 = 0.062 | vs B0 : p=1.0 ; vs A : p=0.5 |
+
+Sensibilité complete-case (12 paires où les deux arms ont produit) : B0 0.250 vs
+B1 0.167, p=1.0.
+
+**Verdict** : pas d'effet détectable du contexte WM à n=32 ; l'estimation ponctuelle
+est **négative** (la régénération elle-même dégrade légèrement, conforme au diagnostic
+d'amendement 3 : la régénération rouvre la porte à la version upstream mémorisée).
+Sous-puissance assumée (discordances 0-2 par comparaison) — mais publier un négatif
+scellé était le plan B explicite du prereg, et il tient. **Le RCT ne soutient PAS la
+claim « le contexte world-model améliore le F2P du LLM » à ce régime.**
+
+Leçons : (i) l'ITT est indispensable — 36/64 slots n'ont pas produit de candidat et le
+taux de production diffère par arm (b1 pire), lecture substantive en soi (l'économie de
+l'attention du modèle dégradée par le bloc contexte ?) ; (ii) la claim viability du MCP
+repose désormais sur l'axe évaluation/infrastructure (jamais réfuté), pas sur
+l'augmentation directe.
+
+Artefacts : `rct-v1/analysis.json`, `rct-v1/results/`, 4 chaînes ancrées
+`data/release-store/chains/`. Logs : `rct-v1/call-log.jsonl` (100) +
+`discarded-window-{1,2,3}/` (65).
