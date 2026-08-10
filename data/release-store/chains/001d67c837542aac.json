@@ -1,0 +1,8 @@
+{
+ "amendment": 1,
+ "code_commit": "9881db90511b9b7eb3b44e62c37fa033457ee491",
+ "panel_sha256": "c91fdfc13ae847dadbfdc2e63429595016f60d88049c25afdbb798d88bb01225",
+ "parent_chain": "dae108b1af35d398cfa056d220c2413f4d5542d9449c6b126766d9fcc2908d0b",
+ "protocol_sha256": "9eeb6fcbb4ce192fca4bfc4855cfeb228fdb3b520c9dd4ebd35c238e6bcbd265",
+ "type": "rct-prereg-v1-amendment-1"
+}
