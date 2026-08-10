@@ -131,7 +131,13 @@ S4 : uniXCoder-base mesuré **non arbitraire** — 3 challengers d'encodeur gel�
 barre (AUC 0.739-0.810, queue haute-confiance 10 % vs 25 %). S5 : pool 113 → 131 par
 récupération des patchs rct-v1 scellés (18 après dédup) → GOLD 0.830 AUC / 0.771
 acc100, combiné 0.864 avec 39 patchs à 0.974 [0.868,0.995] — le point déployable
-actuel. Détail complet : addendum 08-10f du phase report.
+actuel. S6/S7 (0 call, node relancé) : les 128 candidats boltzmann labellisés (+32,
+13 F2P) mais les 18 *recovered* sanitize/recount mesurés **poison** (AUC 0.543 seuls,
+effondrent la queue) → **pool v6 final = 145** (14 stricts gardés) : GOLD 0.822 /
+0.779, 29 patchs à 0.966 — et une règle produit durable : *scorer le candidat dans
+la forme où le modèle l'a écrit, avant toute réparation mécanique*. E1 corrigé : 4
+gagnants existaient dans les 4-plets, theory/random n'en voyaient que 2. Détail
+complet : addenda 08-10f/g du phase report.
 
 **Exécution (2026-08-10, machine livrée, 0 call)** : fork apparié du draft draw-3 —
 b0 (feedback neutre, contrôle « 2ᵉ chance ») vs b1 (bloc consequence-context) —

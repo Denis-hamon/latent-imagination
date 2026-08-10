@@ -511,3 +511,49 @@ projet). **Verdict campagne** : l'amélioration venue de la méthode (λ, combin
 réelle mais plafonne ; la marge restante est dans n (doctrine confirmée : 200+ patchs) et
 dans la persistance systématique des raw replies dès le premier appel — leçon appliquée
 au RCT, trop tard pour les fenêtres pilotes.
+
+---
+
+## Addendum 2026-08-10g — S6/S6b/S7 : +32 patchs à 0 call, et un poison mesuré
+
+Le gisement boltzmann-e1 (128 candidats T=0.7 × 32 tâches frozen32, générés 08-09) n'avait
+jamais été exécuté. Runner node (`s6_boltzmann_label_exec.py`, même protocole docker que
+le pilot : bug gold → patch → py_compile → F2P → P2P), 128 exécutions en ~5 min,
+0 call galere :
+
+| passe | applicables | F2P verts (P2P verts inclus) |
+|---|---|---|
+| S6 apply strict | 14/128 | 4 |
+| S6b récupération sanitize→recount→ré-export (procédure canonique) | 18/92 | 9 |
+| **total** | **32/128 (25 %)** | **13** |
+
+**Découverte auditing E1 (correction au NON du 08-09c)** : E1 avait mesuré 1/32 theory
+et 1/32 random — mais les 4 candidats gagnants réels étaient exceptiongroup-c1,
+getmoto-c3, icecream-c2, sqlglot-c1. Ni theory ni random ne trouvaient la majorité des
+gagnants *présents* dans le 4-plet : le verdict « l'énergie ne départage pas au choix
+ponctuel » tient, renforcé.
+
+**Le poison, mesuré nommément** : ajout des 32 au pool (163) → GOLD 0.830→0.790, queue
+haute-confiance effondrée (cov@≥0.95 → 0 %). Stratification par sous-ensemble :
+
+| sous-ensemble | n | AUC | acc100 |
+|---|---|---|---|
+| v5 (pilot+rct) | 131 | 0.830 | 0.771 |
+| boltzmann stricts seuls | 14 | 0.750 | dans la distribution |
+| **boltzmann recovered seuls** | 18 | **0.543** | **hasard pur** |
+
+Les diffs réparés mécaniquement (comptes de hunks ré-écrits, verbiage coupé) ne sont plus
+le texte que le modèle a écrit — leur géométrie latente est décorrélée du couple (état,
+but). **Pool final v6 = v5 + 14 stricts = 145** (52 positifs, 78 tâches, recovered exclus,
+conservés marqués `recovered=true` pour traçabilité) : GOLD AUC 0.822, acc100 0.779,
+**29 patchs à 0.966 [0.828,0.994] @20 %** — équivalent v5 dans tous les IC, n supérieur.
+
+**Trois leçons écrites au doctrinal** : (i) la composition du pool est un facteur de
+première classe — n brut ne suffit pas, la fidélité textuelle du diff non plus ne
+pardonnera pas (recovered = poison) ; (ii) leçon **produit** pour le MCP : il faut scorer
+le candidat dans la forme où le modèle l'a écrit, *avant* toute réparation mécanique ;
+(iii) pour atteindre 200+ il faudra de la génération nouvelle (raw replies persistées dès
+le 1er appel) — la récupération a été faite, elle est épuisée.
+Artefacts : `boltzmann-e1/labels/` (128, sur node + rapatriés), `latent-pool-v6.*`,
+`s7-boltzmann-extension.json`. Scripts : `s6_boltzmann_label_exec.py`,
+`s6b_boltzmann_recover_exec.py`, `s7_pool_boltzmann.py`.
