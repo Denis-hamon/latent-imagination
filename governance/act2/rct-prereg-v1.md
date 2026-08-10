@@ -77,6 +77,12 @@ uv run python scripts/act2/rct_analyze.py
 
 (aucun à l'ouverture — toute ligne ajoutée ici sera datée et antérieure aux résultats)
 
-## Signature
+## Scellement
 
-- [ ] owner : Denis Hamon — hash de ce fichier au scellement : à remplir à la signature
+- Ce fichier ne contient volontairement AUCUN hash de lui-même (auto-référence
+  impossible). L'identité gelée vit dans le ledger : chain = sha256 canonique de
+  {sha256(ce fichier), code_commit git, sha256(panel frozen32)}.
+- Preuve : `data/release-store/prereg-ledger.jsonl` (type `rct-prereg`) +
+  `data/release-store/proofs/<chain16>.ots` (OpenTimestamps).
+- Vérification tierce : recalculer la chain_hash depuis les 3 composantes publiques,
+  comparer au ledger, vérifier la preuve OTS offline.
