@@ -77,6 +77,29 @@ uv run python scripts/act2/rct_analyze.py
 
 (aucun à l'ouverture — toute ligne ajoutée ici sera datée et antérieure aux résultats)
 
+### Amendement 1 — 2026-08-10, AVANT tout résultat F2P connu
+
+Fenêtre 1 arrêtée volontairement après **29 calls** (b0/b1 partiels, aucun résultat
+d'exécution : le node exec n'avait pas commencé). Cause diagnosticquée sur call de
+debug dédié (1 call supplémentaire, total 30 — comptés dans l'enveloppe R10) :
+
+1. **Bug extraction (repo historique)** : `extract_diff` ne capturait que le 1er bloc
+   fenced (le modèle en émet ~30 avec son raisonnement) et `sanitize_diff` tronquait
+   au 1er saut de ligne (contexte vides désespacés) → diffs sans corps, « no net
+   change ». Fenêtres passées épargnées (extraction full-file dominante à l'époque),
+   mais la fenêtre 1 du RCT l'a déclenché massivement (taux d'application ~17 %).
+   **Fix** : `extract_diff_v2` consolidé multi-blocs + lignes vides = contexte,
+   **côté b uniquement** (`rct_wm_fork.py`) — l'arm A (draw-3) garde sa chaîne
+   d'origine ; le contraste causal clé (b1 vs b0) partage la même chaîne fixée.
+2. **Roaming inter-fichiers** : la régénération éditait un autre fichier que la cible
+   (harness mono-fichier) → renforcement HARD CONSTRAINT cible unique dans les deux
+   suffixes b0/b1 (symétrique).
+
+Sorties de la fenêtre 1 (29 calls) **écartées** : `rct-v1/discarded-window-1/`
+(audit trail conservé). Nouvelle fenêtre complète relancée sous amendement ;
+call-log reparti à zéro, cap dur 100 **inchangé** (le cap ne couvre que la série
+publiée ; les 30 calls écartés sont du budget R10 global séparé).
+
 ## Scellement
 
 - Ce fichier ne contient volontairement AUCUN hash de lui-même (auto-référence

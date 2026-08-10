@@ -58,8 +58,45 @@ def base_prompt(task: dict, src: str) -> str:
             f"CURRENT CONTENT (verbatim):\n```python\n{src}\n```")
 
 
+def extract_diff_v2(text: str) -> str | None:
+    """Extraction consolidée (amendement 2026-08-10a) — corrige deux bugs de chaîne :
+    (1) extract_diff ne capturait que le 1er bloc fenced (Qwen émet des dizaines de
+        blocs de raisonnement → diff capture partielle) ;
+    (2) sanitize_diff terminait au 1er ligne vide (les lignes de contexte vides
+        perdent leur espace préfixe à la génération → hunk tronqué à l'entête).
+    L'applieur (apply_and_export_debug, git apply --recount) est inchangé.
+    Côté b0/b1 seulement : la chaîne d'extraction de l'arm A reste celle de draw-3."""
+    import re
+    blocks = re.findall(r"```(?:diff|patch)\n(.*?)```", text, re.DOTALL)
+    if blocks:
+        raw = "\n".join(blocks)
+    else:
+        m = re.search(r"(?ms)^diff --git .+", text) or \
+            re.search(r"(?ms)^--- [ab]/.+\n\+\+\+ [ab]/.+\n@@ .+", text)
+        raw = m.group(0) if m else None
+    if raw is None:
+        return None
+    keep, started = [], False
+    prefixes = ("--- ", "+++ ", "@@ ", "index ", "diff --git ", "new file", "old mode", "new mode")
+    for ln in raw.splitlines():
+        s = ln.rstrip()
+        if s.startswith(("+diff>", "</diff>", "</patch>", "</change>")):
+            continue
+        if s.startswith(prefixes) or s.startswith(("-", "+", " ", "\\ ")):
+            keep.append(s)
+            started = True
+        elif not started:
+            continue
+        elif s == "":
+            keep.append(" ")          # ligne vide dans un hunk = ligne de contexte vide
+        else:
+            break
+    out = "\n".join(keep)
+    return (out + "\n") if out else None
+
+
 def extract_and_apply(task: dict, src: str, reply: str) -> tuple[str | None, str, str]:
-    """Même chaîne que pilot_run : full-file > diff sanitize > git apply local."""
+    """Full-file > diff consolidé v2 > git apply local (applieur canonique)."""
     original = src
     edited = pr.extract_full_file(reply)
     if edited and original:
@@ -67,7 +104,7 @@ def extract_and_apply(task: dict, src: str, reply: str) -> tuple[str | None, str
             edited = None
     if edited and original and edited.strip() != original.strip():
         return pr.make_diff(original, edited, task["target"]), "regenerated", ""
-    raw = pr.extract_diff_sanitized(reply)
+    raw = extract_diff_v2(reply)
     if raw and original:
         d, err = pr.apply_and_export_debug(original, raw + "\n", task["target"])
         return d, ("model-applied-reexport" if d else "unappliable"), ("" if d else err)
@@ -88,10 +125,14 @@ def run_arm(task: dict, src: str, draft: str, arm: str, dry: bool) -> dict:
         ask = ("YOUR PREVIOUS DRAFT (below) was instrumented against a world model of "
                "113 past patches on OTHER tasks.\n" + ctx +
                "\n\nYOUR PREVIOUS DRAFT:\n```diff\n" + (draft[:3000] or "(no appliable diff)") +
-               "\n```\nProduce an improved unified diff inside ```diff fences — no prose.")
+               "\n```\nImprove it. HARD CONSTRAINT: the unified diff must target ONLY "
+               f"a/{task['target']} (paths a/<file> b/<file> on that same file) so plain "
+               "`git apply` accepts it. One single ```diff fenced block, no prose.")
     else:
         ask = ("YOUR PREVIOUS DRAFT:\n```diff\n" + (draft[:3000] or "(no appliable diff)") +
-               "\n```\n" + NEUTRAL)
+               "\n```\n" + NEUTRAL +
+               f" HARD CONSTRAINT: the diff must target ONLY a/{task['target']} "
+               "(single ```diff block, applies with `git apply`).")
     prompt = base_prompt(task, src) + "\n\n" + ask
 
     if dry:
