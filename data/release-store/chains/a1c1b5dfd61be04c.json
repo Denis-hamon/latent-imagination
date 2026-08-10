@@ -1,0 +1,7 @@
+{
+ "code_commit": "4e62a003800c7688941d7f34c6a2168d2ab1e13a",
+ "panel_sha256": "c91fdfc13ae847dadbfdc2e63429595016f60d88049c25afdbb798d88bb01225",
+ "protocol": "governance/act2/ladder-prereg-v1.md",
+ "protocol_sha256": "1c0a0613740cc2c802bdbaab4e78a9f6a90f42db5ee7651495deeed8018e6ed4",
+ "type": "ladder-prereg-v1"
+}
