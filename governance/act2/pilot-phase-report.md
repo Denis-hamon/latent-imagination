@@ -413,5 +413,34 @@ libres)** ; aucune extension votée. La série est annulée **avant tout résult
 (0.817/0.735 mesurés LOAO), et la discipline elle-même — 5 amendements RCT + 2 ladder,
 chaque fenêtre écartée conservée `discarded-window-*/`, chaque chaîne ancrée OTS.
 **Ce qui manque pour la claim business** : une fenêtre de mesure absolue sur modèles
-forts — en attente d'une nouvelle enveloppe owner. Protocole ladder-v1 scellé (chaîne
+forts — en attente d'une nouvelle enveloppe owner. Protocole ladder scellé (chaîne
 `63006531`) — rejouable tel quel.
+
+---
+
+## Addendum 2026-08-10e — prédiction sélective : le régime haute-confiance existe
+
+Après le stop budgétaire, calcul local gratuit sur le pool (113 patchs / 69 tâches) :
+l'instrument a-t-il un sous-ensemble où il ne se trompe JAMAIS ? Protocole LOAO-strict
+(seuil médiane-train par fold, confiance = marge au seuil ; couverture décidée après
+assignation hors-pli) — la question de Var-JEPA posée à nos données :
+
+| couverture | n | acc GOLD (énergie, but connu) | IC95 Wilson |
+|---|---|---|---|
+| 100 % | 113 | 0.735 | [0.646, 0.807] |
+| 75 % | 85 | 0.824 | [0.729, 0.890] |
+| 50 % | 56 | 0.839 | [0.722, 0.913] |
+| **25 %** | **28** | **1.000** | **[0.879, 1.000]** |
+| 10 % | 11 | 1.000 | [0.741, 1.000] |
+
+Lecture : (i) la courbe est **monotone croissante en sélectivité** — l'instrument SAIT
+quand il sait ; (ii) à 25 % de couverture (décisions à marge > quartile), exactitude
+parfaite avec borne basse Wilson 0.879 > majorité 0.611 — **premier point déployable
+de l'instrument** : ne trancher que le quart confiant, s'abstenir sinon ; (iii) l'axe
+goal-free F1 ne sélectionne pas (acc décroît avec la couverture) — la sélectivité est
+une propriété de l'axe goal-conditionné, cohérent avec G1.
+
+Conséquence design (reportée dans `docs/world-model-mcp-design.md`) : le MCP ne doit
+pas PREDIRE partout — il doit prédire au quart hautement confiant et s'abstenir sinon
+(Var-JEPA validé chez nous, gratuitement). Artefact : `data/landing/act2-pilot/s1-selective.json`.
+Script : `scripts/act2/s1_selective_prediction.py`. Zéro call galere.

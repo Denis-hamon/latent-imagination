@@ -78,8 +78,8 @@ qu'un MCP est.
 
 | angle | qui l'a déjà | ce qui le tue | verdict |
 |---|---|---|---|
-| A. **Tool-time WM context (2 axes) via MCP** | personne (LLM-JEPA = training-time) | ΔF2P trop faible au RCT → mitigé : infra + négatifs tiennent seuls | **LE BANGER** |
-| B. Eval-infrastructure ERBVE population | harness papers nombreux | moins de nouveauté | fallback, section du papier |
+| A. **Tool-time WM context (2 axes) via MCP** | personne (LLM-JEPA = training-time) | ΔF2P trop faible au RCT → mitigé : infra + négatifs tiennent seuls | **réfuté au RCT 08-10 (n.s., estimation négative)** — survit réduit à l'abstention |
+| B. Eval-infrastructure ERBVE population + **S1 abstention** | harness papers nombreux ; Var-JEPA sur sélectivité | moins de nouveauté | **devient l'angle principal** (S1 : acc 1.000 @ 25 % couverture) |
 | C. Code-WM propriétaire entraîné (recette LeWM) | EB-JEPA/LeWM en vidéo | n=113 trop petit pour from-scratch ; E2-négatif | future work |
 
 **Thèse du banger.**
@@ -109,6 +109,20 @@ R1) avec les artefacts — la crédibilité *est* le différenciateur.
 - **Règle d'arrêt et publication** : effet + IC95 publiés **quel que soit le signe** ;
   si |Δ| < 5 pts, le papier publie l'instrument + les négatifs (affirmé d'avance).
 - Budget R10 à pré-enregistrer par l'humain avant tout spend (comme d'habitude).
+
+**Résultat RCT (2026-08-10, série scellée cap 100) : NÉGATIF honnête** — ITT n=32 :
+A 0.125 / B0 0.094 / B1 0.062, McNemar n.s. partout ; la régénération dégrade
+(amendement 3 : upstream mémorisé), pas d'effet contexte à ce régime. La piste B
+(évaluation/infrastructure) devient primaire ; piste A (injection directe) repliée
+à : « abstention + contexte minimal ».
+
+**S1 (même jour, 0 call) : le régime haute-confiance existe.** Prédiction sélective
+LOAO sur le pool : à **25 % de couverture acc 1.000 [0.879, 1.000]** (borne basse >
+majorité), 0.839 à 50 % — l'instrument sait quand il sait (Var-JEPA chez nous).
+Forme produit révisée du MCP : **ne prédire qu'au quart le plus confiant, s'abstenir
+sinon** — c'est l'abstention qui est le produit, pas la décoration.
+S2 (règle d'arrêt sur E1) : non mesurable — 2 positifs/64, énergies par candidat non
+persistées ; dit honnêtement au lieu d'être simulé.
 
 **Exécution (2026-08-10, machine livrée, 0 call)** : fork apparié du draft draw-3 —
 b0 (feedback neutre, contrôle « 2ᵉ chance ») vs b1 (bloc consequence-context) —
