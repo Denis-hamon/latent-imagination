@@ -593,6 +593,27 @@ on ne bouge pas les poteaux après mesure. Production : latent-gate reste sur v1
 **Contamination (déclarée)** : les repos swe-smith sont publics — même clause
 qu'uniXCoder (code statique vu au pretraining, labels = mutants récents non publiés).
 
+---
+
+## Addendum 2026-08-10i — S9 smoke : LoRA causal-LLM vs énergie gelée — NÉGATIF net
+
+**Protocole** : Qwen2.5-Coder-0.5B + LoRA r8 (q,v), verdict-token {PASS, FAIL} supervisé
+(CE 2-classes), 2 epochs, LOAO complet 69/69 folds sur le pool 113 — co-honoré avec la
+baseline uxc recalculée sur les mêmes folds. Wmel-gpu, fp16 natif (Turing).
+
+| instrument | acc100 | IC95 | @25 % |
+|---|---|---|---|
+| uxc-énergie gelé (champion) | **0.735** | [0.646, 0.807] | **1.000** [0.879, 1.000] |
+| LoRA 0.5B | 0.602 | [0.510, 0.687] | 0.607 — **sous la majorité** (0.611) |
+
+**Verdict** : à n=113, le fine-tune n'atteint même pas la baseline majoritaire.
+Convergence E2 (fine-tune détruit) + S9 (fine-tune n'apprend pas) : **à ce régime de n,
+toute capacité entraînée sur nos patchs est perdante face au gelé + géométrie.**
+Le vrai run 7B/32B (S9') garde son sens uniquement avec n beaucoup plus grand ou une
+supervision traces NLEX à l'échelle — ni l'un ni l'autre ne tient dans le budget restant.
+Artefact : `data/landing/act2-pilot/s9-smoke.json` + copie Mac. Script :
+`scripts/act2/s9_lora_smoke.py`.
+
 **Artefacts** : `latent-pool-Qwen2.5-Coder-7B-Instruct-{last,mean}.npz` (GPU node,
 fp16) + `s8-qwen7b.json`. Script : `scripts/act2/s8_cwm_probe.py` (fp16 forcé sous
 Turing). Note ops : le node WMEL-gpu-strong est resté down ~3 h (20:14→23:10) après
