@@ -361,3 +361,44 @@ l'augmentation directe.
 Artefacts : `rct-v1/analysis.json`, `rct-v1/results/`, 4 chaînes ancrées
 `data/release-store/chains/`. Logs : `rct-v1/call-log.jsonl` (100) +
 `discarded-window-{1,2,3}/` (65).
+
+---
+
+## Addendum 2026-08-10d — ladder-v1 annulée par budget, findings harness + transparence de dépense
+
+**Contexte** : après le RCT négatif, la question « performances absolues adéquates »
+exigeait une ladder 2 modèles récents (DeepSeek-V4-Flash-max, GLM-5.2-NVFP4) sur le
+même panel gelé (ladder-prereg-v1, 2 amendements). **Décision owner 2026-08-10 :
+STOP NET — l'enveloppe R10 (cap 2000 galere/projets) est quasi épuisée (~28 calls
+libres)** ; aucune extension votée. La série est annulée **avant tout résultat F2P**.
+
+**Spend du jour (audit complet, budget-v1.toml)** :
+
+| poste | calls |
+|---|---|
+| série RCT publiée (cap 100, arrêtée exactement au cap) | 100 |
+| debug protocolaire RCT (3 fenêtres écartées + diagnostics) | 65 |
+| ladder fenêtre 1 (extraction 1er-bloc inadaptée aux modèles à raisonnement) | 17 |
+| ladder fenêtre 2 (extraction réparée mais plafond tokens) | 37 |
+| **total jour** | **219** |
+
+**Findings harness à consigner** (valeur durable, au-delà de la série annulée) :
+
+1. `extract_diff` ne capturait que le 1er bloc fenced — les modèles à traces de
+   raisonnement en émettent 20-50 → diffs sans corps. **Fix** : consolidation multi-blocs.
+2. `sanitize_diff` tronquait au 1er saut de ligne (contexte vides sans espace préfixe)
+   → « no net change » au git-apply. **Fix** : ligne vide = ligne de contexte.
+3. En régénération, le modèle aligne ses hunks sur la **version upstream mémorisée**
+   du package (packages swe-smith célèbres), pas sur le mutant → mismatach systématique.
+   **Fix** : fichier-complet uniquement + note anti-mémorisation dans le prompt.
+4. **max_tokens=6000 × modèle à raisonnement long = silence du livrable** : 34/37
+   réponses ont plafonné à 6000 avant même d'émettre le fichier — le raisonnement
+   mange tout le budget. Toute fenêtre future avec ces familles doit prévoir
+   max_tokens ≥ 16k et le logger.
+
+**Ce qui tient** : le RCT scellé (négatif propre), l'instrument d'énergie latente
+(0.817/0.735 mesurés LOAO), et la discipline elle-même — 5 amendements RCT + 2 ladder,
+chaque fenêtre écartée conservée `discarded-window-*/`, chaque chaîne ancrée OTS.
+**Ce qui manque pour la claim business** : une fenêtre de mesure absolue sur modèles
+forts — en attente d'une nouvelle enveloppe owner. Protocole ladder-v1 scellé (chaîne
+`63006531`) — rejouable tel quel.

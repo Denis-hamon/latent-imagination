@@ -67,3 +67,19 @@ make_diff difflib). Symétrique entre les deux modèles. Fenêtre 1 écartée :
 `ladder-v1/discarded-window-1/` — les 17 calls partent au debug R10 du jour
 (total 2026-08-10 : 82 calls debug + 100 série RCT). Reste ~65 sous enveloppe 2000 :
 **le cap 64 tient sans extension**. Résultats F2P : non consultés.
+
+## Amendement 2 — 2026-08-10, AVANT tout résultat F2P consulté
+
+Fenêtre 2 stoppée à **37 calls**. Cause mesurée (usages du call-log) : 34/37
+réponses plafonnent à **6000 tokens de completion** — les modèles à raisonnement
+étendu consomment tout le budget à penser et n'émettent jamais le fichier corrigé.
+Constat harness à consigner : *max_tokens=6000 × modèles-raisonnement = silence
+du livrable*.
+
+**Décision owner (2026-08-10) : STOP NET.** L'enveloppe R10 (cap 2000) est quasi
+consommée (~28 calls libres) ; l'extension demandée a été refusée. La série ladder
+est **ANNULÉE avant tout résultat F2P** — aucune mesure de ces deux modèles ne sera
+présentée comme un résultat. Fenêtre 2 écartée : `ladder-v1/discarded-window-2/`.
+Spend jour 2026-08-10 : **119 debug + 100 série RCT = 219 calls** (loggé dans
+`budget-v1.toml`). Publié à la place : le RCT scellé (négatif), les diagnostics
+d'harness, et ce protocole ladder scellé — réutilisable dès qu'une enveloppe est votée.
