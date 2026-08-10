@@ -35,8 +35,8 @@ DRAFTS = PILOT / "results"               # sync depuis le node (slots *-off de d
 CAP = 100
 LOG = RCT / "call-log.jsonl"
 
-NEUTRAL = ("Review your draft patch and produce an improved unified diff. "
-           "Output ONLY a unified diff inside ```diff fences — no prose.")
+NEUTRAL = ("Review your draft patch and improve it. Output ONLY the complete "
+           "corrected file inside ```python fences. No prose.")
 
 
 def log_call(**kw):
@@ -50,9 +50,12 @@ def calls_used() -> int:
 
 
 def base_prompt(task: dict, src: str) -> str:
-    """Prompt identique à celui de l'arm A (pilot_run.gen_patch)."""
-    return ("Fix failing tests. Output ONLY a unified diff inside ```diff fences "
-            "(paths a/<file> b/<file>). The diff must apply with `git apply`. No prose.\n"
+    """Prompt de l'arm A + acceptation explicite du fichier complet (le mode
+    `regenerated` qui portait les fenêtres historiques ~40 % d'application ;
+    amendement 2 rct-prereg-v1 — la régénération aligne ses contextes de hunk
+    sur sa propre version, pas sur l'original → les diffs seuls échouent)."""
+    return ("Fix failing tests. Output ONLY the complete corrected file inside "
+            "```python fences (the test harness diffs it deterministically). No prose.\n"
             f"File to patch: {task.get('target', 'the affected file')}\n\n"
             f"TASK: {task['problem'][:1200]}\n\nFAILING TESTS: {'; '.join(map(str, task['f2p'][:6]))}\n\n"
             f"CURRENT CONTENT (verbatim):\n```python\n{src}\n```")
@@ -125,14 +128,15 @@ def run_arm(task: dict, src: str, draft: str, arm: str, dry: bool) -> dict:
         ask = ("YOUR PREVIOUS DRAFT (below) was instrumented against a world model of "
                "113 past patches on OTHER tasks.\n" + ctx +
                "\n\nYOUR PREVIOUS DRAFT:\n```diff\n" + (draft[:3000] or "(no appliable diff)") +
-               "\n```\nImprove it. HARD CONSTRAINT: the unified diff must target ONLY "
-               f"a/{task['target']} (paths a/<file> b/<file> on that same file) so plain "
-               "`git apply` accepts it. One single ```diff fenced block, no prose.")
+               "\n```\nImprove it — output ONLY the complete corrected "
+               f"a/{task['target']} file inside ```python fences, built from the "
+               "CURRENT CONTENT above (your memory of the upstream package is WRONG "
+               "here: this file has been mutated for the benchmark). No prose.")
     else:
         ask = ("YOUR PREVIOUS DRAFT:\n```diff\n" + (draft[:3000] or "(no appliable diff)") +
                "\n```\n" + NEUTRAL +
-               f" HARD CONSTRAINT: the diff must target ONLY a/{task['target']} "
-               "(single ```diff block, applies with `git apply`).")
+               f" Build it from the CURRENT CONTENT above (a/{task['target']} only — "
+               "this file has been mutated for the benchmark, upstream memory does not apply).")
     prompt = base_prompt(task, src) + "\n\n" + ask
 
     if dry:
@@ -145,6 +149,8 @@ def run_arm(task: dict, src: str, draft: str, arm: str, dry: bool) -> dict:
         raise SystemExit(f"cap {CAP} atteint — publication partielle (voir prereg)")
 
     g = pr.call_model(prompt)
+    (outdir / "reply.raw.txt").write_text(g["text"])   # audit/debug brut (amendement 2)
+    (outdir / "prompt.txt").write_text(prompt)
     log_call(task=iid, arm=arm, kind="fork",
              prompt_sha256=sha256(prompt.encode()).hexdigest(),
              reply_sha256=sha256(g["text"].encode()).hexdigest(), usage=g["usage"])
@@ -157,6 +163,7 @@ def run_arm(task: dict, src: str, draft: str, arm: str, dry: bool) -> dict:
         fb = err or "no parseable diff (must contain one ```diff block)"
         g2 = pr.call_model(prompt + f"\n\nYOUR PREVIOUS ATTEMPT FAILED — git-apply feedback:\n"
                                     f"```\n{fb[:800]}\n```\nProduce a corrected diff.")
+        (outdir / "reply-retry.raw.txt").write_text(g2["text"])
         log_call(task=iid, arm=arm, kind="apply-retry",
                  reply_sha256=sha256(g2["text"].encode()).hexdigest(), usage=g2["usage"])
         diff, mode, err = extract_and_apply(task, src, g2["text"])
@@ -175,9 +182,13 @@ def run_arm(task: dict, src: str, draft: str, arm: str, dry: bool) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--max-tasks", type=int, default=0,
+                    help="limite de tâches (0 = tout le panel) — fenêtrage prudent")
     args = ap.parse_args()
 
     tasks = json.loads((PILOT / "pilot-tasks-frozen32.json").read_text())
+    if args.max_tasks:
+        tasks = tasks[: args.max_tasks]
     JOBS.mkdir(parents=True, exist_ok=True)
     (RCT / "pilot-tasks.json").write_text(json.dumps(tasks, indent=1))  # manifest node
     res = []

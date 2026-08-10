@@ -100,6 +100,33 @@ Sorties de la fenêtre 1 (29 calls) **écartées** : `rct-v1/discarded-window-1/
 call-log reparti à zéro, cap dur 100 **inchangé** (le cap ne couvre que la série
 publiée ; les 30 calls écartés sont du budget R10 global séparé).
 
+### Amendement 2 — 2026-08-10, AVANT tout résultat F2P connu
+
+Fenêtre 2 stoppée après **28 calls** (0/14 slot applicable, toutes arms confondues)
++ call de debug à chaque arrêt. Cause structurelle, diagnostic appuyé sur les raw
+replies (désormais persistées par slot — verte) : le suffixe « ONLY unified diff »
+fermait le chemin **fichier-complet** (`mode regenerated`) qui portait historiquement
+~40 % d'application, et un modèle en régénération aligne ses contextes de hunk sur
+**sa version précédente**, pas sur l'original → mismatch systématique.
+**Fix** : le prompt accepte explicitement diff OU fichier complet (```python),
+rappel « hunk contexts must match CURRENT CONTENT verbatim » — symétrique b0/b1.
+Fenêtre 2 écartée : `rct-v1/discarded-window-2/`. Spend R10 2026-08-10 : **59 calls**
+(29+debug w1, 28 w2, comptés dans `budget-v1.toml`, hors série publiée).
+Cap dur 100 de la série publiée inchangé ; toujours **aucun résultat F2P consulté**.
+
+### Amendement 3 — 2026-08-10, AVANT tout résultat F2P connu
+
+Fenêtre-sonde (2 tâches × 2 arms, 6 calls) : b0 applique 2/2 via full-file,
+b1 0/2 — lecture des raw replies : le modèle **écrit ses hunks contre la version
+upstream mémorisée du package** (packages swe-smith célèbres dans les données
+d'entraînement), pas contre le fichier muté — mismatch de contexte garanti en mode
+diff, quelle que soit la consigne. **Fix** : les deux arms passent en **fichier
+complet uniquement** (le mode `regenerated` historique du harness) avec avertissement
+explicite anti-mémorisation ; le diff final est produit par difflib déterministe
+(`make_diff`) → application garantie par construction. Sonde écartée :
+`rct-v1/discarded-window-3/`. Spend R10 2026-08-10 : **65 calls**. Cap série
+publiée inchangé (100). Résultats F2P : toujours non consultés.
+
 ## Scellement
 
 - Ce fichier ne contient volontairement AUCUN hash de lui-même (auto-référence

@@ -21,4 +21,4 @@ rule = "si un cap est atteint au milieu d'une série, la série se PUBLIE partie
 # 2026-08-07: 1 appel consommé (pilote Kimi-K3, boltons c1c25da, résultat: false start, 94 s).
 galere_used_2026_08_07 = 359  # call-log.jsonl: ladder + itérations harness + fenêtre v2 (retry instrumenté). Modèle figé: Qwen/Qwen3.6-35B-A3B-FP8 — voir pilot-phase-report.md
 hf_hub_used = "1 mirror op (28 fichiers, denishamon/latent-imagination-releases)"
-galere_used_2026_08_10 = 30  # RCT fenêtre-1 écartée (29) + debug (1) — voir rct-prereg-v1.md amendement 1
+galere_used_2026_08_10 = 65  # + 1 validation chain fixée (apply OK), RCT fenêtre-1 écartée (29) + debug (1) — voir rct-prereg-v1.md amendement 1
