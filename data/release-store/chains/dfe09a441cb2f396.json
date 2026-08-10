@@ -1,0 +1,11 @@
+{
+ "amendments_covered": [
+  2,
+  3,
+  4
+ ],
+ "code_commit": "da516fd4d57c0b543d335d8474df8951eea6169f",
+ "parent_chain": "001d67c837542aac406173eae9f1d9b1b41d386e1c7acfcb508792ce15406b91",
+ "protocol_sha256": "44ab9cd2db30b94448f18aaf565ccab8c69400d89fb9fcabd9cfd34b7d80a0ae",
+ "type": "rct-prereg-v1-amendments-2-4"
+}
