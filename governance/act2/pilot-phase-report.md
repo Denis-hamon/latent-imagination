@@ -292,3 +292,29 @@ Scripts : `e2_discrete_latent.py`, `e6_aux_ablation.py`, `e5_iql_vs_bisim.py`,
 `e3_macro_action.py`. Artefacts : `data/landing/act2-pilot/e{2,3,5,6}-*.json` (git-ignorés,
 reproductibles). Piste E4-synthèse (le texte « World Model of Software ») : **rédigé** —
 `docs/world-model-of-software-e4.md`, construit sur les 10 addenda de ce rapport.
+
+---
+
+## Addendum 2026-08-10b — G1 goal-free : l'énergie est goal-bound, les échecs parlent seuls
+
+**Contexte** : tout usage production (MCP live) se fait SANS gold. Gate de validité
+mesurée sur le pool (LOAO-strict, seuil médiane-train par fold) :
+
+| score | AUC | acc LOAO |
+|---|---|---|
+| GOLD (contrôle) | 0.817 | 0.735 [0.646,0.807] |
+| but retrievé 1-NN (R1) | 0.556 | 0.540 — **mort** (McNemar p=0.005 vs GOLD) |
+| buts top-3 moyens (R3) | 0.578 | 0.566 |
+| **failure-attractor (F1)** | **0.709** | 0.637 [0.545,0.720] |
+| vote k-NN vanilla (K5V) | 0.667 | 0.593 |
+| buts permutés (contrôle) | 0.479 | 0.478 ✓ protocole |
+
+Spearman(GOLD, F1) = **+0.187** (presque orthogonaux) ; rang-moyen GOLD+F1 = **AUC 0.838**.
+
+**Verdict** : (i) la destination spécifique porte l'information, un but emprunté ne
+transfère pas ; (ii) la distance aux échecs passés est un signal autonome, qui bat le
+retrieval vanilla (+0.042 AUC) ; (iii) l'instrument production = **deux axes**
+(direction-vers-but où le but existe / répulsion-des-échecs partout).
+Conséquence produit et plan RCT pré-enregistré (A/B agent ± contexte-conséquence) :
+`docs/world-model-mcp-design.md`. Script : `g1_goal_free_energy.py`.
+Artefact : `data/landing/act2-pilot/g1-goal-free.json`. Zéro appel galere consommé.
