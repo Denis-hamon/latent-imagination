@@ -352,11 +352,24 @@ Sous-puissance assumée (discordances 0-2 par comparaison) — mais publier un n
 scellé était le plan B explicite du prereg, et il tient. **Le RCT ne soutient PAS la
 claim « le contexte world-model améliore le F2P du LLM » à ce régime.**
 
-Leçons : (i) l'ITT est indispensable — 36/64 slots n'ont pas produit de candidat et le
-taux de production diffère par arm (b1 pire), lecture substantive en soi (l'économie de
-l'attention du modèle dégradée par le bloc contexte ?) ; (ii) la claim viability du MCP
-repose désormais sur l'axe évaluation/infrastructure (jamais réfuté), pas sur
-l'augmentation directe.
+**Sous-groupes modèle** (dette de l'amendement 5, soldée ici ; borne = crash roster) :
+
+| sous-groupe | arm | slots | candidats | F2P mesurés |
+|---|---|---|---|---|
+| Qwen3.6-35B (38 slots) | b0 | 19 | 9 | 1/7 |
+| | b1 | 19 | 8 | 0/5 |
+| Qwen3.5-35B-distillé (24 slots) | b0 | 12 | 5 | 2/4 |
+| | b1 | 12 | 6 | 2/5 |
+
+Lecture : production de candidats à **parité stricte** entre arms (14/31 vs 14/31)
+— rectificatif à une observation de mi-fenêtre qui suggérait une dégradation b1 ;
+la différence se niche uniquement dans la conversion F2P (3 vs 2, n.s.).
+Le sous-groupe 3.5-distillé convertit mieux que 3.6 (4/9 vs 1/12) — descriptif
+seulement, n très faibles, aucune conclusion de modèle.
+
+Leçons : (i) l'ITT reste indispensable — 34/62 slots sans candidat (parité arms) ;
+(ii) la claim viability du MCP repose désormais sur l'axe évaluation/infrastructure
+(jamais réfuté), pas sur l'augmentation directe.
 
 Artefacts : `rct-v1/analysis.json`, `rct-v1/results/`, 4 chaînes ancrées
 `data/release-store/chains/`. Logs : `rct-v1/call-log.jsonl` (100) +

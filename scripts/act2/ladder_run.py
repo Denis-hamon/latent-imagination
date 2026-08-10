@@ -77,6 +77,8 @@ def main() -> int:
             src = src_p.read_text() if src_p.is_file() else ""
             prompt = base_prompt(task, src)
             pr.MODEL = model                     # payload "model" vient du module-global
+            # amendement-2 finding : modèles à raisonnement long → le livrable meurt
+            # sous le plafond de completion ; le replay exige ≥16k (PILOT_MAX_TOKENS)
             g = call_model_robust(prompt)
             log_call(task=iid, arm=slug, model=model,
                      prompt_sha256=sha256(prompt.encode()).hexdigest(),
