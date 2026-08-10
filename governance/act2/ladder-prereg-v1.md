@@ -54,6 +54,10 @@ Aucun hash in-file. Chaîne : {sha256(ce fichier), code_commit, sha256(panel)}
 
 ## Amendement 1 — 2026-08-10, AVANT tout résultat F2P consulté
 
+**DIVULGATION DE PROCESS** : les 17 calls ci-dessous ont été dépensés AVANT le
+scellement OTS de ce prereg (inversion freeze→spend de l'opérateur ; la série
+publiée partira, elle, scellée).
+
 Fenêtre 1 stoppée à **17 calls** (16 « no-diff », 1 regenerated). Cause : les
 modèles à raisonnement long (DeepSeek-V4-Flash-max) émettent des dizaines de
 blocs ```python de réflexion ; l'extraction canonique prenait le PREMIER (un
