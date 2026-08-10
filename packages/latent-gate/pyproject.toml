@@ -1,5 +1,5 @@
 [project]
-name = "latent-gate"
+name = "li-latent-gate"
 version = "0.1.0"
 requires-python = ">=3.11"
 description = "Latent Imagination — consequence model served over MCP/HTTP (public service v1)"

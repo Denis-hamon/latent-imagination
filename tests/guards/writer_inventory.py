@@ -43,8 +43,14 @@ WRITER_PACKAGES = _writer_packages()
 # scripts subtrees whose store-aimed writes are sanctioned ceremony surfaces:
 # prereg = ceremonies (story 2.6 design); act1 = Act-I field-run/campaign
 # orchestration writing occurrence-class outputs under a caller-passed store root;
-# probe = the pinned arm-artifact re-export ceremony (Act II, story 6.2 machinery).
-SCRIPT_SANCTIONED = ("prereg", "act1", "probe")
+# probe = the pinned arm-artifact re-export ceremony (Act II, story 6.2 machinery);
+# act2 = Act-II pilot campaign orchestration — same occurrence-class landing writes
+# as act1 (labels/results under data/landing), never the canonical store.
+SCRIPT_SANCTIONED = ("prereg", "act1", "probe", "act2")
+
+# vendored environments are not repo-authored code — scanning their
+# site-packages would flag huggingface_hub & co, not our writers.
+_SKIP_DIRS = {"venv", ".venv", "node_modules", "__pycache__"}
 
 
 def _pkg_dir_name(path: Path, packages_dir: Path) -> str:
@@ -78,6 +84,8 @@ def find_unauthorized_writers(packages_dir: Path = PACKAGES, scripts_dir: Path =
     if scripts_dir.is_dir():
         def script_classify(mod: Path) -> str | None:
             rel = mod.relative_to(scripts_dir)
+            if any(part in _SKIP_DIRS for part in rel.parts):
+                return None
             return None if rel.parts[0] in SCRIPT_SANCTIONED else f"scripts/{rel.parts[0]}"
 
         _scan_tree(scripts_dir, "**/*.py", script_classify, violations)
