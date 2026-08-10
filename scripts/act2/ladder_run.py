@@ -19,7 +19,25 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts" / "act2"))
 import pilot_run as pr
-from rct_wm_fork import base_prompt, extract_and_apply, call_model_robust
+from rct_wm_fork import base_prompt, call_model_robust
+
+
+def extract_and_apply(task: dict, src: str, reply: str):
+    """Variante ladder (amendement-1 ladder-prereg, avant résultats) :
+    parmi TOUS les blocs ```python, retenir le PLUS LONG (les modèles à
+    raisonnement étendu émettent des dizaines de snippets ; le fichier corrigé
+    est le bloc le plus substantiel), garde 0.5 puis chaîne canonique."""
+    import re
+    blocks = re.findall(r"```python\n(.*?)```", reply, re.DOTALL)
+    cand = max(blocks, key=len) if blocks else None
+    if cand and src and cand.strip() != src.strip() and \
+            len(cand.splitlines()) >= len(src.splitlines()) * 0.5:
+        return pr.make_diff(src, cand, task["target"]), "regenerated", ""
+    raw = pr.extract_diff_sanitized(reply)
+    if raw and src:
+        d, err = pr.apply_and_export_debug(src, raw + "\n", task["target"])
+        return d, ("model-applied-reexport" if d else "unappliable"), ("" if d else err)
+    return None, "no-diff", ""
 
 PILOT = ROOT / "data" / "landing" / "act2-pilot"
 LAD = PILOT / "ladder-v1"
@@ -58,6 +76,7 @@ def main() -> int:
             src_p = PILOT / f"{key}.buggy.py"
             src = src_p.read_text() if src_p.is_file() else ""
             prompt = base_prompt(task, src)
+            pr.MODEL = model                     # payload "model" vient du module-global
             g = call_model_robust(prompt)
             log_call(task=iid, arm=slug, model=model,
                      prompt_sha256=sha256(prompt.encode()).hexdigest(),

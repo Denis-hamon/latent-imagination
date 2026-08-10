@@ -51,3 +51,15 @@ mieux ».
 
 Aucun hash in-file. Chaîne : {sha256(ce fichier), code_commit, sha256(panel)}
 → ledger `prereg-ledger.jsonl`, preuve `proofs/<prefix>.ots`.
+
+## Amendement 1 — 2026-08-10, AVANT tout résultat F2P consulté
+
+Fenêtre 1 stoppée à **17 calls** (16 « no-diff », 1 regenerated). Cause : les
+modèles à raisonnement long (DeepSeek-V4-Flash-max) émettent des dizaines de
+blocs ```python de réflexion ; l'extraction canonique prenait le PREMIER (un
+snippet) → rejet systématique au garde-fou 0.5. **Fix** : le runner ladder retient
+le bloc ```python **le plus long**, puis chaîne canonique identique (garde 0.5,
+make_diff difflib). Symétrique entre les deux modèles. Fenêtre 1 écartée :
+`ladder-v1/discarded-window-1/` — les 17 calls partent au debug R10 du jour
+(total 2026-08-10 : 82 calls debug + 100 série RCT). Reste ~65 sous enveloppe 2000 :
+**le cap 64 tient sans extension**. Résultats F2P : non consultés.
