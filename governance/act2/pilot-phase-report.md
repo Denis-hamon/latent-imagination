@@ -557,3 +557,39 @@ le 1er appel) — la récupération a été faite, elle est épuisée.
 Artefacts : `boltzmann-e1/labels/` (128, sur node + rapatriés), `latent-pool-v6.*`,
 `s7-boltzmann-extension.json`. Scripts : `s6_boltzmann_label_exec.py`,
 `s6b_boltzmann_recover_exec.py`, `s7_pool_boltzmann.py`.
+
+---
+
+## Addendum 2026-08-10h — S8 : encoder-swap vers un LLM-instruct gelé (Qwen2.5-Coder-7B) — premier gain mesuré de queue
+
+**Contexte** : le gate v2 « CWM » est tué par la licence (visée commerciale). Test
+intermédiaire à 0 call : un LLM de code généraliste gelé comme encodeur (last-token
+pooling, 512 tok, fp16 sur wmel-gpu RTX-5000 — Turing sans bf16, fp16 natif).
+Protocole identique à S4/S7 (pool v6, n=145, LOAO strict). Contrôle positif :
+uxc reproduit sur v6 (0.822/0.779) à l'identique.
+
+| instrument | AUC | acc100 | cov@≥0.95 | queue |
+|---|---|---|---|---|
+| uxc GOLD+marge (S7) | 0.822 | 0.779 | 20 % | 29 à 0.966 [0.828,0.994] |
+| uxc GxF λ=1 (S7) | 0.828 | 0.710 | 20 % | idem |
+| Qwen-7B GOLD seul (marge) | 0.815 | 0.710 | **25 %** | **36 à 1.000 [0.904,1.000]** |
+| **Qwen-GOLD × uxc-F1 (croisé)** | **0.852** | 0.724 | **25-30 %** | 36 à 1.000 @25 % + **0.903 @50 %** |
+
+(Note pooling : `mean` légèrement sous `last` sur Qwen — 0.802/0.731 — retenu `last`.)
+
+**Lecture honnête** : en AUC, les trois instruments sont **statistiquement à égalité**
+(IC se recouvrent ; le croisé 0.852 n'est pas séparé de 0.828). Le gain est sur la
+**métrique produit** : la queue haute-confiance passe de 29 patchs à 0.966 à
+**36 patchs à 1.000, borne basse Wilson 0.904**, et le croisé tient 0.903 à 50 %
+de couverture (vs 0.833 pour uxc). Sous la règle de promotion pré-déclarée
+(AUC > 0.830 ET cov > 25 %), **le croisé Qwen-7B×uxc est promu candidat v2** —
+à confirmer sur la prochaine promotion du pool (n) avant bascule en production.
+
+**Contamination (déclarée)** : les repos swe-smith sont publics — même clause
+qu'uniXCoder (code statique vu au pretraining, labels = mutants récents non publiés).
+
+**Artefacts** : `latent-pool-Qwen2.5-Coder-7B-Instruct-{last,mean}.npz` (GPU node,
+fp16) + `s8-qwen7b.json`. Script : `scripts/act2/s8_cwm_probe.py` (fp16 forcé sous
+Turing). Note ops : le node WMEL-gpu-strong est resté down ~3 h (20:14→23:10) après
+arrêt manuel du vLLM OpenResearcher — repris via KVM owner ; probe tourné sur
+wmel-gpu (RTX 5000).
