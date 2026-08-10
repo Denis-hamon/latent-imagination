@@ -581,9 +581,14 @@ uxc reproduit sur v6 (0.822/0.779) à l'identique.
 (IC se recouvrent ; le croisé 0.852 n'est pas séparé de 0.828). Le gain est sur la
 **métrique produit** : la queue haute-confiance passe de 29 patchs à 0.966 à
 **36 patchs à 1.000, borne basse Wilson 0.904**, et le croisé tient 0.903 à 50 %
-de couverture (vs 0.833 pour uxc). Sous la règle de promotion pré-déclarée
-(AUC > 0.830 ET cov > 25 %), **le croisé Qwen-7B×uxc est promu candidat v2** —
-à confirmer sur la prochaine promotion du pool (n) avant bascule en production.
+de couverture (vs 0.833 pour uxc).
+
+**Verdict sous la règle pré-déclarée ce matin (AUC GOLD > 0.864 ET cov@≥0.95 > 30 %) :
+le croisé (0.852, 30 %) NE LA PASSE PAS — il est enregistré comme CANDIDAT v2, non
+promu, réévaluable tel quel à la prochaine promotion du pool (n↑, même règle).**
+Rectificatif d'honnêteté : une première rédaction de cet addendum disait « promu »
+en relisant le gate plus doux d'hier — le gate est celui déclaré AVANT le run ;
+on ne bouge pas les poteaux après mesure. Production : latent-gate reste sur v1.
 
 **Contamination (déclarée)** : les repos swe-smith sont publics — même clause
 qu'uniXCoder (code statique vu au pretraining, labels = mutants récents non publiés).
