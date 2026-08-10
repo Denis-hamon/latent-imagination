@@ -139,6 +139,20 @@ fenêtres écartées (w1/w2/w3 = 65 calls) restent en budget R10 debug séparé.
 Spend série en cours : **79** ; reprise estimée ≤ 21 calls → total ≤ 100.
 Résultats F2P : toujours non consultés.
 
+### Amendement 5 — 2026-08-10, AVANT tout résultat F2P connu
+
+**Rotation du roster galere en pleine fenêtre** : `Qwen/Qwen3.6-35B-A3B-FP8` (48/64
+slots) retiré de l'endpoint entre le crash 502 et la reprise. Substitut le plus
+proche de la famille : `MLX-Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled-bf16`
+(même gabarit 35B-A3B). Propriétés conservées et déclarées :
+1. **cas échéant par tâche** : b0 et b1 d'une même tâche tournent sur le même modèle
+   dans la même minute → le contraste causal apparié b1−b0 est intact ;
+2. la dérive éventuelle n'affecte que l'interprétation population (48 slots Qwen3.6
+   vs 16 slots Qwen3.5-distillé) → **tableau par sous-groupe au rapport** ;
+3. **le cap dur 100 tient** — la série s'arrête au cap et publie partielle avec %
+   de couverture conformément à la règle disclosure scellée ; pas d'extension de cap.
+Spend série figé à 79 + reprise bornée. Résultats F2P : toujours non consultés.
+
 ## Scellement
 
 - Ce fichier ne contient volontairement AUCUN hash de lui-même (auto-référence

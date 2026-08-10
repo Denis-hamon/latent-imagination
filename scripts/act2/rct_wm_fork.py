@@ -39,17 +39,18 @@ NEUTRAL = ("Review your draft patch and improve it. Output ONLY the complete "
            "corrected file inside ```python fences. No prose.")
 
 
-def call_model_robust(prompt: str, retries: int = 3) -> dict:
-    """Enrobage amendement-4 : l'endpoint galere répond parfois un 502 nginx
-    transitoire (crash fenêtre-4 à 79 calls) — retry borné, côté b uniquement."""
+def call_model_robust(prompt: str, retries: int = 4) -> dict:
+    """Enrobage amendements-4/5 : endpoint instable (502 transitoire, rotation de
+    roster "No openai endpoints available") — retry borné toute RuntimeError réseau,
+    backoff 30-120 s, côté fork uniquement (pilot_run.call_model inchangé)."""
     import time
     for i in range(retries):
         try:
             return pr.call_model(prompt)
-        except RuntimeError as e:
-            if "502" not in str(e) or i == retries - 1:
+        except RuntimeError:
+            if i == retries - 1:
                 raise
-            time.sleep(20 * (i + 1))
+            time.sleep(30 * (i + 1))
 
 
 def log_call(**kw):
