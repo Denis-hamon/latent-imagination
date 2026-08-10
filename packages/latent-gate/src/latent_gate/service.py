@@ -23,10 +23,11 @@ from . import encoder
 from .pool import get_pool
 from .scoring import GateModel, energy_gold, f1_attractor
 
-OUTCOME_DIR = Path(os.environ.get(
-    "LI_OUTCOME_DIR",
-    # src/latent_gate/service.py → parents[4] = racine du repo latent-imagination
-    Path(__file__).resolve().parents[4] / "data" / "landing" / "mcp-outcomes"))
+def _outcome_dir() -> Path:
+    """Lecture paresseuse — les tests monkeypatchent l'env à la volée."""
+    return Path(os.environ.get(
+        "LI_OUTCOME_DIR",
+        Path(__file__).resolve().parents[4] / "data" / "landing" / "mcp-outcomes"))
 
 
 def _now() -> str:
@@ -34,8 +35,9 @@ def _now() -> str:
 
 
 def _log_outcome(entry: dict):
-    OUTCOME_DIR.mkdir(parents=True, exist_ok=True)
-    f = OUTCOME_DIR / (time.strftime("%Y-%m-%d", time.gmtime()) + ".jsonl")
+    d = _outcome_dir()
+    d.mkdir(parents=True, exist_ok=True)
+    f = d / (time.strftime("%Y-%m-%d", time.gmtime()) + ".jsonl")
     with f.open("a") as fh:
         fh.write(json.dumps(entry) + "\n")
 

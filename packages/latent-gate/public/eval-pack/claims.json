@@ -1,16 +1,72 @@
 {
  "artifact": "latent-gate",
- "created": "2026-08-10T19:49:41Z",
+ "created": "2026-08-10T20:22:09Z",
+ "recipe": "gxf-logreg-l1",
+ "pool_sha256": "df37da37d58f4271267ccbd91998a0d3a0b48d046143d72bf79fbb6a1058b052",
+ "pool_vectors_sha": "7a8d8244ac9d827d8bbd770f6f45e480432d8bce0e5b4977cf0eecec9679f3c2",
  "model_sha256": "d2c013ed2c8b51df2e755ce6aa8360b49db93ec5213a9a581ee22eb031964bca",
- "pool_sha256": "6125871d3a1c705b5ffe7d7a115b7e592ad7081f3b5018045f8a3c98f3ef308e",
  "headline": {
-  "campaign_loao_curve": "voir README \u00a7measured numbers (pool v6, n=145, OOF)",
-  "eval_pack_loao": "acc 0.880 [0.762,0.944] @100% ; 1.000 [0.867,1.000] @50% (16 t\u00e2ches, 50 candidats, exclude_task)",
+  "campaign_loao_curve_v6": {
+   "cov100": {
+    "acc": 0.71,
+    "wilson95": [
+     0.632,
+     0.778
+    ]
+   },
+   "cov50": {
+    "acc": 0.833,
+    "wilson95": [
+     0.731,
+     0.902
+    ]
+   },
+   "cov25": {
+    "acc": 0.944,
+    "wilson95": [
+     0.819,
+     0.985
+    ]
+   },
+   "cov20": {
+    "acc": 0.966,
+    "wilson95": [
+     0.828,
+     0.994
+    ]
+   }
+  },
+  "eval_pack_loao_exclude_task": {
+   "n_candidats": 50,
+   "taches": 16,
+   "acc100": {
+    "acc": 0.88,
+    "wilson95": [
+     0.762,
+     0.944
+    ]
+   },
+   "acc50": {
+    "acc": 1.0,
+    "wilson95": [
+     0.867,
+     1.0
+    ]
+   }
+  },
   "known_negatives": [
    "best-of-K par score = hasard (n=32)",
-   "RCT contexte-cons\u00e9quence n\u00e9gatif",
-   "recovered diffs = poison"
+   "RCT contexte-cons\u00e9quence n\u00e9gatif (ITT n=32)",
+   "recovered diffs = poison (AUC 0.543)"
   ]
  },
- "abstention_contract": "advice=abstain quand confidence < q50 LOAO ; tier=high seulement au-del\u00e0 de q75"
+ "abstention_contract": {
+  "q50": 0.1863,
+  "q75": 0.3222,
+  "rule": "confidence < q50 \u2192 abstain ; high seulement \u2265 q75 ; quantiles from LOAO out-of-fold, frozen at calibration"
+ },
+ "serving": {
+  "latency_ms_median_measured": 199,
+  "encoder": "microsoft/unixcoder-base (frozen, CLS 512)"
+ }
 }
