@@ -124,6 +124,15 @@ sinon** — c'est l'abstention qui est le produit, pas la décoration.
 S2 (règle d'arrêt sur E1) : non mesurable — 2 positifs/64, énergies par candidat non
 persistées ; dit honnêtement au lieu d'être simulé.
 
+**S3/S4/S5 (même jour, 0 call) : instrument durci.** S3 : la combinaison apprise
+GOLD×F1 (logreg λ=1) pousse la couverture haute-fiabilité de 25 → 30 % ; aucun
+estimateur de confiance ne bat la marge brute sur GOLD seul (densité k-NN rejetée).
+S4 : uniXCoder-base mesuré **non arbitraire** — 3 challengers d'encodeur gelé sous la
+barre (AUC 0.739-0.810, queue haute-confiance 10 % vs 25 %). S5 : pool 113 → 131 par
+récupération des patchs rct-v1 scellés (18 après dédup) → GOLD 0.830 AUC / 0.771
+acc100, combiné 0.864 avec 39 patchs à 0.974 [0.868,0.995] — le point déployable
+actuel. Détail complet : addendum 08-10f du phase report.
+
 **Exécution (2026-08-10, machine livrée, 0 call)** : fork apparié du draft draw-3 —
 b0 (feedback neutre, contrôle « 2ᵉ chance ») vs b1 (bloc consequence-context) —
 32 tâches, **cap dur 100 calls**. Pré-enregistrement scellé + runbook :

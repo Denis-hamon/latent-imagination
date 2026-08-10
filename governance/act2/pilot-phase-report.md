@@ -444,3 +444,70 @@ Conséquence design (reportée dans `docs/world-model-mcp-design.md`) : le MCP n
 pas PREDIRE partout — il doit prédire au quart hautement confiant et s'abstenir sinon
 (Var-JEPA validé chez nous, gratuitement). Artefact : `data/landing/act2-pilot/s1-selective.json`.
 Script : `scripts/act2/s1_selective_prediction.py`. Zéro call galere.
+
+---
+
+## Addendum 2026-08-10f — S3/S4/S5 : l'instrument amélioré à 0 call (confiance × combinaison × encodeur × n)
+
+Trois chantiers locaux exécutés dans la foulée de S1 (scripts `s3_confidence_combination.py`,
+`s4_encoder_swap.py`, `s5_pool_extension.py` ; artefacts `s3-confidence.json`,
+`s4-encoder-swap.json`, `s5-extension.json` + `latent-pool-v5.*`). Contrôles positifs à
+chaque étape : repro exacte S1 (0.735 / 1.000@25 %) et repro bit-stable uxc-base local
+(AUC 0.817 CPU/MPS = node GPU).
+
+### S3 — estimateurs de confiance & combinaison GOLD × F1 (n=113, LOAO-strict)
+
+| méthode | AUC | acc100 | cov@≥0.95 (borne basse Wilson > maj) |
+|---|---|---|---|
+| GOLD + marge brute (S1) | 0.817 | 0.735 | 25 % |
+| GOLD + Platt / + bootstrap | 0.795 | 0.69 | 25 % |
+| GOLD + densité k-NN | 0.817 | 0.735 | **0 %** ✗ |
+| GxF z-somme naïve (0 param appris) | **0.890** | 0.637 (seuil médiane mal placé) | 25 % |
+| **GxF logreg λ=1 (Platt / bootstrap)** | 0.845 | **0.743** | **30 %** |
+
+Deux leçons mesurées : (i) pour l'axe GOLD seul, **aucun estimateur ne bat la marge
+brute** de S1 — la densité k-NN est franchement mauvaise, Platt/bootstrap parités ;
+(ii) la **combinaison apprise gagne** : logreg 2D régularisée (λ=1.0) pousse la
+couverture haute-fiabilité de 25 → **30 %** (0.971 [0.851,0.995] à n=34) avec acc100
+équivalente (0.743 vs 0.735). Piège identifié : à λ=1e-3 la logreg 2D **sépare
+complètement** sur les folds (poids biais −7.2, F1 +25 mesurés → AUC 0.706) — à n~100,
+λ fort obligatoire. La z-somme naïve a le meilleur AUC (0.890) mais un seuil médiane
+déplacé : à réserver au **ranking**, pas au verdict.
+
+### S4 — swap d'encodeur gelé : uniXCoder-base reste champion (négatif propre)
+
+| encodeur (gelé, 512 tok) | pooling | AUC GOLD | acc LOAO | cov@≥0.95 |
+|---|---|---|---|---|
+| **microsoft/unixcoder-base** (contrôle) | CLS | **0.817** | **0.735** | **25 %** |
+| jinaai/jina-embeddings-v2-base-code 161M | mean | 0.810 | 0.726 | 10 % |
+| Salesforce/codet5p-110m-embedding | (pooled) | 0.762 | 0.708 | 10 % |
+| microsoft/codebert-base | CLS | 0.739 | 0.664 | 10 % |
+
+Le choix uxc-base n'était **pas arbitraire** : 3 challengers de 3 familles (BERT-code,
+T5, RoBERTa) tous sous le contrôle, et leur **région haute-confiance** (le produit réel)
+est dégradée (10 % vs 25 %). Reste ouverte l'hypothèse « beaucoup plus gros »
+(gte-Qwen2-1.5B-instruct et au-delà) — future work, coût non justifié après 0/3 à cette
+échelle. Note d'ingénierie : les remote codes jina/codet5p exigent transformers 4.49
+(incompatibles 5.x) — `.venv-embed` dédié créé, git-ignoré.
+
+### S5 — pool étendu 113 → 131 à 0 call (récupération rct-v1)
+
+Audit des gisements 0-call : fenêtres pilotes sans raw replies persistées → 281 slots
+non-applicables **irrécupérables** ; discarded-window-1..3 = raw replies sans exécution
+conservée → labels impossibles (node docker down) ; e1-boltzmann = 128 candidats mais
+mapping candidat→verdict non persisté → écarté honnêtement. **rct-v1/results (série
+scellée) : 18 patchs appliqués ajoutés après dédup (task, sha256)** (4 positifs,
+mixture b0/b1 déclarée) → n=131, 48 positifs, 74 tâches.
+
+| instrument | AUC | acc100 | cov@≥0.95 | en absolu |
+|---|---|---|---|---|
+| GOLD+marge (113) | 0.817 | 0.735 | 25 % | 28 patchs à 1.000 [0.879,1.000] |
+| GOLD+marge (131) | **0.830** | **0.771** | 25 % | **33 patchs à 1.000 [0.896,1.000]** |
+| GxF+platt (131) | **0.864** | 0.725 | **30 %** | **39 patchs à 0.974 [0.868,0.995]** |
+
+Le n supplémentaire resserre les bornes et monte le GOLD à 0.771@100 % (majorité 0.634) ;
+le combiné confirme son avantage de queue (0.974 @ 30 % — meilleur point déployable du
+projet). **Verdict campagne** : l'amélioration venue de la méthode (λ, combinaison) est
+réelle mais plafonne ; la marge restante est dans n (doctrine confirmée : 200+ patchs) et
+dans la persistance systématique des raw replies dès le premier appel — leçon appliquée
+au RCT, trop tard pour les fenêtres pilotes.

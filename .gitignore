@@ -1,4 +1,5 @@
 .venv/
+.venv-embed/
 __pycache__/
 *.pyc
 .ruff_cache/
