@@ -127,6 +127,18 @@ explicite anti-mémorisation ; le diff final est produit par difflib déterminis
 `rct-v1/discarded-window-3/`. Spend R10 2026-08-10 : **65 calls**. Cap série
 publiée inchangé (100). Résultats F2P : toujours non consultés.
 
+### Amendement 4 — 2026-08-10, AVANT tout résultat F2P connu
+
+Fenêtre 4 (première sous protocole stabilisé amendements 1-3) interrompue à
+**79 calls** par un **502 transitoire de l'endpoint galere** (crash process, pas un
+choix de protocole). Reprise idempotente : les slots déjà écrits (meta.json présent,
+quel que soit l'outcome — patch ou échec honnête) sont **gelés** ; seuls les slots
+jamais tentés continuent ; `call_model` côté fork gagne un retry borné sur 502
+(3 × backoff 20-60 s). Le cap 100 couvre la série publiée fenêtre-4 incluse ; les
+fenêtres écartées (w1/w2/w3 = 65 calls) restent en budget R10 debug séparé.
+Spend série en cours : **79** ; reprise estimée ≤ 21 calls → total ≤ 100.
+Résultats F2P : toujours non consultés.
+
 ## Scellement
 
 - Ce fichier ne contient volontairement AUCUN hash de lui-même (auto-référence

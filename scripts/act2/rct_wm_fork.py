@@ -39,6 +39,19 @@ NEUTRAL = ("Review your draft patch and improve it. Output ONLY the complete "
            "corrected file inside ```python fences. No prose.")
 
 
+def call_model_robust(prompt: str, retries: int = 3) -> dict:
+    """Enrobage amendement-4 : l'endpoint galere répond parfois un 502 nginx
+    transitoire (crash fenêtre-4 à 79 calls) — retry borné, côté b uniquement."""
+    import time
+    for i in range(retries):
+        try:
+            return pr.call_model(prompt)
+        except RuntimeError as e:
+            if "502" not in str(e) or i == retries - 1:
+                raise
+            time.sleep(20 * (i + 1))
+
+
 def log_call(**kw):
     LOG.parent.mkdir(parents=True, exist_ok=True)
     with LOG.open("a") as f:
@@ -120,8 +133,8 @@ def run_arm(task: dict, src: str, draft: str, arm: str, dry: bool) -> dict:
     key = iid.replace("/", "_")
     outdir = JOBS / f"{key}-{arm}"
     outdir.mkdir(parents=True, exist_ok=True)
-    if (outdir / "patch.diff").is_file():
-        return {"task": iid, "arm": arm, "skipped": "exists"}
+    if (outdir / "meta.json").is_file():
+        return {"task": iid, "arm": arm, "skipped": "meta-exists"}  # amendement 4 : reprise idempotente, slots gelés quels que soient les outcomes
 
     if arm == "b1":
         ctx = wm_context.build_context(task["problem"], task["f2p"], draft, exclude_task=iid)
@@ -148,7 +161,7 @@ def run_arm(task: dict, src: str, draft: str, arm: str, dry: bool) -> dict:
     if calls_used() >= CAP:
         raise SystemExit(f"cap {CAP} atteint — publication partielle (voir prereg)")
 
-    g = pr.call_model(prompt)
+    g = call_model_robust(prompt)
     (outdir / "reply.raw.txt").write_text(g["text"])   # audit/debug brut (amendement 2)
     (outdir / "prompt.txt").write_text(prompt)
     log_call(task=iid, arm=arm, kind="fork",
