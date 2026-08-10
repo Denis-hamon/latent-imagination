@@ -72,7 +72,7 @@ def main() -> int:
         tok.pad_token = tok.eos_token
     t0 = time.time()
     model = AutoModel.from_pretrained(
-        MODEL, dtype=torch.bfloat16, device_map="auto",
+        MODEL, dtype=torch.float16, device_map="auto",
         attn_implementation="sdpa").eval()
     device = next(model.parameters()).device
     print(f"modèle chargé en {time.time()-t0:.0f}s, device_map sur "
