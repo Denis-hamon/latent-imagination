@@ -110,6 +110,17 @@ R1) avec les artefacts — la crédibilité *est* le différenciateur.
   si |Δ| < 5 pts, le papier publie l'instrument + les négatifs (affirmé d'avance).
 - Budget R10 à pré-enregistrer par l'humain avant tout spend (comme d'habitude).
 
+**Exécution (2026-08-10, machine livrée, 0 call)** : fork apparié du draft draw-3 —
+b0 (feedback neutre, contrôle « 2ᵉ chance ») vs b1 (bloc consequence-context) —
+32 tâches, **cap dur 100 calls**. Pré-enregistrement scellé + runbook :
+`governance/act2/rct-prereg-v1.md`. Scripts : `scripts/act2/wm_context.py`
+(constructeur du bloc, anti-fuite `exclude_task`), `rct_wm_fork.py` (runner,
+`--dry-run` vérifié : 64 slots, 0 call), `rct_analyze.py` (McNemar apparié).
+Node : `pilot_node_exec.py` accepte désormais `PILOT_ARMS=b0,b1`. Côté produit :
+4ᵉ tool MCP `risk_scan` (l'axe goal-free 0.709) live-testé dans
+`scripts/mcp/energy_gate_server.py`. Reste à la main de l'owner : signature du
+prereg + 5 commandes du runbook (dont ~64-96 calls galere).
+
 ## 6. Risques honnêtes
 
 1. n=113, IC larges visibles ; F1 acc [0.545,0.720] croise la majorité → le score

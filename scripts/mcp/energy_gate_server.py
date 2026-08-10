@@ -175,6 +175,23 @@ TOOLS = [
             "required": ["state_text", "diff_text", "goal_text"],
         },
     },
+    {
+        "name": "risk_scan",
+        "description": "Score goal-free de risque d'un brouillon de diff : distance au plus "
+                       "proche ÉCHEC passé moins distance au plus proche SUCCÈS passé "
+                       "(failure-attractor, G1 mesuré : AUC 0.709 sans aucun but, LOAO). "
+                       "N'a PAS besoin du gold — c'est le tool production quand la destination "
+                       "est inconnue. exclude_task retire une tâche du pool (anti-fuite).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "state_text": {"type": "string"},
+                "diff_text": {"type": "string"},
+                "exclude_task": {"type": "string", "description": "optionnel"},
+            },
+            "required": ["state_text", "diff_text"],
+        },
+    },
 ]
 
 def handle(msg: dict) -> dict | None:
@@ -304,6 +321,39 @@ def handle(msg: dict) -> dict | None:
                   "type": "near-mis", "top": rows})
             return _resp(mid, {"content": [{"type": "text", "text": json.dumps({
                 "call_id": call_id, "nearest": rows})}]})
+        if name == "risk_scan":
+            pool_path = Path("/Users/dhamon/Desktop/wo/latent-imagination/data/landing"
+                             "/act2-pilot/latent-pool.json")
+            if not pool_path.is_file():
+                return _err(mid, -32602, "latent-pool absent")
+            pool = json.loads(pool_path.read_text())
+            import numpy as _np
+            d = _np.load(str(pool_path).replace(".json", ".npz"))
+            def _n(A): return A / (_np.linalg.norm(A, axis=1, keepdims=True) + 1e-9)
+            E_s, E_d = _n(d["E_state"]), _n(d["E_diff"])
+            cd = _n(E_s + E_d)                       # composites du pool (113)
+            y = _np.array([int(r["y"]) for r in pool])
+            keep = _np.array([r["task"] != args.get("exclude_task", "") for r in pool])
+            # composite côté requête : même recette (état + action) que le pool
+            # concaténé est ré-embeddé pour coller à la construction du pool
+            q_s = _np.array(embed(args["state_text"]))
+            q_d = _np.array(embed(args["diff_text"][:3000]))
+            c_q = q_s + q_d
+            c_q = c_q / (_np.linalg.norm(c_q) + 1e-9)
+            sims = cd[keep] @ c_q
+            yk = y[keep]
+            d_fail = float((1 - sims[yk == 0]).min()) if (yk == 0).any() else float("nan")
+            d_pass = float((1 - sims[yk == 1]).min()) if (yk == 1).any() else float("nan")
+            f1 = d_fail - d_pass
+            out = {"attractor_score": round(f1, 4),
+                   "zone": "high_risk" if f1 < 0 else "low_risk",
+                   "d_nearest_fail": round(d_fail, 4), "d_nearest_pass": round(d_pass, 4),
+                   "note": "score >0 = plus proche des succès; rang, pas verdict (voir G1)"}
+            call_id = sha256(f"{time.time()}:{args['state_text'][:80]}".encode()).hexdigest()[:12]
+            _log({"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ"), "call_id": call_id,
+                  "type": "risk_scan", **{k: out[k] for k in
+                                         ("attractor_score", "zone")}})
+            return _resp(mid, {"content": [{"type": "text", "text": json.dumps(out)}]})
         if name == "report_outcome":
             _log({"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
                   "call_id": args["call_id"], "type": "outcome",

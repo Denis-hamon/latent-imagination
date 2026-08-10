@@ -80,9 +80,10 @@ def run_one(iid: str, arm: str) -> dict:
 
 
 def main():
+    arms = os.environ.get("PILOT_ARMS", "off,on").split(",")
     for task in TASKS:
         iid = task["instance_id"]
-        for arm in ("off", "on"):
+        for arm in arms:
             d = JOBS / f"{iid.replace('/', '_')}-{arm}"
             if not (d / "patch.diff").exists():
                 continue

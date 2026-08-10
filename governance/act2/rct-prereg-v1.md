@@ -1,0 +1,82 @@
+# Pré-enregistrement RCT — « consequence-context » (arm fork b0/b1) — v1, 2026-08-10
+
+Scellé AVANT tout appel galere de cette série. Toute modification ultérieure =
+amendement loggé ci-dessous AVANT résultats (discipline sealed-envelope du repo).
+
+## Question
+
+Le contexte-conséquence d'un world model (failure-attractors + near-miss outcomes,
+G1 mesuré AUC 0.709 goal-free) injecté AU MOMENT de régénérer un patch, améliore-t-il
+le taux F2P d'un agent de coding, comparé à une régénération neutre et au draft initial ?
+
+## Design (fork apparié, économe)
+
+| arm | origine | calls galere |
+|---|---|---|
+| A (contrôle) | draw-3 off-arm existant (9/32 F2P) — réutilisé tel quel | 0 |
+| b0 (contrôle « 2ᵉ chance générique ») | fork du draft draw-3 + feedback NEUTRE | 32 (+ retries) |
+| b1 (traitement) | fork du MÊME draft + bloc CONSEQUENCE-CONTEXT | 32 (+ retries) |
+
+- Panel : frozen 32 tâches (FR-10, seed 6769) — panel déjà gelé, harness inchangé.
+- Le retrieval du bloc b1 **exclut la tâche cible** (`exclude_task`) — anti-fuite
+  inter-bras, équivalent production « tâche jamais vue ».
+- Chaîne identique aux fenêtres précédentes : extraction full-file>diff, sanitize,
+  `git apply` local, 1 apply-retry instrumenté max par arm.
+- Modèle : celui des fenêtres frozen32 (PILOT_MODEL fixé au lancement, loggé dans
+  call-log ; toute dérive de version côté endpoint frappe b0 et b1 pareil — apparié).
+
+## Budget (compte dans l'enveloppe R10 pré-enregistrée, cap 2000)
+
+- **Cap dur : 100 calls galere** pour la série entière (b0+b1) — attendu ~64–96.
+- Arrêt au cap ⇒ publication **partielle** avec % de couverture en header (règle
+  disclosure R10 déjà en vigueur).
+- 0 call pour l'arm A. 0 h node supplémentaire hors exécution docker existante
+  (node_gpu_hours_cap 12 h inchangé).
+
+## Mesures
+
+- **Primaire** : ΔF2P-pass par tâche, McNemar exact sur discordances
+  (b1 vs A ; b1 vs b0 ; b0 vs A), publié **quel que soit le signe**.
+- **Secondaires** : taux d'application, nb d'apply-retries, tokens (usage loggé).
+- Si |Δ| < 5 pts : l'artefact publié = l'instrument + ce négatif ; le design doc
+  (`docs/world-model-mcp-design.md` §4) l'annonce déjà.
+
+## Menaces déclarées d'avance
+
+1. Arm A datée (draft draw-3) vs b0/b1 frais : la dérive endpoint est commune aux
+   deux forks, l'appariement les immunise ; b0 absorbe l'effet « juste une 2ᵉ chance ».
+2. 14/32 tâches frozen présentes dans le pool 113 → exclusion par tâche appliquée ;
+   le contexte b1 sur ces tâches reste évaluable (retrieval tient la tâche dehors).
+3. n=32 par comparaison : IC larges affichés, pas de sur-claim (doctrine branch-iii).
+
+## Runbook (fenêtre node)
+
+```bash
+# 1) sync drafts draw-3 → Mac
+scp -r "WMEL-gpu-strong:/home/ubuntu/latent-imagination/data/landing/act2-pilot/results" \
+      data/landing/act2-pilot/           # slots *-off (patch.diff+meta.json)
+
+# 2) génération des forks b0/b1 depuis le Mac (cap dur 100 in-script)
+uv run python scripts/act2/rct_wm_fork.py            # --dry-run d'abord, 0 call
+
+# 3) pousser rct-v1 → node ; lien gold (réutilise control-gold existant)
+scp -r data/landing/act2-pilot/rct-v1 \
+      "WMEL-gpu-strong:/home/ubuntu/latent-imagination/data/landing/act2-pilot/"
+ssh WMEL-gpu-strong 'cd /home/ubuntu/latent-imagination/data/landing/act2-pilot/rct-v1 \
+      && ln -sfn ../control-gold control-gold'
+
+# 4) exécution docker (même harness que draw-3)
+ssh WMEL-gpu-strong 'cd /home/ubuntu/latent-imagination \
+      && PILOT_ARMS=b0,b1 PILOT_CAMPAIGN_DIR=rct-v1 .venv/bin/python scripts/act2/pilot_node_exec.py'
+
+# 5) rapatrier run-result.json ; analyse appariée
+uv run python scripts/act2/rct_analyze.py
+```
+
+## Amendements
+
+(aucun à l'ouverture — toute ligne ajoutée ici sera datée et antérieure aux résultats)
+
+## Signature
+
+- [ ] owner : Denis Hamon — hash de ce fichier au scellement : à remplir à la signature
