@@ -1,0 +1,20 @@
+[project]
+name = "latent-gate"
+version = "0.1.0"
+requires-python = ">=3.11"
+description = "Latent Imagination — consequence model served over MCP/HTTP (public service v1)"
+dependencies = [
+  "numpy>=1.26",
+  "torch>=2.2",
+  "transformers>=4.49",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "pydantic>=2.7",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "latent_gate"

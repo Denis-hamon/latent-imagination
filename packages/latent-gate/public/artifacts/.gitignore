@@ -1,0 +1,5 @@
+# sauce : jamais dans git — distribution interne hashée uniquement
+latent-pool-v6.json
+latent-pool-v6.npz
+model.json
+model-witness.json

@@ -1,0 +1,22 @@
+services:
+  gate:
+    build:
+      context: ..
+      dockerfile: public/Dockerfile
+    image: latent-gate:0.1.0
+    ports:
+      - "8080:8080"
+    environment:
+      LI_API_KEYS: ${LI_API_KEYS:-}   # vide = auth off (dev) ; requis en prod
+    volumes:
+      - outcomes:/data/outcomes
+    restart: unless-stopped
+
+  # Optionnel prod : TLS + domaine. Exemple :
+  # caddy:
+  #   image: caddy:2-alpine
+  #   ports: ["443:443"]
+  #   volumes: ["./Caddyfile:/etc/caddy/Caddyfile"]
+
+volumes:
+  outcomes:

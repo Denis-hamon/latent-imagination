@@ -1,0 +1,16 @@
+{
+ "artifact": "latent-gate",
+ "created": "2026-08-10T19:49:41Z",
+ "model_sha256": "d2c013ed2c8b51df2e755ce6aa8360b49db93ec5213a9a581ee22eb031964bca",
+ "pool_sha256": "6125871d3a1c705b5ffe7d7a115b7e592ad7081f3b5018045f8a3c98f3ef308e",
+ "headline": {
+  "campaign_loao_curve": "voir README \u00a7measured numbers (pool v6, n=145, OOF)",
+  "eval_pack_loao": "acc 0.880 [0.762,0.944] @100% ; 1.000 [0.867,1.000] @50% (16 t\u00e2ches, 50 candidats, exclude_task)",
+  "known_negatives": [
+   "best-of-K par score = hasard (n=32)",
+   "RCT contexte-cons\u00e9quence n\u00e9gatif",
+   "recovered diffs = poison"
+  ]
+ },
+ "abstention_contract": "advice=abstain quand confidence < q50 LOAO ; tier=high seulement au-del\u00e0 de q75"
+}
