@@ -614,6 +614,49 @@ supervision traces NLEX à l'échelle — ni l'un ni l'autre ne tient dans le bu
 Artefact : `data/landing/act2-pilot/s9-smoke.json` + copie Mac. Script :
 `scripts/act2/s9_lora_smoke.py`.
 
+---
+
+## Addendum 2026-08-10j — S10 SCAMPER + ERRATUM sur 08-07c : le signal est dans diff↔gold, pas dans l'état
+
+**Erratum d'abord (protocole `governance/erratum-protocol.md`, direction négative).**
+L'addendum 08-07c publiait « diff↔gold seul : AUC 0,174 — pas de corrélation naïve
+u→û ». **Ce chiffre est faux** : recalcul direct de cos(E_diff, E_goal) sur les deux
+pools donne **AUC 0.826 (n=113) et 0.828 (n=145)**. Le bug (signe/orientation dans
+`latent_energy_eval.py`) est corrigé en S10. Invalidés en conséquence (marqués
+superseded, pas réécrits) : la phrase « ce n'est pas la distance "ses diff à gold"
+qui porte le signal mais l'espace conjoint » et la conclusion de cohérence avec IWM
+fondée dessus. Les nombres état-seul (0.543), énergie conjointe (0.817), buts permutés
+(0.567) sont eux inchangés et re-mesurés lors du contrôle positif.
+
+**S10 — balayage SCAMPER des variantes du modèle (LOAO strict, numpy seul, 0 call).**
+Contrôle positif : repro exacte de S7 (0.822/0.779 ✓). Pool v6 (n=145) :
+
+| variante | AUC | acc100 | cov@≥0.95 |
+|---|---|---|---|
+| champion uxc GOLD (état∘diff vs état∘gold) | 0.822 | 0.779 | 20 % |
+| **E1 diff→gold SEUL (cos direct)** | **0.828** | **0.779** | 20 % |
+| E2 état→gold seul (sans diff) | 0.446 | 0.448 | 0 % ✗ bruit |
+| M1 all-but-the-top k=1/3 | 0.812/0.823 | 0.752 | 20 % (n.s.) |
+| M1 k=8 | 0.828 | 0.710 | 10 % (dégrade) |
+| **C1 GxF 4 espaces (uxc+Qwen, λ=2)** | **0.856** | 0.717 | **30 %** |
+| R1 temporel : train {frozen32,rct,boltzmann} → test extension-128 | AUC 0.763 | acc 0.600 [0.497,0.695] | — |
+
+**Lecture doctrine — trois faits qui déplacent le modèle mental :**
+1. **L'état n'apporte RIEN** : diff↔gold seul = le champion (0.828 vs 0.822, égalité
+   IC). Élimination honnête : le modèle peut être simplifié à 2 embeddings (diff, but)
+   — moins cher, même pouvoir. L'état seul = bruit (0.446 < hasard : sous-ensemble
+   interestingly anti-informatif — à creuser plus tard si utile).
+2. **La combinaison multi-espaces (uxc + Qwen) tient** : AUC 0.856 — meilleur AUC
+   mesuré du projet ; cov 30 %. Sous le gate pré-déclaré v2 (AUC > 0.864 ET cov > 30 %)
+   : **NE PASSE PAS** — enregistré sans promotion (les poteaux ne bougent pas).
+3. **R1 temporel** : la généralisation à la fenêtre postérieure (extension-128, tirée
+   après) est affaiblie mais réelle (AUC 0.763 vs 0.822 LOAO) — le modèle transfère
+   à la dérive de distribution, partiellement. Utile pour la lecture externe.
+
+Artefact : `data/landing/act2-pilot/s10-scamper.json`. Script :
+`scripts/act2/s10_scamper.py`. La bascule « modèle simplifié diff↔gold » pour
+latent-gate v2-candidat est sur la table, évaluée à la prochaine promotion du pool.
+
 **Artefacts** : `latent-pool-Qwen2.5-Coder-7B-Instruct-{last,mean}.npz` (GPU node,
 fp16) + `s8-qwen7b.json`. Script : `scripts/act2/s8_cwm_probe.py` (fp16 forcé sous
 Turing). Note ops : le node WMEL-gpu-strong est resté down ~3 h (20:14→23:10) après
