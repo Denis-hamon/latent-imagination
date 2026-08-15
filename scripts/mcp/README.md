@@ -106,3 +106,29 @@ Pool/calibration servis : `latent-pool-v8.json/.npz` +
 
 Le flywheel (report_outcome → mcp_flywheel.py → pool v9) est l'axe
 d'amélioration : plus d'issues groundées = plus de couverture fiable.
+
+## v0.4.0 — familles et abstention expliquée (2026-08-15)
+
+- `family` = dérivation MÉCANIQUE du préfixe de tâche (`owner__repo`), zéro
+  modèle. Chaque réponse `risk_scan` porte un bloc `family` additif :
+  famille la plus proche (similarité cosinus en espace d'état), sa couverture
+  dans le pool (n / positives / négatives), top-5 familles, nombre total de
+  familles du pool.
+- Les abstentions portent `abstention_diagnosis` : « hors régime fiable ;
+  famille la plus proche X (n lignes, p positives) — pas assez de masse ici
+  pour trancher à acc ≥ 0.95 ». La DÉCISION (attracteur + tau) est inchangée :
+  le diagnostic est additif, jamais un aiguillage du score.
+- `reporter` manquant = accepté mais signalé (`reporter_note` dans la réponse,
+  `reporter_missing: true` dans le log) : sans identité d'auteur, la paire ne
+  peut pas être stratifiée par le flywheel (contrat multi-LLM).
+- `near_mis_patches` renvoie désormais `family` par voisin.
+- Tests hors-ligne (numpy seul, embed mocké — pas de torch) :
+  `scripts/mcp/test_ghost_server_family.py` ; skippent proprement quand le
+  pool v8 est absent (CI propre).
+
+Design note (mesuré, pas spéculé) : les familles servent d'abord à EXPLIQUER
+l'abstention et à CIBLER la croissance du pool. Le routage du score par
+famille est un pari non mesuré (sous-pools trop petits pour tenir le régime
+acc ≥ 0.95 chacun) — il reste hors service tant qu'une éval family-LOAO
+pré-enregistrée ne montre pas le contraire. Séparation maintenue : GHOST
+reste goal-free et sans LLM dans la boucle de décision.

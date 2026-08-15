@@ -28,6 +28,13 @@ governance/act2/arm-artifacts/risk-scan-v8-calibration.json), sinon "abstain"
   disponibles pour le renforcement nocturne du pool (scripts/act2/mcp_flywheel.py).
 
 N'écrit jamais JSON ailleurs que sur stdout. Pas de dépendance au net.
+
+v0.4.0 (2026-08-15) : diagnostic de famille ADDITIF — `family_of(task)` dérive
+mécaniquement la famille (préfixe repo, zéro modèle), `_family_diagnosis` nome
+la famille la plus proche + sa couverture dans chaque réponse risk_scan ; les
+abstentions portent `abstention_diagnosis` (expliquées, plus aveugles). La
+décision (attracteur + tau) et le régime calibré sont INCHANGÉS. `reporter`
+manquant → signalé (`reporter_note`, log `reporter_missing`) mais accepté.
 """
 
 from __future__ import annotations
@@ -132,9 +139,18 @@ _pool_cache = None
 _risk_calib_cache = None
 
 
+def family_of(task: str) -> str:
+    """Dérivation MÉCANIQUE de la famille d'une tâche : le préfixe avant le
+    premier point (owner__repo). Zéro modèle, zéro apprentissage — c'est une
+    dérivation déterministe, pas une classification (leçon S11 : la famille
+    et l'auteur sont des facteurs de première classe; on les expose, on ne
+    les invente pas)."""
+    return task.split(".", 1)[0] if isinstance(task, str) and "." in task else str(task)
+
+
 def _load_pool():
-    """Charge (rows, composites cd normalisés, E_state/E_goal, labels y, tasks)
-    du pool servi en cache. Utilisé par risk_scan et near_mis_patches."""
+    """Charge (rows, composites cd normalisés, E_state/E_goal, labels y, tasks,
+    familles) du pool servi en cache. Utilisé par risk_scan et near_mis_patches."""
     global _pool_cache
     if _pool_cache is None:
         import numpy as np
@@ -146,9 +162,49 @@ def _load_pool():
         cd = _n(E_s + E_d)
         y = np.array([int(r["y"]) for r in rows])
         tasks = np.array([r["task"] for r in rows])
+        families = np.array([family_of(r["task"]) for r in rows])
         _pool_cache = {"rows": rows, "cd": cd, "E_s": E_s, "E_g": E_g,
-                       "y": y, "tasks": tasks, "n": len(rows)}
+                       "y": y, "tasks": tasks, "families": families, "n": len(rows)}
     return _pool_cache
+
+
+def _family_coverage(pc, exclude: list[bool] | None = None) -> dict:
+    """Couverture par famille (n, positifs) — pur numpy, pas de modèle."""
+    import numpy as np
+    fams, y = pc["families"], pc["y"]
+    keep = np.ones(len(y), bool) if exclude is None else np.array(exclude)
+    cov: dict = {}
+    for f in sorted(set(fams[keep].tolist())):
+        m = (fams == f) & keep
+        cov[f] = {"n": int(m.sum()), "positives": int(y[m].sum())}
+    return cov
+
+
+def _family_diagnosis(q_s, pc) -> dict:
+    """Diagnostic ADDITIF (ne change JAMAIS la décision ni le régime tau/thr) :
+    dans l'espace E_state, la famille du pool la plus proche de la requête et
+    sa couverture. Transforme l'abstention aveugle en abstention expliquée —
+    « hors couverture de la famille X » plutôt que « confiance insuffisante ».
+    Note: la couverture de la famille la plus proche est le signal honnête ;
+    la décision reste portée par l'attracteur goal-free (cd space)."""
+    import numpy as np
+    E_s, fams, y = pc["E_s"], pc["families"], pc["y"]
+    q_s = q_s / (np.linalg.norm(q_s) + 1e-9)  # cosine, robust au scaling amont
+    sims = E_s @ q_s  # q_s déjà normalisé côté appelant
+    order = np.argsort(sims)[::-1]
+    top5_fams = [str(fams[i]) for i in order[:5]]
+    fam = top5_fams[0]
+    mask = fams == fam
+    in_fam_pos = int(y[mask].sum())
+    return {
+        "nearest_family": fam,
+        "nearest_similarity": round(float(sims[order[0]]), 4),
+        "family_coverage": {"n": int(mask.sum()), "positives": in_fam_pos,
+                            "negatives": int(mask.sum()) - in_fam_pos},
+        "top5_families_by_state": top5_fams,
+        "families_in_pool": len(set(fams.tolist())),
+        "pool_n": pc["n"],
+    }
 
 
 def _load_risk_calib():
@@ -246,10 +302,14 @@ TOOLS = [
                        "goal-free — pas de gold requis). Pool v8 (n=207). ABSTENTION calibrée : "
                        "verdict (low_risk/high_risk) seulement si la confiance atteint le régime "
                        "mesuré LOAO acc 0.952 [0.773,0.992] (10 % de couverture), sinon "
-                       "'abstain' — le fantôme se tait quand il ne sait pas. exclude_task retire "
-                       "une tâche du pool (anti-fuite) ; reporter = identité du LLM/agent "
-                       "(stratification flywheel). Advisory only — renvoyer l'issue groundée via "
-                       "report_outcome.",
+                       "'abstain' — le fantôme se tait quand il ne sait pas, et explique : le "
+                       "bloc 'family' + 'abstention_diagnosis' nomme la famille de tâches la plus "
+                       "proche et sa couverture dans le pool (diagnostic additif, la décision ne "
+                       "change pas). exclude_task retire une tâche du pool (anti-fuite) ; "
+                       "reporter = identité du LLM/agent — REQUIS pour stratifier le flywheel "
+                       "par auteur (un appel sans reporter est accepté mais signalé "
+                       "'reporter_note' et marqué dans le log). Advisory only — renvoyer l'issue "
+                       "groundée via report_outcome.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -273,7 +333,7 @@ def handle(msg: dict) -> dict | None:
         return _resp(mid, {
             "protocolVersion": "2025-06-18",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "ghost", "version": "0.3.0"},
+            "serverInfo": {"name": "ghost", "version": "0.4.0"},
         })
     if method == "notifications/initialized":
         return None
@@ -410,6 +470,7 @@ def do_near_mis_patches(args: dict) -> dict:
         rows.append({
             "task": task,
             "arm": pool[int(i)]["arm"],
+            "family": family_of(task),
             "y": pool[int(i)]["y"],
             "sim": float(sims[int(i)]),
         })
@@ -461,6 +522,18 @@ def do_risk_scan(args: dict) -> dict:
                "tau": round(tau, 4),
                "reason": "confiance sous le régime calibré (10 %, acc ≥0.95) — "
                          "le modèle sait qu'il ne sait pas"}
+    # Diagnostic de famille (additif — la décision ci-dessus ne change pas).
+    out["family"] = _family_diagnosis(q_s, pc)
+    if out.get("abstain"):
+        cov = out["family"]["family_coverage"]
+        out["abstention_diagnosis"] = (
+            f"hors régime fiable ; famille la plus proche '{out['family']['nearest_family']}' "
+            f"({cov['n']} lignes pool, {cov['positives']} positives) — la géométrie "
+            f"n'a pas assez de masse ici pour trancher à acc ≥0.95")
+    reporter = args.get("reporter") or ""
+    if not reporter:
+        out["reporter_note"] = ("reporter absent — ce résultat ne pourra pas être "
+                                "stratifié par auteur dans le flywheel (contrat multi-LLM)")
     out.update({"d_nearest_fail": round(d_fail, 4),
                 "d_nearest_pass": round(d_pass, 4),
                 "pool": POOL_JSON.name, "pool_n": pc["n"],
@@ -474,7 +547,9 @@ def do_risk_scan(args: dict) -> dict:
           "attractor_score": out["attractor_score"],
           "confidence": out["confidence"],
           "exclude_task": exc,
-          "reporter": args.get("reporter") or "",
+          "reporter": reporter,
+          "reporter_missing": not reporter,
+          "nearest_family": out["family"]["nearest_family"],
           "state_sha": sha256(args["state_text"].encode()).hexdigest(),
           "diff_sha": sha256(args["diff_text"].encode()).hexdigest(),
           "state_text": args["state_text"][:4000],
