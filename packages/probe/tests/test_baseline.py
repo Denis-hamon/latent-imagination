@@ -10,7 +10,7 @@ import importlib.util
 import pytest
 
 pytestmark = pytest.mark.skipif(
-    importlib.util.find_spec("numpy") is None,
+    importlib.util.find_spec("sklearn") is None,
     reason="requires the [ml] extra (see AR-10 isolation guard)",
 )
 
