@@ -43,10 +43,13 @@ def world(tmp_path, monkeypatch):
           "goal": "g", "diff": "already-in-pool-diff", "y": 0}]))
     monkeypatch.setattr(fw, "LOG", log)
     monkeypatch.setattr(fw, "OUT", out)
+    monkeypatch.setattr(fw, "RUNS_LOG", out / "runs.log")
+    monkeypatch.setattr(fw, "HISTORY", out / "history")
     monkeypatch.setattr(fw, "POOL_JSON", pool)
     monkeypatch.setattr(fw, "STAGE2_ROWS", out / "flywheel-rows.json")
     monkeypatch.setattr(fw, "STAGE2_REPORT", out / "promote-report.json")
     monkeypatch.setattr(fw, "V9_JSON", tmp_path / "latent-pool-v9.json")
+    monkeypatch.setattr(fw, "V9_NPZ", tmp_path / "latent-pool-v9.npz")
     monkeypatch.setattr(fw, "V9_CALIB", tmp_path / "risk-scan-v9-calibration.json")
     return {"tmp": tmp_path, "log": log, "out": out, "pool": pool}
 
@@ -146,6 +149,50 @@ class TestAssemble:
     def test_assemble_without_candidates_halts_cleanly(self, world, capsys):
         assert fw.assemble() == 0
         assert "candidates.json absent" in capsys.readouterr().out
+
+
+class TestCadenceJournalAndHistory:
+    """Story 9.2: attempt journal (R4), missing-reporter surfacing, dated
+    history snapshots — a crashed run must read as interrupted, never silent."""
+
+    def test_collect_journals_the_attempt_and_counts_missing_reporters(self, world):
+        _write_log(world["log"], [
+            _scan("c1", diff="diff-A", reporter="model-a"),
+            _scan("c2", diff="diff-B", reporter=""),          # missing reporter
+            _outcome("c1", True, reporter="model-a", grounded_by="pytest-f2p"),
+            _outcome("c2", True, reporter="", grounded_by="pytest-f2p"),
+        ])
+        rc = fw._dispatch([str(world["log"]), "--stage", "collect"])
+        assert rc == 0
+        lines = [json.loads(l) for l in (world["out"] / "runs.log").read_text().splitlines()]
+        assert len(lines) == 1 and lines[0]["stage"] == "collect" and lines[0]["exit"] == 0
+        assert lines[0]["paires_promouvables"] == 2
+        rep = json.loads((world["out"] / "collect-report.json").read_text())
+        assert rep["scans_sans_reporter"] == 1  # surfaced, never silent
+
+    def test_history_snapshot_is_dated_and_append_safe(self, world):
+        _write_log(world["log"], [
+            _scan("c1", diff="diff-A", reporter="m"),
+            _outcome("c1", True, reporter="m", grounded_by="pytest-f2p"),
+        ])
+        assert fw._dispatch([str(world["log"]), "--stage", "collect"]) == 0
+        snaps = list((world["out"] / "history").glob("collect-report-*.json"))
+        assert len(snaps) == 1  # first run -> one dated copy
+        from scripts.act2.mcp_flywheel import _history_snapshot
+        _history_snapshot("collect-report.json")  # same second -> no dup
+        assert len(list((world["out"] / "history").glob("collect-report-*.json"))) == 1
+
+    def test_assemble_journals_too(self, world):
+        _write_log(world["log"], [
+            _scan("c1", diff="diff-A", reporter="m"),
+            _outcome("c1", True, reporter="m", grounded_by="pytest-f2p"),
+        ])
+        assert fw._dispatch([str(world["log"]), "--stage", "collect"]) == 0
+        assert fw._dispatch(["--stage", "assemble"]) == 0
+        lines = [json.loads(l) for l in (world["out"] / "runs.log").read_text().splitlines()]
+        assert [l["stage"] for l in lines] == ["collect", "assemble"]
+        assert lines[1]["rows_out"] == 1
+        assert list((world["out"] / "history").glob("assemble-report-*.json"))
 
 
 class TestPromoteReport:

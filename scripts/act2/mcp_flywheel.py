@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from collections import defaultdict
 from hashlib import sha256
 from pathlib import Path
@@ -99,9 +100,13 @@ def main() -> int:
                 alerts.append(f"auteur {rep}: taux positifs {pr:.0%} vs base pool "
                               f"{pos_rate_pool:.0%} — vérif distribution avant merge "
                               f"(leçon S11)")
+    # pairs sans identité d'auteur : visibles, jamais silencieusement perdus
+    n_reporter_missing = sum(1 for s in scans.values()
+                             if s.get("reporter_missing") or not s.get("reporter"))
     report = {
         "log": str(LOG),
         "risk_scan_avec_capture": len(scans),
+        "scans_sans_reporter": n_reporter_missing,
         "outcomes": len(outcomes),
         "outcomes_non_appariés": unmatched,
         "outcomes_non_groundés_rejetés": ungrounded,
@@ -113,6 +118,7 @@ def main() -> int:
     }
     (OUT / "candidates.json").write_text(json.dumps(pairs, indent=1))
     (OUT / "collect-report.json").write_text(json.dumps(report, indent=1))
+    _history_snapshot("collect-report.json")
     print(json.dumps(report, indent=1))
     print(f"\n→ {OUT / 'candidates.json'} ({len(pairs)} paires prêtes pour "
           f"assemble (stage 2) — embed/serve restent des étapes node-serveur)")
@@ -134,7 +140,40 @@ def main() -> int:
 STAGE2_ROWS = OUT / "flywheel-rows.json"
 STAGE2_REPORT = OUT / "promote-report.json"
 V9_JSON = PILOT / "latent-pool-v9.json"
+V9_NPZ = PILOT / "latent-pool-v9.npz"
 V9_CALIB = ROOT / "governance" / "act2" / "arm-artifacts" / "risk-scan-v9-calibration.json"
+
+# Journal de tentatives (story 9.2, discipline R4) : CHAQUE invocation laisse
+# une ligne — un crash se lit comme une interruption dans l'historique,
+# jamais comme un succès continu ininterrompu.
+RUNS_LOG = OUT / "runs.log"
+HISTORY = OUT / "history"
+
+
+def _journal(stage: str, exit_code: int, counts: dict) -> None:
+    try:
+        OUT.mkdir(parents=True, exist_ok=True)
+        with RUNS_LOG.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                                 "stage": stage, "exit": exit_code, **counts},
+                                sort_keys=True) + "\n")
+    except OSError:
+        print(f"[journal] impossible d'écrire {RUNS_LOG} — trace de tentative perdue",
+              file=sys.stderr)
+
+
+def _history_snapshot(name: str) -> None:
+    """Copie datée d'audit (le fichier live reste l'état courant lisible machine)."""
+    try:
+        HISTORY.mkdir(parents=True, exist_ok=True)
+        src = OUT / name
+        if src.is_file():
+            stamp = time.strftime("%Y%m%dT%H%M%SZ")
+            dst = HISTORY / f"{name.replace('.json', '')}-{stamp}.json"
+            if not dst.exists():
+                dst.write_text(src.read_text())
+    except OSError as exc:
+        print(f"[history] snapshot ignoré ({type(exc).__name__})", file=sys.stderr)
 
 
 def assemble() -> int:
@@ -181,6 +220,7 @@ def assemble() -> int:
                "positives": sum(r["y"] for r in rows),
                "all_goal_free": all(r.get("goal_free") for r in rows)}
     (OUT / "assemble-report.json").write_text(json.dumps(summary, indent=1))
+    _history_snapshot("assemble-report.json")
     print(json.dumps(summary, indent=1))
     print(f"\n→ {STAGE2_ROWS} ({len(rows)} lignes goal-free prêtes pour embed node-serveur)")
     return 0
@@ -201,7 +241,7 @@ def promote_report() -> int:
     # thr = médiane pool du score f1=d_fail-d_pass, conf=|score-thr|). Le npz
     # v9 n'existant pas avant l'embed node-serveur, on ne peut PAS recalculer le
     # régime ici sans les embeddings -> divulgation honnête.
-    v9_npz = PILOT / "latent-pool-v9.npz"
+    v9_npz = V9_NPZ
     embed_done = v9_npz.is_file()
     rep = {
         "v8": {"rows": len(base),
@@ -227,6 +267,14 @@ def promote_report() -> int:
     return 0
 
 
+def _report_counts(name: str, keys: tuple[str, ...]) -> dict:
+    try:
+        doc = json.loads((OUT / name).read_text())
+        return {k: doc.get(k) for k in keys if k in doc}
+    except (OSError, ValueError):
+        return {}
+
+
 def _dispatch(argv: list[str]) -> int:
     import argparse
     ap = argparse.ArgumentParser(description="MCP flywheel (stage 1 collect / stage 2 assemble|promote-report)")
@@ -237,10 +285,19 @@ def _dispatch(argv: list[str]) -> int:
     if a.stage == "collect":
         if a.log:
             LOG = Path(a.log)
-        return main()
+        rc = main()
+        _journal("collect", rc, _report_counts(
+            "collect-report.json", ("risk_scan_avec_capture", "scans_sans_reporter",
+                                    "paires_promouvables", "outcomes_non_groundés_rejetés")))
+        return rc
     if a.stage == "assemble":
-        return assemble()
-    return promote_report()
+        rc = assemble()
+        _journal("assemble", rc, _report_counts(
+            "assemble-report.json", ("candidates_in", "rows_out")))
+        return rc
+    rc = promote_report()
+    _journal("promote-report", rc, {})
+    return rc
 
 
 if __name__ == "__main__":
