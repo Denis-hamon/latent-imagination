@@ -1,0 +1,25 @@
+{
+ "selection_digest": "4c06a0f84fc0c571017e38af151c74efeb608d8668a1ef241181b835f8f86c5c",
+ "q1_tasks": 60,
+ "families_targeted": 12,
+ "per_family": {
+  "PyCQA__flake8": 5,
+  "Suor__funcy": 5,
+  "ariga__atlas": 5,
+  "hjson__hjson-go": 5,
+  "jd__tenacity": 5,
+  "joke2k__faker": 5,
+  "luozhouyang__python-string-similarity": 5,
+  "madzak__python-json-logger": 5,
+  "mahmoud__boltons": 5,
+  "pudo__dataset": 5,
+  "pytest-dev__iniconfig": 5,
+  "seatgeek__thefuzz": 5
+ },
+ "raw_rows_total": 7392,
+ "usable_uncovered_rows": 1223,
+ "usable_uncovered_families": 12,
+ "candidates_dropped_no_statement": 1215,
+ "coverage_honesty": "12 nouvelles familles ciblées × 5 tâches avec le pool raw local (2 shards SWE-smith) ; 2 familles supplémentières écartées (statements absents, 1215 candidats drop disclosés). 5 lignes/famille = seuil family-LOAO atteint pour chaque nouvelle famille. Plus de familles exigeraient de télécharger d'autres shards — non fait, disclosé.",
+ "q2_status": "PENDING-HARVEST"
+}

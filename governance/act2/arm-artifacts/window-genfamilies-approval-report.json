@@ -1,0 +1,10 @@
+{
+ "ceremony": "10.x-window-approval-anchoring",
+ "window": "governance/act2/window-gen-families-v1.md",
+ "frozen_sha256": "a4732c9487a5033d734cd1f149ea5f9d0058c8eab9b4298da9d1de0ca6602495",
+ "anchored_at": "2026-08-15T20:14:18.973039Z",
+ "anchor_mode": "ots-live",
+ "proof": "data/release-store/proofs/window-a4732c9487a5033d.ots",
+ "seal_note": "content-addressed: digest covers the window bytes AT APPROVAL (status+approved_by written, Seal-record section still placeholder). The in-file Seal record is filled afterwards as a pointer; the canonical identity lives in the ledger row + this proof (rct-prereg:159 / ladder-prereg:52 'aucun hash in-file'). Verify by hashing the pre-receipt bytes or the approved-state git blob.",
+ "ledger": "data/release-store/prereg-ledger.jsonl"
+}

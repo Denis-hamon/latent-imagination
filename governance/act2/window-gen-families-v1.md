@@ -1,6 +1,8 @@
 # Window GEN-FAMILIES — targeted pool growth by family (pre-registration v1)
 
-Status: PRE-REGISTERED — values move BY AMENDMENT ONLY, before any spend.
+Status: APPROVED 2026-08-15 — owner ratified the session envelope (350-call
+cap Q1+Q2, quotas Q1 120 / Q2 20 / Q3 ≤30 optional) at session approval.
+Values still move BY AMENDMENT ONLY, before any spend.
 Seal: sha256 of this file's frozen bytes is to be recorded in the prereg
 ledger at the next ceremony window (same discipline as rct-prereg-v1 /
 ladder-prereg-v1). Execution requires explicit owner approval of a session
@@ -78,6 +80,16 @@ measurement.
 
 ## Seal record (fill at ledger-anchoring ceremony)
 
-- frozen_sha256: (recorded at anchor)
-- ledger_chain: (recorded at anchor)
-- approved_by / envelope: (owner, at session approval)
+- frozen_sha256: `a4732c9487a5033d734cd1f149ea5f9d0058c8eab9b4298da9d1de0ca6602495`
+  — canonical identity lives in the prereg ledger (`data/release-store/prereg-ledger.jsonl`,
+  row `type:"window-approved"`, anchored 2026-08-15T20:14:18Z), proof
+  `data/release-store/proofs/window-a4732c9487a5033d.ots`, report
+  `governance/act2/arm-artifacts/window-genfamilies-approval-report.json`.
+  The digest covers this file's APPROVED-state bytes (this Seal section written
+  afterwards as a pointer — no hash-in-file bootstrap, rct-prereg:159 /
+  ladder-prereg:52 convention).
+- ledger_chain: prereg ledger row `window-approved` (chain_hash = frozen_sha256)
+  + OTS live anchor; verify per governance/prereg-ceremony.md.
+- approved_by / envelope: Denis (owner), 2026-08-15 session — envelope as
+  registered above approved unchanged (350 calls Q1+Q2; Q3 ≤30 only on
+  headroom; overspend = stop-at-cap + amendment, never silent extension).
