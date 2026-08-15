@@ -7,11 +7,15 @@ contrat multi-LLM (reporter / grounded_by), capture flywheel.
 
 Démarrage serveur (sur le node) :
     .venv/bin/python ghost_http_server.py
-Env : GHOST_HOST (défaut 0.0.0.0), GHOST_PORT (défaut 8093).
+Env : GHOST_HOST (défaut 0.0.0.0), GHOST_PORT (défaut 8093),
+      GHOST_TOKEN (optionnel : s'il est posé, le serveur EXIGE un bearer
+      token valide — fail-closed : si la lib ne sait pas l'appliquer, le
+      serveur refuse de démarrer plutôt que servir « protégé » en nom seul).
 
 Côté client — l'installation tient en une ligne, comme Context7 :
     claude mcp add --transport http ghost http://<host>:8093/mcp
     # ou dans mcpServers : {"ghost": {"url": "http://<host>:8093/mcp"}}
+    # avec token : header Authorization: Bearer <GHOST_TOKEN>
 """
 from __future__ import annotations
 
@@ -50,14 +54,37 @@ Advisory only : aucun outil ne remplace l'exécution des tests."""
 
 HOST = os.environ.get("GHOST_HOST", "0.0.0.0")
 PORT = int(os.environ.get("GHOST_PORT", "8093"))
+TOKEN = os.environ.get("GHOST_TOKEN", "")
 
-mcp = MCPServer(
-    "ghost",
-    title="GHOST MCP",
-    description="Le fantôme de chaque run passé note votre brouillon de patch "
-                "(world model goal-free, abstention calibrée).",
-    instructions=INSTRUCTIONS,
-)
+
+def verify_bearer(authorization: str | None) -> bool:
+    """Délègue à la vérification pure de ghost_server (testée sans lib MCP)."""
+    return gs.verify_bearer_token(authorization, TOKEN)
+
+
+mcp_kwargs: dict = {
+    "title": "GHOST MCP",
+    "description": "Le fantôme de chaque run passé note votre brouillon de patch "
+                   "(world model goal-free, abstention calibrée).",
+    "instructions": INSTRUCTIONS,
+}
+if TOKEN:
+    # Fail-closed wiring : si la version de la lib ne supporte pas le
+    # token_verifier attendu, on refuse de démarrer plutôt que de servir
+    # non protégé en silence (doctrine : degrade-with-disclosure jamais
+    # silencieuse sur la sécurité).
+    try:
+        mcp = MCPServer("ghost", token_verifier=lambda auth: verify_bearer(auth), **mcp_kwargs)
+    except TypeError as exc:
+        raise SystemExit(
+            "GHOST_TOKEN posé mais cette version de la lib ne supporte pas "
+            f"token_verifier ({exc}) — refus de démarrer non protégé. "
+            "Mettre la lib à jour ou retirer GHOST_TOKEN (réseau interne seulement)."
+        ) from exc
+else:
+    mcp = MCPServer("ghost", **mcp_kwargs)
+    print("[ghost] AVERTISSEMENT : GHOST_TOKEN absent — serveur SANS auth, "
+          "réseau interne uniquement (README sécurité).", file=sys.stderr, flush=True)
 
 
 def _run(name: str, args: dict) -> str:

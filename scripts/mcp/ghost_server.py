@@ -567,6 +567,21 @@ def do_report_outcome(args: dict) -> str:
     return "enregistré"
 
 
+def verify_bearer_token(authorization: str | None, token: str) -> bool:
+    """Vérification bearer PURE (utilisée par le transport HTTP, story #5
+    hardening) : constant-time, vide = refus, aucun log du token."""
+    import hmac
+
+    if not token:
+        return False  # serveur « protégé » sans token configuré = jamais accepté
+    if not isinstance(authorization, str):
+        return False
+    scheme, _, value = authorization.partition(" ")
+    if scheme.strip().lower() != "bearer" or not value.strip():
+        return False
+    return hmac.compare_digest(value.strip(), token)
+
+
 def main() -> int:
     # charge le modèle AVANT la boucle (MCP démarre et fermeture rapide des
     # pipes sinon)

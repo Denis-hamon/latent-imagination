@@ -88,14 +88,27 @@ cd ~/latent-imagination/scripts/mcp && \
   nohup ../../.venv/bin/python ghost_http_server.py > /tmp/ghost-http.log 2>&1 &
 # arrêt
 pkill -f ghost_http_server.py
-# env : GHOST_HOST (défaut 0.0.0.0), GHOST_PORT (défaut 8093)
+# env : GHOST_HOST (défaut 0.0.0.0), GHOST_PORT (défaut 8093), GHOST_TOKEN (cf. Sécurité)
 ```
 
-Sécurité : pas d'auth à ce stade — réseau interne uniquement ; ajouter un
-bearer token (MCPServer `token_verifier`) avant toute exposition publique.
-Pool/calibration servis : `latent-pool-v8.json/.npz` +
-`risk-scan-v8-calibration.json` (chemins surchargeables `LI_POOL_JSON`/
-`LI_POOL_NPZ`). Version serveur : `ghost` 0.3.0.
+Sécurité (durcissement 2026-08-15) :
+- **Auth** : `GHOST_TOKEN` posé dans l'env du service → le serveur exige
+  `Authorization: Bearer <token>` (constant-time, fail-closed : si la lib ne
+  supporte pas `token_verifier`, le serveur REFUSE de démarrer plutôt que
+  servir « protégé » en nom seul). Sans token : avertissement au démarrage,
+  réseau interne uniquement.
+- **Provenance du pool servi** : `governance/act2/arm-artifacts/pool-v8-provenance.json`
+  (sha256 des fichiers servis, lignée v7→v8, mesures au gel). À ancrer dans le
+  prereg ledger à la prochaine cérémonie.
+- **Backup WORM** : les pools + calibrations sont la matière première du world
+  model ; sur le node, miroiter vers le bucket objet avec object-lock :
+  `mc mirror --overwrite ~/latent-imagination/data/landing/act2-pilot/ \
+     minio/latent-imagination-artifacts/act2-pilot/ && \
+     mc retention set --default GOVERNANCE 365d minio/latent-imagination-artifacts/act2-pilot`
+  (bucket dédié, PAS le bucket de releases ; procédure owner, fenêtre cérémonie).
+- Pool/calibration servis : `latent-pool-v8.json/.npz` +
+  `risk-scan-v8-calibration.json` (chemins surchargeables `LI_POOL_JSON`/
+  `LI_POOL_NPZ`). Version serveur : `ghost` 0.4.0.
 
 ## Honnêteté mesurée (addendum 2026-08-15)
 

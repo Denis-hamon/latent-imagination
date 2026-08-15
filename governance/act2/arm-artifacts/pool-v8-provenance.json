@@ -1,0 +1,45 @@
+{
+  "anchor_status": "NOT YET ANCHORED \u2014 seal these hashes in the prereg ledger at the next ceremony window (prereg-ceremony.md runbook)",
+  "artifact": "latent-pool-v8",
+  "contents": {
+    "campaigns": {
+      "boltzmann-e1": 14,
+      "extension-128": 90,
+      "frozen32": 23,
+      "rct-v1": 18,
+      "s12-gen": 32,
+      "s14-gen": 30
+    },
+    "families": 54,
+    "positives": 73,
+    "rows": 207,
+    "tasks": 94
+  },
+  "files": {
+    "latent-pool-v8.json": {
+      "bytes": 939608,
+      "sha256": "5d410fd8fb652f73330ab0e3cc6825bb210692e8f622bda503ce3b0f4734773b"
+    },
+    "latent-pool-v8.npz": {
+      "bytes": 1316465,
+      "sha256": "540a910caa8dcce0632b2581bf95f979ebe9b7b418a2587f18b2401abf0e7423"
+    }
+  },
+  "frozen_at": "2026-08-15",
+  "lineage": {
+    "base": "latent-pool-v7 (177 rows, sha256 recorded at v7 promotion)",
+    "commit": "18903ed (S14 session, 2026-08-15)",
+    "delta": "v8 = v7 + 30 net rows (19 S14 window + 11 S12-recovered re-extraction; 6 byte-identical dedups)"
+  },
+  "measurements_at_freeze": {
+    "auc_goal_free_global": "0.615-0.675 (rank, not verdict \u2014 honest serving)",
+    "calibration_file": "governance/act2/arm-artifacts/risk-scan-v8-calibration.json",
+    "risk_scan_regime": "LOAO acc 0.952 [0.773, 0.992] at 10% coverage (tau=0.1392, thr_pool=-0.006551)"
+  },
+  "served_by": {
+    "env_overrides": "LI_POOL_JSON / LI_POOL_NPZ",
+    "server_version_at_freeze": "ghost 0.4.0",
+    "service": "ghost-mcp (systemd, node 51.210.228.117)"
+  },
+  "supersession": "promotion to v9 follows scripts/act2/mcp_flywheel.py stage 2 (assemble \u2192 node embed \u2192 promote-report with disclosure + rollback)"
+}

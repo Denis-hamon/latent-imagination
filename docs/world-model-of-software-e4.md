@@ -125,3 +125,52 @@ Deployment artefact: `scripts/mcp/ghost_server.py (GHOST MCP)`
 (calibration `governance/act2/arm-artifacts/predictor-mcp-calibration.json`).
 
 Full audit trail (ten addenda, French): `governance/act2/pilot-phase-report.md`.
+
+---
+
+## Addendum 2026-08-15 — from E4 snapshot to served system (post-draft state)
+
+The body of this draft freezes the v6-era measurements (113–145 rows). The
+system since evolved; the current honest state, for reviewers:
+
+**Pool v8 (served).** 207 rows / 73 positives / 94 tasks / 54 repo-families
+(`data/landing/act2-pilot/latent-pool-v8.*`, provenance and sha256s sealed in
+`governance/act2/arm-artifacts/pool-v8-provenance.json`). Lineage: v6 (145) →
+v7 (+32, S12 window, 177) → v8 (+30 net: 19 S14 + 11 S12-recovered after the
+sanitize-fix re-extraction, 6 byte-identical dedups).
+
+**GHOST MCP (served product, v0.4.0).** The world model is deployed as an MCP
+service (streamable-HTTP on the GPU node + stdio fallback). Five tools:
+deterministic preflight checks, goal-free `risk_scan` (failure-attractor
+score), grounded `report_outcome`, k nearest real outcomes, and a gold-axis
+evaluator for harness use. Served honesty: global goal-free AUC 0.615–0.675
+(rank, not verdict); the reliable regime is the ~10% of queries where the
+calibrated abstention answers (LOAO acc 0.952 [0.773, 0.992], tau pinned in
+`risk-scan-v8-calibration.json`). **Abstention is the product**: outside its
+measured regime the model says so.
+
+**Family diagnostics (v0.4.0).** Pools rows carry a mechanically-derived task
+family; abstentions now name the out-of-coverage family and its pool coverage
+instead of staying silent. Diagnosis only — scoring geometry and the tau
+regime are unchanged; per-family scoring remains an unmeasured hypothesis
+(explicitly not adopted: sub-pools too small to hold the acc ≥ 0.95 regime;
+S11 showed stratification does not rescue a mixed distribution).
+
+**Flywheel stage 2.** Grounded (state, diff, outcome) pairs logged by the MCP
+contract are collected, label-gated (execution-grounded only — self-declared
+LLM opinions are rejected), deduplicated, and assembled into goal-free pool
+rows (`scripts/act2/mcp_flywheel.py --stage assemble|promote-report`).
+Embedding and the serving swap remain owner-supervised node acts with
+disclosure + rollback.
+
+**Judge-free boundary.** An LLM-judge baseline (S13) and a 0-parameter
+ensemble reached AUC 0.891 at 50% coverage on v8, transferred better on
+unseen families — and remain CANDIDATE v3 (not promoted): they were proposed
+post-observation, and the world model's product posture keeps the decision
+path non-LLM. Any ensemble adoption requires a prospective, pre-registered
+validation.
+
+**Pending (stated, not hidden):** v9 pool promotion via the flywheel; optional
+targeted growth of thin/unseen families (`governance/act2/window-gen-families-v1.md`,
+pre-registered, unspent); TSA-fallback live anchor test at the first real
+ceremony; independent replication of the v8 LOAO regime.

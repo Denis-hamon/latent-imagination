@@ -161,6 +161,25 @@ class TestRiskScanAdditiveFields:
 
 
 @NEEDS_POOL
+class TestBearerVerification:
+    """Story #5 hardening: pure token check (constant-time, fail-closed)."""
+
+    def test_valid_bearer(self):
+        assert gs.verify_bearer_token("Bearer s3cret-token", "s3cret-token") is True
+
+    def test_case_insensitive_scheme_exact_token(self):
+        assert gs.verify_bearer_token("bearer s3cret-token", "s3cret-token") is True
+        assert gs.verify_bearer_token("Bearer wrong-token", "s3cret-token") is False
+
+    def test_invalid_shapes_refused(self):
+        for bad in (None, "", "s3cret-token", "Basic abc", "Bearer ", "Bearer"):
+            assert gs.verify_bearer_token(bad, "s3cret-token") is False
+
+    def test_empty_policy_token_refuses_everything(self):
+        assert gs.verify_bearer_token("Bearer anything", "") is False
+        assert gs.verify_bearer_token(None, "") is False
+
+
 class TestNearMisFamily:
     def test_nearest_rows_carry_family(self, tmp_path, monkeypatch):
         pc = gs._load_pool()
