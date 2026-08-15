@@ -1,0 +1,41 @@
+{
+ "pool": "latent-pool-v9.json",
+ "n": 213,
+ "positifs": 78,
+ "majority": 0.6338028169014085,
+ "recipe": "score = d(nearest fail) - d(nearest pass), LOAO F1; thr = médiane pool figée; conf=|score-thr| (identique v8 — recette servie inchangée)",
+ "thr_pool": -0.006509900093078613,
+ "tau_10pct": 0.15466666221618652,
+ "predict_regime": {
+  "coverage": 0.1,
+  "n": 21,
+  "acc_measured_serving_recipe": 1.0,
+  "wilson95": [
+   0.8453561767357979,
+   0.9999999999999999
+  ],
+  "acc_measured_LOAO": 0.577,
+  "note": "pred si conf>=tau_10pct, sinon abstain"
+ },
+ "goal_free_rows": 6,
+ "gate": {
+  "positive_control_v6": {
+   "expected": [
+    0.822,
+    0.779
+   ],
+   "got": [
+    0.822,
+    0.779
+   ],
+   "ok": true
+  },
+  "regime_no_regression": {
+   "v8_acc10": 0.9523809523809523,
+   "v9_acc10": 1.0,
+   "tolerance": 0.01,
+   "ok": true
+  },
+  "promotable": true
+ }
+}

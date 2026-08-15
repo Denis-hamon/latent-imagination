@@ -6,7 +6,7 @@ GHOST est un world-model servi en MCP : il compare votre diff candidat à la
 géométrie des issues passées (attracteur d'échecs, goal-free — aucun gold
 requis) et prédit l'issue AVANT que vous n'investissiez une exécution.
 Il ne prédit que dans un régime mesuré à **acc ≥ 0.95** (10 % de couverture,
-LOAO, pool v8 n=207) ; sinon il répond `abstain` — le fantôme se tait quand
+LOAO, pool v9 n=213) ; sinon il répond `abstain` — le fantôme se tait quand
 il ne sait pas. **Advisory only** : rien ne remplace l'exécution des tests.
 
 ## Installation — client distant (recommandé, à la Context7)
@@ -54,7 +54,7 @@ claude mcp add --transport http ghost http://51.210.228.117:8093/mcp
 ```
 
 (Le venv doit contenir torch + transformers ; le modèle unixcoder-base et le
-pool v8 sont attendus aux chemins par défaut `data/landing/act2-pilot/`.)
+pool v9 sont attendus aux chemins par défaut `data/landing/act2-pilot/`.)
 
 ## Utilisation — le contrat en 4 temps
 
@@ -97,8 +97,9 @@ Sécurité (durcissement 2026-08-15) :
   supporte pas `token_verifier`, le serveur REFUSE de démarrer plutôt que
   servir « protégé » en nom seul). Sans token : avertissement au démarrage,
   réseau interne uniquement.
-- **Provenance du pool servi** : `governance/act2/arm-artifacts/pool-v8-provenance.json`
-  (sha256 des fichiers servis, lignée v7→v8, mesures au gel). À ancrer dans le
+- **Provenance du pool servi** : `governance/act2/arm-artifacts/pool-v9-provenance.json`
+  (v9 au gel du 2026-08-15 : lignée v8→v9 +6 lignes flywheel goal-free).
+  v8 reste archivé dans `pool-v8-provenance.json`. À ancrer dans le
   prereg ledger à la prochaine cérémonie.
 - **Backup WORM** : les pools + calibrations sont la matière première du world
   model ; sur le node, miroiter vers le bucket objet avec object-lock :
@@ -106,9 +107,11 @@ Sécurité (durcissement 2026-08-15) :
      minio/latent-imagination-artifacts/act2-pilot/ && \
      mc retention set --default GOVERNANCE 365d minio/latent-imagination-artifacts/act2-pilot`
   (bucket dédié, PAS le bucket de releases ; procédure owner, fenêtre cérémonie).
-- Pool/calibration servis : `latent-pool-v8.json/.npz` +
-  `risk-scan-v8-calibration.json` (chemins surchargeables `LI_POOL_JSON`/
-  `LI_POOL_NPZ`). Version serveur : `ghost` 0.4.0.
+- Pool/calibration servis : `latent-pool-v9.json/.npz` +
+  `risk-scan-v9-calibration.json`, pointés par le drop-in systemd
+  `pool-v9.conf` (`LI_POOL_JSON`/`LI_POOL_NPZ`/`LI_RISK_CALIB`).
+  Rollback = retirer le drop-in + restart (répété le 2026-08-15).
+  Version serveur : `ghost` 0.4.0.
 
 ## Honnêteté mesurée (addendum 2026-08-15)
 
@@ -137,7 +140,7 @@ d'amélioration : plus d'issues groundées = plus de couverture fiable.
 - `near_mis_patches` renvoie désormais `family` par voisin.
 - Tests hors-ligne (numpy seul, embed mocké — pas de torch) :
   `scripts/mcp/test_ghost_server_family.py` ; skippent proprement quand le
-  pool v8 est absent (CI propre).
+  pool servi (défaut v8, v9 en prod via env) est absent (CI propre).
 
 Design note (mesuré, pas spéculé) : les familles servent d'abord à EXPLIQUER
 l'abstention et à CIBLER la croissance du pool. Le routage du score par

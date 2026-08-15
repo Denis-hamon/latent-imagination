@@ -1,0 +1,57 @@
+{
+  "anchor_status": "NOT YET ANCHORED — seal with pool-v8 at story 9.3 ceremony window",
+  "artifact": "latent-pool-v9",
+  "contents": {
+    "families": 60,
+    "goal_free_rows": 6,
+    "positives": 78,
+    "rows": 213,
+    "tasks": 100
+  },
+  "disclosures": {
+    "goal_free_E_goal": "zero vector + goal_free flag — the gold axis skips these rows (a fabricated goal channel would invent evidence)",
+    "regime": "acc@10% = 1.0000 Wilson [0.8454, 1.0] on n=21 (honest: coverage stays 10%); global LOAO 0.5775 disclosed, not the served decision basis",
+    "rollback": "rehearsed 2026-08-15: drop-in removed -> v8 resurvi (pool_n 207) -> re-swapped v9 (213)"
+  },
+  "files": {
+    "latent-pool-v9.json": {
+      "bytes": 956712,
+      "sha256": "8d5c119adc5c489199b38c3b335e0f7387f53550df0fb5e559de5f3be301cbc8"
+    },
+    "latent-pool-v9.npz": {
+      "bytes": 1350696,
+      "sha256": "eafaeee76a30f98c958b5886aecaca35d01e8c2fa04612f9f99cf9bf5566d1ce"
+    }
+  },
+  "frozen_at": "2026-08-15",
+  "lineage": {
+    "base": "latent-pool-v8 (provenance: pool-v8-provenance.json)",
+    "delta": "v9 = v8 rows untouched (append-only) + 6 flywheel goal-free rows (reporters: qwen3.8-bmad-epic7 x5, http-test x1; all execution-grounded)",
+    "promotion_gate": {
+      "positive_control_v6": {
+        "expected": [
+          0.822,
+          0.779
+        ],
+        "got": [
+          0.822,
+          0.779
+        ],
+        "ok": true
+      },
+      "promotable": true,
+      "regime_no_regression": {
+        "ok": true,
+        "tolerance": 0.01,
+        "v8_acc10": 0.9523809523809523,
+        "v9_acc10": 1.0
+      }
+    }
+  },
+  "served_by": {
+    "calibration": "governance/act2/arm-artifacts/risk-scan-v9-calibration.json",
+    "env_overrides": "LI_POOL_JSON / LI_POOL_NPZ / LI_RISK_CALIB",
+    "server_version": "ghost 0.4.0",
+    "service": "ghost-mcp (systemd drop-in pool-v9.conf)"
+  }
+}
