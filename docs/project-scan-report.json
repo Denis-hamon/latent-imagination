@@ -1,0 +1,58 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2026-08-15T00:00:00Z",
+    "last_updated": "2026-08-15T00:00:00Z",
+    "completed": "2026-08-15T00:00:00Z"
+  },
+  "mode": "initial_scan",
+  "scan_level": "deep",
+  "project_root": "/Users/dhamon/Desktop/wo/latent-imagination",
+  "project_knowledge": "/Users/dhamon/Desktop/wo/latent-imagination/docs",
+  "project_classification": {
+    "repository_type": "monorepo",
+    "parts_count": 1,
+    "primary_tech": "Python 3.14 / uv workspace (20 members: 13 core stages + 7 adapters)",
+    "project_types": [
+      {
+        "part_id": "latent-imagination",
+        "project_type_id": "library+backend",
+        "display_name": "Python measurement pipeline monorepo (uv workspace)"
+      }
+    ]
+  },
+  "completed_steps": [
+    {"step": "step_0_5", "status": "completed", "summary": "documentation-requirements loaded (12 types)"},
+    {"step": "step_0_6", "status": "completed", "summary": "no existing index.md -> initial_scan, scan_level=deep (brownfield AI-context target)"},
+    {"step": "step_1", "status": "completed", "summary": "classified monorepo, 1 logical part, Python uv workspace with adapters edge tier"},
+    {"step": "step_2", "status": "completed", "summary": "9 existing docs inventoried (README, docs/ x6, governance/README, store-layout README, tests/README)"},
+    {"step": "step_3", "status": "completed", "summary": "tech stack: Python 3.14.6, uv 0.12.1, pytest 9.1.1, ruff 0.16.1, pydantic 2.13.4, duckdb, opentimestamps-client 0.7.2, torch/transformers (research-only)"},
+    {"step": "step_4", "status": "completed", "summary": "conditional analysis: data models (core_schema + store layout + ledger shapes), API seams (gate/ghost/ceremonies/CLIs); no UI components, no hardware docs"},
+    {"step": "step_5", "status": "completed", "summary": "source tree annotated: 20 workspace members, 9 script surfaces, governance envelope, data split committed/gitignored", "outputs": ["source-tree-analysis.md"]},
+    {"step": "step_6", "status": "completed", "summary": "dev setup, CI (2 jobs), releases (Zenodo/HF ceremony), guards table extracted", "outputs": ["development-guide.md"]},
+    {"step": "step_7", "status": "skipped", "summary": "single logical part; integration seams folded into architecture.md instead"},
+    {"step": "step_8", "status": "completed", "summary": "architecture documented: AD invariant table, package topology, data flow, governance model, strictness/precision regime split", "outputs": ["architecture.md"]},
+    {"step": "step_9", "status": "completed", "summary": "supporting docs: project-overview.md, data-models.md, api-contracts.md; no deployment/contribution files found (CI + conventions cover them)", "outputs": ["project-overview.md", "data-models.md", "api-contracts.md"]},
+    {"step": "step_10", "status": "completed", "summary": "master index generated with existing-doc links + external BMAD pointers", "outputs": ["index.md"]},
+    {"step": "step_11", "status": "completed", "summary": "validation: all 6 generated docs present, no _(To be generated)_ markers, links point at existing files"},
+    {"step": "step_12", "status": "completed", "summary": "workflow complete"}
+  ],
+  "current_step": "completed",
+  "findings": {
+    "batches_completed": [
+      {"path": "packages/{prereg,gate,gate-adapters,store}", "files_scanned": 24, "summary": "gate family + store contract exhaustively read during Epic 7 work; seams documented verbatim"},
+      {"path": "docs/, governance/, scripts/, tests/, .github/, data/", "files_scanned": 60, "summary": "inventory via explore pass; README, 6 docs, demos, bench, registries, CI, guards table summarized"}
+    ]
+  },
+  "outputs_generated": [
+    "project-scan-report.json",
+    "index.md",
+    "project-overview.md",
+    "architecture.md",
+    "source-tree-analysis.md",
+    "data-models.md",
+    "api-contracts.md",
+    "development-guide.md"
+  ],
+  "resume_instructions": "Workflow complete. For a rescan after significant changes, archive this file to docs/.archive/ and re-run initial_scan, or use the deep-dive workflow for a specific area."
+}
