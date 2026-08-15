@@ -35,7 +35,9 @@ def call_model(prompt: str) -> dict:
     key = os.environ.get("LI_GALERE_KEY") or os.environ.get("OPENCODE_GALERE_KEY")
     body = json.dumps({
         "model": MODEL, "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.2, "max_tokens": 6000,
+        # 2026-08-10 finding : modèles à raisonnement long → 6000 est mangé par la
+        # pensée, jamais de livrable. Env-overridable, défaut historique inchangé.
+        "temperature": 0.2, "max_tokens": int(os.environ.get("PILOT_MAX_TOKENS", "6000")),
     })
     cmd = ["curl", "-sS", "--max-time", "580", "-X", "POST", GALERE,
            "-H", "Content-Type: application/json", "-H", "User-Agent: opencode/1.0",
@@ -62,15 +64,27 @@ def call_model(prompt: str) -> dict:
 
 def sanitize_diff(diff: str) -> str:
     """Strip chatty tags (`</diff>`…) and trailing non-diff tail; keep only
-    diff-syntax lines (hunk operators, context, headers)."""
+    diff-syntax lines (hunk operators, context, headers).
+
+    AMENDEMENT 2026-08-15 : une ligne de contexte VIDE dans le diff du modèle
+    (" " → "" après rstrip) déclenchait le break et tronquait le hunk — bug
+    mesuré sur 42 no-diff S12 + 47 no-diff S14 dont la fence contenait un vrai
+    diff. Dedans d'un hunk déjà ouvert, la ligne vide est reprise comme
+    contexte vide (" "). Le prompt/panel restent inchangés : seule la fidélité
+    d'extraction est réparée (doctrine S11 : texte TEL QU'ÉCRIT)."""
     keep = []
     prefixes = ("--- ", "+++ ", "@@ ", "index ", "diff --git ", "new file", "old mode", "new mode")
+    in_hunk = False
     for ln in diff.splitlines():
         s = ln.rstrip()
         if s.startswith(("+diff>", "</diff>", "</patch>", "</change>")):
             continue
         if s.startswith(prefixes) or s.startswith(("-", "+", " ", "\\ ")):
+            if s.startswith("@@ "):
+                in_hunk = True
             keep.append(s)
+        elif s == "" and in_hunk:
+            keep.append(" ")  # ligne de contexte vide du modèle
         elif not keep:  # pre-diff chatter
             continue
         else:
