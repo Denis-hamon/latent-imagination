@@ -1,0 +1,20 @@
+{
+ "pool": "latent-pool-v8.json",
+ "n": 207,
+ "positifs": 73,
+ "majority": 0.6473429951690821,
+ "recipe": "score = d(nearest fail) - d(nearest pass), LOAO F1; thr = m\u00e9diane pool fig\u00e9e; conf=|score-thr|",
+ "thr_pool": -0.006551265716552734,
+ "tau_10pct": 0.1392466425895691,
+ "predict_regime": {
+  "coverage": 0.1,
+  "n": 21,
+  "acc_measured_serving_recipe": 0.9523809523809523,
+  "wilson95": [
+   0.7733018341376452,
+   0.9915442305280766
+  ],
+  "acc_measured_LOAO": 0.952,
+  "note": "pred si conf>=tau_10pct, sinon abstain"
+ }
+}

@@ -1,5 +1,5 @@
 """Transport MCP stdio (JSON-RPC 2025-06-18) — même protocole que le serveur
-live-testé scripts/mcp/energy_gate_server.py, outils alignés sur la v1 publique.
+live-testé scripts/mcp/ghost_server.py, outils alignés sur la v1 publique.
 
 Run : python -m latent_gate.mcp_stdio
 N'écrit jamais JSON ailleurs que sur stdout ; logs sur stderr.
