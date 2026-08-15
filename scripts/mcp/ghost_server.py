@@ -50,8 +50,12 @@ from hashlib import sha256
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-CALIBRATION_PATH = ROOT / "governance" / "act2" / "arm-artifacts" / "predictor-mcp-calibration.json"
-LOG_PATH = ROOT / "data" / "landing" / "act2-pilot" / "mcp-log.jsonl"
+CALIBRATION_PATH = Path(os.environ.get(
+    "LI_CALIBRATION",
+    ROOT / "governance" / "act2" / "arm-artifacts" / "predictor-mcp-calibration.json"))
+LOG_PATH = Path(os.environ.get(
+    "LI_LOG_PATH",
+    ROOT / "data" / "landing" / "act2-pilot" / "mcp-log.jsonl"))
 # pool servi : v8 (n=207) par défaut — surchargable par env pour tests/reculs
 POOL_JSON = Path(os.environ.get(
     "LI_POOL_JSON",
@@ -62,7 +66,11 @@ POOL_NPZ = Path(os.environ.get(
 # calibration risk_scan épinglée (mesurée LOAO, addendum 2026-08-15) :
 # le MCP ne prédit QUE si conf >= tau (régime 10 % → acc 0.952 [0.773,0.992]),
 # sinon il s'abstient. C'est l'abstention qui est le produit.
-RISK_CALIB = ROOT / "governance/act2/arm-artifacts/risk-scan-v8-calibration.json"
+# LI_RISK_CALIB : seul levier de serving-swap lors d'une promotion de pool
+# (flywheel stage 2) — la version servie reste auditable par ce chemin.
+RISK_CALIB = Path(os.environ.get(
+    "LI_RISK_CALIB",
+    ROOT / "governance/act2/arm-artifacts/risk-scan-v8-calibration.json"))
 
 # ---------------- encodage ----------------
 _model = None
