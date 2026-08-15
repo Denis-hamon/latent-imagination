@@ -16,7 +16,6 @@ from __future__ import annotations
 import json
 import math
 import statistics
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -94,7 +93,6 @@ def main() -> int:
 
     # H1/H3 LOAO : à chaque pli test-task, on fit sur les AUTRES tâches
     uniq_tasks = sorted(set(tasks))
-    tp = tn = fp = fn = 0
     for held in uniq_tasks:
         te = np.array([t == held for t in tasks])
         tr = ~te

@@ -8,10 +8,9 @@ the harness protocol (stop-at-first-valid per act1 design). Writes f2p results.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
-
-import os
 
 CAMPAIGN = os.environ.get("PILOT_CAMPAIGN_DIR", "")
 BASE = Path(f"/home/ubuntu/latent-imagination/data/landing/act2-pilot/{CAMPAIGN}")

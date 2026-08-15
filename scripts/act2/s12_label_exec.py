@@ -97,16 +97,16 @@ def run_slot(slot_dir: Path) -> dict:
                 out["py_compile_err"] = cp.stderr[-300:]
         if out["patch_applied"] and task.get("f2p"):
             r = sh(["docker", "exec", box, "bash", "-c",
-                    f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python "
-                    f"-m pytest -x -q {' '.join(map(str, task['f2p'][:4]))}"])
+                    (f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python "
+                    f"-m pytest -x -q {' '.join(map(str, task['f2p'][:4]))}")])
             out["f2p_pass"] = r.returncode == 0
             out["f2p_tail"] = (r.stdout + r.stderr)[-600:]
             p2p = task.get("p2p") or []
             if out["f2p_pass"] and p2p:
                 rp = sh(["docker", "exec", box, "bash", "-c",
-                         f"cd {repo} && "
+                         (f"cd {repo} && "
                          "/opt/miniconda3/envs/testbed/bin/python "
-                         f"-m pytest -q {' '.join(map(str, p2p[:20]))}"])
+                         f"-m pytest -q {' '.join(map(str, p2p[:20]))}")])
                 out["p2p_pass"] = rp.returncode == 0
                 out["p2p_tail"] = (rp.stdout + rp.stderr)[-400:]
     finally:

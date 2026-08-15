@@ -73,7 +73,7 @@ def main() -> int:
     order = sorted(range(n), key=lambda i: -scored[i]["conf"])
     print(f"{'couverture':>10} {'n':>4} {'acc':>7} {'IC95':>16}")
     for cov in COVERAGES:
-        m = max(1, int(round(n * cov)))
+        m = max(1, round(n * cov))
         sel = order[:m]
         k = sum(1 for i in sel
                 if (scored[i]["p"] > 0.5) == bool(scored[i]["y"]))

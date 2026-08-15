@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -25,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts" / "act2"))
-import pilot_run as pr                    # call_model, extract_*, apply_*, make_diff
+import pilot_run as pr  # call_model, extract_*, apply_*, make_diff
 import wm_context
 
 PILOT = ROOT / "data" / "landing" / "act2-pilot"
@@ -116,9 +115,8 @@ def extract_and_apply(task: dict, src: str, reply: str) -> tuple[str | None, str
     """Full-file > diff consolidé v2 > git apply local (applieur canonique)."""
     original = src
     edited = pr.extract_full_file(reply)
-    if edited and original:
-        if len(edited.splitlines()) < len(original.splitlines()) * 0.5:
-            edited = None
+    if edited and original and len(edited.splitlines()) < len(original.splitlines()) * 0.5:
+        edited = None
     if edited and original and edited.strip() != original.strip():
         return pr.make_diff(original, edited, task["target"]), "regenerated", ""
     raw = extract_diff_v2(reply)

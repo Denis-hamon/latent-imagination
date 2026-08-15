@@ -12,10 +12,11 @@ CE SCRIPT NE PROMEUT RIEN — canonique reste v6, décision owner.
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import importlib.util
 import json
-import sys
+import operator
 from pathlib import Path
 
 import numpy as np
@@ -84,7 +85,7 @@ def stage_pool() -> int:
     seen = {hashlib.sha256(r["diff"].strip().encode()).hexdigest()
             for r in (existing_pre or rows_b)}
     new, skipped = [], []
-    run_results = sorted(sum((list(d.glob("*/run-result.json"))
+    run_results = sorted(functools.reduce(operator.iadd, (list(d.glob("*/run-result.json"))
                               for d in RESULTS_SOURCES), []),
                          key=lambda p: str(p))
     for rr in run_results:
@@ -217,7 +218,7 @@ def stage_eval() -> int:
     EU8 = {k: norm(dv8[k]) for k in ("E_state", "E_diff", "E_goal")}
     cd8, cg8 = norm(EU8["E_state"] + EU8["E_diff"]), norm(EU8["E_state"] + EU8["E_goal"])
     out = {"n_v8": len(v8), "positifs_v8": int(y8.sum()),
-           "majority_v8": float(maj8), "n_tasks_v8": int(len(set(t8))),
+           "majority_v8": float(maj8), "n_tasks_v8": len(set(t8)),
            "positive_control_v6": {"expected": [0.822, 0.779],
                                    "got": [ctrl["auc"], ctrl["acc100"]],
                                    "ok": bool(ok)},
@@ -230,7 +231,7 @@ def stage_eval() -> int:
     out["variants"]["v8_gxf_strict"] = report("V8 GxF strict", pred_g, conf_g,
                                               sco_g, y8, maj8)
     order = np.argsort(-conf_g)
-    m = max(1, int(round(len(y8) * 0.25)))
+    m = max(1, round(len(y8) * 0.25))
     top = order[:m]
     out["queue_top25_gxf"] = {
         c: {"n": int((camp8[top] == c).sum()),

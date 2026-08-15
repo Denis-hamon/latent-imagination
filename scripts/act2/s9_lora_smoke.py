@@ -53,7 +53,6 @@ def uxc_baseline(rows, folds_eval):
     E_s, E_d, E_g = norm(d["E_state"]), norm(d["E_diff"]), norm(d["E_goal"])
     cd, cg = norm(E_s + E_d), norm(E_s + E_g)
     energy = 1 - (cd * cg).sum(-1)
-    y = np.array([r["y"] for r in rows])
     tasks = np.array([r["task"] for r in rows])
     pred = np.zeros(len(rows), int)
     conf = np.zeros(len(rows))
@@ -191,7 +190,7 @@ def main() -> int:
         ym, pm = y[m], pr[m]
         curve = []
         for cov in (1.0, 0.5, 0.25):
-            mm = max(1, int(round(m.sum() * cov)))
+            mm = max(1, round(m.sum() * cov))
             s2 = order[:mm]
             kk = int((pm[s2] == ym[s2]).sum())
             l2, h2 = wilson(kk, mm)

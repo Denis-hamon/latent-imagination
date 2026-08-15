@@ -15,6 +15,7 @@ from pathlib import Path
 
 WOOD = Path(__file__).resolve().parents[2]
 import os
+
 JOBS = WOOD / "data" / "landing" / "act2-pilot" / os.environ.get("PILOT_CAMPAIGN_DIR", "")
 TASKS = JOBS / "pilot-tasks.json"
 GOLD = JOBS / "control-gold"

@@ -111,7 +111,7 @@ def build_spec(pool_json: Path) -> tuple[dict, dict]:
     order = np.argsort(-conf_oof)
     maj = max(y.mean(), 1 - y.mean())
     for cov in COVERAGES:
-        m2 = max(1, int(round(n * cov)))
+        m2 = max(1, round(n * cov))
         sel = order[:m2]
         k = int((pred_oof[sel] == y[sel]).sum())
         lo, hi = wilson(k, m2)

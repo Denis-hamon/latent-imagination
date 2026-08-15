@@ -81,17 +81,16 @@ def _key() -> str:
 
 
 def log_call(idx: int, attempt: int, prompt: str, reply: dict, rc_ok: bool):
-    with _log_lock:
-        with LOG.open("a") as fh:
-            fh.write(json.dumps({
-                "ts": datetime.now(UTC).isoformat(),
-                "window": "s13-judge", "row": idx, "attempt": attempt,
-                "model": MODEL, "rc_ok": rc_ok,
-                "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
-                "reply_sha256": hashlib.sha256(
-                    reply.get("text", "").encode()).hexdigest(),
-                "usage": reply.get("usage", {}),
-            }) + "\n")
+    with _log_lock, LOG.open("a") as fh:
+        fh.write(json.dumps({
+            "ts": datetime.now(UTC).isoformat(),
+            "window": "s13-judge", "row": idx, "attempt": attempt,
+            "model": MODEL, "rc_ok": rc_ok,
+            "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
+            "reply_sha256": hashlib.sha256(
+                reply.get("text", "").encode()).hexdigest(),
+            "usage": reply.get("usage", {}),
+        }) + "\n")
 
 
 def call_model(prompt: str) -> dict:
@@ -131,7 +130,6 @@ def parse_p(text: str) -> int | None:
 def judge_row(idx: int, row: dict) -> dict | None:
     global _calls_window, _cap_hit
     slot = f"{idx:03d}__{row['task'].replace('/', '_')}"
-    rf = RAW / f"{slot}.txt"
     pf = RAW / f"{slot}.probability.json"
     if pf.is_file():
         return json.loads(pf.read_text())
@@ -211,10 +209,8 @@ def main() -> int:
     if todo:
         with ThreadPoolExecutor(max_workers=PARALLEL) as ex:
             futs = {ex.submit(judge_row, i, v7[i]): i for i in todo}
-            done = 0
-            for fut in as_completed(futs):
+            for done, fut in enumerate(as_completed(futs), start=1):
                 r = fut.result()
-                done += 1
                 if done % 10 == 0 or r is None:
                     print(f"[{done}/{len(todo)}] row {futs[fut]} "
                           f"p={r['probability'] if r else None} "

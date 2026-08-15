@@ -36,7 +36,7 @@ def mcnemar(a: list, b: list) -> dict:
     bc = sum(1 for x, y in pairs if x and not y)   # A passe, B rate
     cc = sum(1 for x, y in pairs if not x and y)   # A rate, B passe
     n = bc + cc
-    p = (2 * min(sum(math.comb(n, i) for i in range(0, min(bc, cc) + 1)),
+    p = (2 * min(sum(math.comb(n, i) for i in range(min(bc, cc) + 1)),
                  sum(math.comb(n, i) for i in range(max(bc, cc), n + 1)))
          / 2 ** n) if n else 1.0
     return {"n_paired": len(pairs), "a_only": bc, "b_only": cc, "p_exact": min(1.0, p),

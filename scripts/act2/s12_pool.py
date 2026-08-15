@@ -22,7 +22,6 @@ import argparse
 import hashlib
 import importlib.util
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -66,7 +65,7 @@ def stage_pool() -> int:
         if not mf.is_file():
             skipped.append((res.get("task") or rr.parent.name, "gen-incomplet (meta manquante)"))
             continue
-        meta = json.loads(mf.read_text())
+        _meta = json.loads(mf.read_text())  # parse preserved, value unused (frozen script)
         task = res["task"]
         if not res.get("patch_applied"):
             skipped.append((task, "non-applicable"))
@@ -167,7 +166,7 @@ def stage_eval() -> int:
     cg7 = norm(EU7["E_state"] + EU7["E_goal"])
     out = {"n_v7": len(v7), "positifs_v7": int(y7.sum()),
            "majority_v7": float(maj7),
-           "n_tasks_v7": int(len(set(t7))),
+           "n_tasks_v7": len(set(t7)),
            "positive_control_v6": {"expected": [0.822, 0.779],
                                    "got": [ctrl["auc"], ctrl["acc100"]],
                                    "ok": bool(ok)},
@@ -179,7 +178,7 @@ def stage_eval() -> int:
                                               y7, maj7)
     # queue haute-confiance : qui l'habite (v6 vs s12) ?
     order = np.argsort(-conf)
-    m = max(1, int(round(len(y7) * 0.25)))
+    m = max(1, round(len(y7) * 0.25))
     top = order[:m]
     out["queue_top25"] = {
         c: {"n": int((camp[top] == c).sum()),

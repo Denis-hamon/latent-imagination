@@ -75,15 +75,15 @@ def run_cand(entry, k):
             meta["py_compiles"] = cp.returncode == 0
         if meta["patch_applied"] and entry.get("f2p"):
             r = sh(["docker", "exec", box, "bash", "-c",
-                    f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python "
-                    f"-m pytest -x -q {' '.join(entry['f2p'][:4])}"])
+                    (f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python "
+                    f"-m pytest -x -q {' '.join(entry['f2p'][:4])}")])
             meta["f2p_pass"] = r.returncode == 0
             meta["f2p_tail"] = (r.stdout + r.stderr)[-600:]
             p2p = P2P.get(iid, [])
             if meta["f2p_pass"] and p2p:
                 rp = sh(["docker", "exec", box, "bash", "-c",
-                         f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python "
-                         f"-m pytest -q {' '.join(p2p[:20])}"])
+                         (f"cd {repo} && /opt/miniconda3/envs/testbed/bin/python "
+                         f"-m pytest -q {' '.join(p2p[:20])}")])
                 meta["p2p_pass"] = rp.returncode == 0
                 meta["p2p_tail"] = (rp.stdout + rp.stderr)[-400:]
     finally:

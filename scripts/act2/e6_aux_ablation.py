@@ -34,13 +34,13 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 
 ROOT = Path(__file__).resolve().parents[2]
 PILOT = ROOT / "data" / "landing" / "act2-pilot"
 
-import os
 import sys
+
 sys.path.insert(0, str(ROOT / "scripts" / "act2"))
 from train_energy_head import make_mutants  # même générateur que la tête 08-07d
 
@@ -195,7 +195,7 @@ def main() -> int:
         bb = int((ok_a & ~ok_b).sum())
         cc = int((~ok_a & ok_b).sum())
         n_disc = bb + cc
-        pval = (2 * min(sum(comb(n_disc, i) for i in range(0, min(bb, cc) + 1)),
+        pval = (2 * min(sum(comb(n_disc, i) for i in range(min(bb, cc) + 1)),
                         sum(comb(n_disc, i) for i in range(max(bb, cc), n_disc + 1)))
                 / 2 ** n_disc) if n_disc else 1.0
         return {f"b_{arm_a}_only": bb, f"c_{arm_b}_only": cc, "p_exact": min(1.0, pval)}

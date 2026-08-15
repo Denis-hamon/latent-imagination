@@ -150,7 +150,7 @@ def eval_gold_and_gxf(E_s, E_d, E_g, y, tasks):
         curve = []
         order = np.argsort(-cf)
         for cov in COVERAGES:
-            m = max(1, int(round(n * cov)))
+            m = max(1, round(n * cov))
             sel = order[:m]
             k = int((pr[sel] == y[sel]).sum())
             lo, hi = wilson(k, m)
@@ -229,7 +229,7 @@ def main() -> int:
 
     (PILOT / "s7-boltzmann-extension.json").write_text(
         json.dumps(res, indent=1, default=float))
-    print(f"\nartefacts : latent-pool-v6.json/.npz, s7-boltzmann-extension.json")
+    print("\nartefacts : latent-pool-v6.json/.npz, s7-boltzmann-extension.json")
     return 0
 
 

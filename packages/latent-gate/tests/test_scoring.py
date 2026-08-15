@@ -11,8 +11,6 @@ import json
 
 import numpy as np
 import pytest
-
-from latent_gate import scoring
 from latent_gate.scoring import GateModel, energy_gold, f1_attractor, norm_rows
 
 
@@ -61,10 +59,10 @@ class TestGateModel:
     def test_combine_tiers(self, tmp_path):
         m = GateModel(self._write_model(tmp_path))
         # energy très basse → p haute → conf forte → high
-        p, conf, tier = m.combine(energy=-0.9, f1=0.0)
+        p, _conf, tier = m.combine(energy=-0.9, f1=0.0)
         assert p > 0.5 and tier == "high"
         # energy ≈ 0 → p ≈ 0.5 → conf ≈ 0 < q50 → low
-        p, conf, tier = m.combine(energy=0.0, f1=0.0)
+        p, _conf, tier = m.combine(energy=0.0, f1=0.0)
         assert tier == "low"
 
     def test_hash_suit_le_contenu(self, tmp_path):

@@ -117,7 +117,7 @@ def main() -> int:
             if out is not None:
                 sys.stdout.write(json.dumps(out) + "\n")
                 sys.stdout.flush()
-        except Exception as exc:  # le serveur ne doit jamais mourir sur un appel
+        except Exception as exc:  # noqa: BLE001 — le serveur ne doit jamais mourir sur un appel (JSON-RPC -32603)
             sys.stdout.write(json.dumps(
                 _err(msg.get("id"), -32603, str(exc))) + "\n")
             sys.stdout.flush()

@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 POOL = ROOT / "data" / "landing" / "act2-pilot" / "refit-pool.json"
 sys.path.insert(0, str(ROOT / "packages" / "gate" / "src"))
-from gate._murmur3 import murmur3_32  # noqa: E402
+from gate._murmur3 import murmur3_32
 
 N_FEATURES = 2**12
 PROJ = "predictor act2-v1"

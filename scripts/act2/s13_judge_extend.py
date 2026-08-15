@@ -5,7 +5,6 @@ Réutilise la mécanique de s13_llm_judge ; n'écrit PAS l'artefact global.
 """
 import importlib.util
 import json
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -26,19 +25,21 @@ todo = [i for i in range(len(v8))
 print(f"à juger : {len(todo)}", flush=True)
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
 with ThreadPoolExecutor(max_workers=s13.PARALLEL) as ex:
     futs = {ex.submit(s13.judge_row, i, v8[i]): i for i in todo}
-    done = 0
-    for fut in as_completed(futs):
-        r = fut.result(); done += 1
+    for done, fut in enumerate(as_completed(futs), start=1):
+        r = fut.result()
         print(f"[{done}/{len(todo)}] row {futs[fut]} "
               f"p={r['probability'] if r else None} ({s13._calls_window} calls)", flush=True)
 
 # AUC juge sur les nouvelles lignes seulement
 import importlib.util as iu
+
 sp = iu.spec_from_file_location("s11", ROOT / "scripts/act2/s11_ext_pool.py")
 s11 = iu.module_from_spec(sp); sp.loader.exec_module(s11)
 import numpy as np
+
 probs, ys = [], []
 for i in todo:
     pf = s13.RAW / f"{i:03d}__{v8[i]['task'].replace('/', '_')}.probability.json"

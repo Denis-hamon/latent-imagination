@@ -78,7 +78,6 @@ def main() -> int:
     print(f"modèle chargé en {time.time()-t0:.0f}s, device_map sur "
           f"{torch.cuda.device_count()} GPU")
 
-    out = {"E_state": None, "E_diff": None, "E_goal": None}
     acc_last, acc_mean = {}, {}
     for kind, tks in texts.items():
         t0 = time.time()

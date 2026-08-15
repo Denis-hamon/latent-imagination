@@ -115,16 +115,15 @@ def load_panel():
 
 
 def log_call(slot: str, attempt: int, prompt: str, reply: dict, rc_ok: bool):
-    with _lock:
-        with LOG.open("a") as fh:
-            fh.write(json.dumps({
-                "ts": datetime.now(UTC).isoformat(),
-                "window": "s14-gen", "slot": slot, "attempt": attempt,
-                "model": MODEL, "rc_ok": rc_ok,
-                "prompt_sha256": sha256(prompt.encode()).hexdigest(),
-                "reply_sha256": sha256(reply.get("text", "").encode()).hexdigest(),
-                "usage": reply.get("usage", {}),
-            }) + "\n")
+    with _lock, LOG.open("a") as fh:
+        fh.write(json.dumps({
+            "ts": datetime.now(UTC).isoformat(),
+            "window": "s14-gen", "slot": slot, "attempt": attempt,
+            "model": MODEL, "rc_ok": rc_ok,
+            "prompt_sha256": sha256(prompt.encode()).hexdigest(),
+            "reply_sha256": sha256(reply.get("text", "").encode()).hexdigest(),
+            "usage": reply.get("usage", {}),
+        }) + "\n")
 
 
 def one_draw(task: dict, k: int) -> dict:
@@ -176,9 +175,8 @@ def one_draw(task: dict, k: int) -> dict:
             continue
         mode, diff, err = "no-diff", None, ""
         edited = pr.extract_full_file(out["text"])
-        if edited and original:
-            if len(edited.splitlines()) < len(original.splitlines()) * 0.5:
-                edited = None
+        if edited and original and len(edited.splitlines()) < len(original.splitlines()) * 0.5:
+            edited = None
         if edited and original and edited.strip() != original.strip():
             diff, mode = pr.make_diff(original, edited, task.get("target") or ""), "whole-file"
         else:
@@ -226,7 +224,6 @@ def main() -> int:
               f"({n_patch / max(1, len(metas)):.0%}) | calls {_calls} "
               f"| rien à faire (reprise) ==")
         return 0
-    orig_call = pr.call_model
 
     def call_t07(prompt):
         import subprocess

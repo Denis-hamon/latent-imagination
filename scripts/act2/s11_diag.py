@@ -95,7 +95,7 @@ try:
     rf = rankdata(-f1) / len(f1)
     out["rank_gxf_auc"] = auci((rg + rf) / 2)
     print(f"rang-moyen GOLD+F1: AUC {out['rank_gxf_auc']:.3f}", flush=True)
-except Exception as e:
+except Exception as e:  # noqa: BLE001 — diag script: degrade-with-message, never crash the session
     print("skip rank-mean:", e)
 
 # --- sous-population la plus propre : mono-fichier ET partage gold
@@ -109,5 +109,6 @@ if len(set(yy)) >= 2:
           f"AUC={out['clean_subset_auc']:.3f}", flush=True)
 
 out["strata_done"] = True
-json.dump(out, open(PILOT / "s11-diag.json", "w"), indent=1)
+with open(PILOT / "s11-diag.json", "w") as _fh:
+    json.dump(out, _fh, indent=1)
 print(f"OK {PILOT / 's11-diag.json'}", flush=True)

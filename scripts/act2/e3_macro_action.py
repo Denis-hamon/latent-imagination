@@ -34,7 +34,7 @@ import torch
 ROOT = Path(__file__).resolve().parents[2]
 PILOT = ROOT / "data" / "landing" / "act2-pilot"
 
-HUNK = re.compile(r"^@@ .*?@@", re.M)
+HUNK = re.compile(r"^@@ .*?@@", re.MULTILINE)
 
 
 def split_hunks(diff: str) -> list[str]:
@@ -42,8 +42,6 @@ def split_hunks(diff: str) -> list[str]:
     marks = [m.start() for m in HUNK.finditer(diff)]
     if not marks:
         return [diff]
-    # préambule (headers diff --git/index/---/+++) rattaché au premier hunk
-    starts = [marks[0]] if marks[0] == 0 else [marks[0]]
     hunks = []
     bounds = marks + [len(diff)]
     for i, s in enumerate(marks):
@@ -171,7 +169,7 @@ def main() -> int:
     b = int((ok_f & ~ok_m).sum())
     c = int((~ok_f & ok_m).sum())
     n_disc = b + c
-    pval = (2 * min(sum(math.comb(n_disc, i) for i in range(0, min(b, c) + 1)),
+    pval = (2 * min(sum(math.comb(n_disc, i) for i in range(min(b, c) + 1)),
                     sum(math.comb(n_disc, i) for i in range(max(b, c), n_disc + 1)))
             / 2 ** n_disc) if n_disc else 1.0
 

@@ -13,8 +13,9 @@ Sortie : data/landing/act2-pilot/latent-pool.npz (+ métadonnées JSON par écha
 from __future__ import annotations
 
 import json
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 BASE = Path("/home/ubuntu/latent-imagination/data/landing/act2-pilot")
 

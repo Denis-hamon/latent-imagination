@@ -107,12 +107,12 @@ def main() -> int:
         for held in sorted(set(tasks)):
             te = tasks == held
             tr = ~te
-            thr = np.median(orient[tr]) if k != "F1" else np.median(orient[tr])
+            thr = np.median(orient[tr])  # degenerate if-else collapsed (both branches identical)
             preds[te] = (orient[te] > thr).astype(int)
         kc = int((preds == y).sum())
         lo, hi = wilson(kc, n)
         out["loao_threshold"][k] = {"acc": kc / n, "wilson95": [lo, hi]}
-        out["scores"][k][f"preds"] = preds.tolist()
+        out["scores"][k]["preds"] = preds.tolist()
 
     # complémentarité F1 × GOLD : Spearman + AUC du rang moyen
     def rankdata(a):
@@ -140,7 +140,7 @@ def main() -> int:
         b = int((pred_g & ~pred_k).sum())
         c = int((~pred_g & pred_k).sum())
         n_disc = b + c
-        p = (2 * min(sum(comb(n_disc, i) for i in range(0, min(b, c) + 1)),
+        p = (2 * min(sum(comb(n_disc, i) for i in range(min(b, c) + 1)),
                      sum(comb(n_disc, i) for i in range(max(b, c), n_disc + 1)))
              / 2 ** n_disc) if n_disc else 1.0
         out["mcnemar_vs_gold"][k] = {"b_gold_only": b, "c_free_only": c, "p_exact": min(1.0, p)}

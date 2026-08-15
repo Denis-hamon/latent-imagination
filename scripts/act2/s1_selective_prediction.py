@@ -88,7 +88,6 @@ def main() -> int:
     out = {"n": n, "axes": {}}
     for ax, R in recs.items():
         score, conf = R[:, 0], R[:, 1]
-        thr_global = 0.0 if ax == "GOLD" else 0.0  # seuil déjà orienté par-fold: via signe
         pred = np.zeros(n, dtype=int)
         # reconstruction des prédictions par fold (seuils médiane-train déjà utilisés)
         for held in uniq:
@@ -102,7 +101,7 @@ def main() -> int:
         curve = []
         order = np.argsort(-conf)  # plus confiant d'abord
         for cov in (1.0, 0.75, 0.5, 0.25, 0.10):
-            m = max(1, int(round(n * cov)))
+            m = max(1, round(n * cov))
             sel = order[:m]
             k = int((pred[sel] == y[sel]).sum())
             lo, hi = wilson(k, m)

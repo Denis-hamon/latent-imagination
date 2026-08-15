@@ -6,12 +6,14 @@ diff) ? Si oui, tout ce qu'on mesure est du prétexte.
 """
 
 import json
+
 import numpy as np
 import torch
 from transformers import AutoModel, AutoTokenizer
 
 BASE = "data/landing/act2-pilot"
-rows = json.load(open(f"{BASE}/latent-pool.json"))
+with open(f"{BASE}/latent-pool.json") as _fh:
+    rows = json.load(_fh)
 d = np.load(f"{BASE}/latent-pool.npz")
 E_s, E_d, E_g, y = d["E_state"], d["E_diff"], d["E_goal"], np.array([r["y"] for r in rows])
 
@@ -22,6 +24,7 @@ E_s, E_d, E_g = norm(E_s), norm(E_d), norm(E_g)
 # --- Contrôle 1 : la probabilité brute sur l'ÉTAT SEUL
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import LeaveOneGroupOut, cross_val_predict
+
 groups = np.array([r["task"] for r in rows])
 logo = LeaveOneGroupOut()
 p_probe_state = cross_val_predict(LogisticRegression(max_iter=2000, class_weight="balanced"), E_s, y, groups=groups, cv=logo, method="predict_proba")[:, 1]

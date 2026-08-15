@@ -32,13 +32,15 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 
 ROOT = Path(__file__).resolve().parents[2]
 PILOT = ROOT / "data" / "landing" / "act2-pilot"
 
 sys.path.insert(0, str(ROOT / "scripts" / "act2"))
-from train_energy_head import make_mutants  # même générateur de mutants que la tête 08-07d
+from train_energy_head import (
+    make_mutants,  # même générateur de mutants que la tête 08-07d
+)
 
 
 def norm(A: np.ndarray) -> np.ndarray:
@@ -145,8 +147,8 @@ def main() -> int:
         if tr.sum() < 20:
             continue
         seed = zlib.crc32(held.encode()) % (2 ** 31)
-        for tau in V:
-            V[tau][te] = expectile_predict(X[tr], torch.tensor(y[tr]), X[te], tau, seed)
+        for tau, v_tau in V.items():
+            v_tau[te] = expectile_predict(X[tr], torch.tensor(y[tr]), X[te], tau, seed)
         print(f"fold {held[:52]:52s} ok", flush=True)
 
     out = {"n": n, "d_bisim": {}, "d_IQL": {}, "spearman": {}}

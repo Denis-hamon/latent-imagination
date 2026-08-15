@@ -155,7 +155,7 @@ def pack(score, pred, conf, y, energy=None):
     curve = []
     order = np.argsort(-conf)
     for cov in COVERAGES:
-        m = max(1, int(round(n * cov)))
+        m = max(1, round(n * cov))
         sel = order[:m]
         k = int((pred[sel] == y[sel]).sum())
         lo, hi = wilson(k, m)

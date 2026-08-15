@@ -11,10 +11,10 @@ Sortie : data/landing/act2-pilot/ladder-v1/results/{task}-m-{slug}/patch.diff + 
 from __future__ import annotations
 
 import json
+import sys
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
-import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts" / "act2"))

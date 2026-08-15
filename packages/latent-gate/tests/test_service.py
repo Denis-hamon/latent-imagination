@@ -8,14 +8,13 @@ import json
 
 import numpy as np
 import pytest
-
 from latent_gate import service
 
 
 def _fake_embed(text: str) -> np.ndarray:
     """Embedding déterministe 8-dim dérivé du hash du texte (aucun ML)."""
     import hashlib
-    h = sha256 = hashlib.sha256(text.encode()).digest()
+    h = hashlib.sha256(text.encode()).digest()
     v = np.frombuffer(h, dtype=np.uint8)[:8].astype(float)
     return (v - v.mean()) / (np.linalg.norm(v) + 1e-9)
 
@@ -41,7 +40,7 @@ def _write_pool(tmp_path):
                      "feat_mu": [0.0, 0.0], "feat_sd": [0.1, 0.1]},
              "abstention": {"q50": 0.08, "q75": 0.22, "note": "toy"}}
     mp = tmp_path / "model.json"
-    mp.write_text(json.dumps(spec := model))
+    mp.write_text(json.dumps(model))
     return tmp_path, mp
 
 

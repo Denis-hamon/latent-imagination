@@ -117,13 +117,13 @@ def build_context(task_problem: str, task_f2p: list[str], draft_diff: str,
 
     lines = [
         "CONSEQUENCE-CONTEXT (instrument, measured on 113 past patches, other tasks only):",
-        f"- draft risk: {zone} (attractor score {f1:+.3f}, >0 is good; "
-        f"calibrated F2P-fail landscape, AUC 0.709 goal-free)",
+        (f"- draft risk: {zone} (attractor score {f1:+.3f}, >0 is good; "
+        f"calibrated F2P-fail landscape, AUC 0.709 goal-free)"),
         "- nearest past patches to your draft (deduped by task, outcome 1=tests passed):",
         *[f"    sim {n['sim']:.3f} | outcome {n['y']} | {n['task']}" for n in near],
         f"- tasks with similar problem statements passed F2P at rate {prior:.2f} (5 nearest)",
-        "If zone is HIGH RISK or neighbors mostly show outcome 0: shrink the diff, "
-        "touch only the failing function, keep names/signatures intact.",
+        ("If zone is HIGH RISK or neighbors mostly show outcome 0: shrink the diff, "
+        "touch only the failing function, keep names/signatures intact."),
     ]
     return "\n".join(lines)
 

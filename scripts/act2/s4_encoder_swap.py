@@ -109,7 +109,7 @@ def evaluate(E_s, E_d, E_g, y, tasks):
     curve = []
     order = np.argsort(-conf)
     for cov in COVERAGES:
-        m = max(1, int(round(n * cov)))
+        m = max(1, round(n * cov))
         sel = order[:m]
         k = int((pred[sel] == y[sel]).sum())
         lo, hi = wilson(k, m)

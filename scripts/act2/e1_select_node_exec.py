@@ -109,7 +109,7 @@ def main() -> int:
         out.append({"task": row["task"], "image": t["image"], "target": t["target"],
                     "f2p": t["f2p"], "cands_energy": [c["energy"] for c in cands],
                     "pick_theory": best, "pick_random": rand["k"]})
-        print(f"[{i + 1}/{len(boltz)}] {row['task'][:44]:44} energies {['%.3f' % c['energy'] for c in cands]} pick=thk k={best['k']}", flush=True)
+        print(f"[{i + 1}/{len(boltz)}] {row['task'][:44]:44} energies {['{:.3f}'.format(c['energy']) for c in cands]} pick=thk k={best['k']}", flush=True)
 
     # F2P eval on the two picks
     def _eval(task_row, diff_text):

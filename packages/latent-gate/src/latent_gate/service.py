@@ -23,6 +23,7 @@ from . import encoder
 from .pool import get_pool
 from .scoring import GateModel, energy_gold, f1_attractor
 
+
 def _outcome_dir() -> Path:
     """Lecture paresseuse — les tests monkeypatchent l'env à la volée."""
     return Path(os.environ.get(

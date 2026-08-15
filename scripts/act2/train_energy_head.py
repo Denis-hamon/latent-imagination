@@ -14,14 +14,13 @@ Le code apprend sur les AUTRES tâches, évalue sur la tâche cachée : aucune f
 from __future__ import annotations
 
 import json
-import math
 import re
 from collections import Counter
 from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 
 ROOT = Path("/home/ubuntu/latent-imagination")
 
@@ -58,7 +57,6 @@ def make_mutants(patch: str, k: int = 3, seed: int = 7) -> list[str]:
                     "with","as","try","except","git","new","file","mode"}})[:40]
     outs = []
     for i in range(k):
-        rng = np.random.default_rng(seed + i)
         perm = [f"mut{i}_{t}" for t in toks]
         mapping = dict(zip(toks, perm))
         outs.append(mutate_diff(patch, mapping))
@@ -166,7 +164,6 @@ def main() -> int:
         opt = torch.optim.Adam(head.parameters(), lr=3e-3, weight_decay=1e-4)
         Xtr, ytr = X[tr].cuda(), y_bin[tr].cuda()
         atr = y_aux[tr].cuda()
-        Mtr = E_mut  # mutants de tous (unsupervised, LOAO-safe car pas de label)
         # X_mut = même canal que X mais avec diff remplacé par mutant0 (113×1536)
         X_mut = torch.cat([E_s, norm_t(E_mut[:, 0])], dim=-1)
         for ep in range(120):

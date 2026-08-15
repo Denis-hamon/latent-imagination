@@ -139,7 +139,7 @@ def main() -> int:
         # p exact binomial sur les paires discordantes
         from math import comb
         n_disc = b + c
-        pval = (2 * min(sum(comb(n_disc, i) for i in range(0, min(b, c) + 1)),
+        pval = (2 * min(sum(comb(n_disc, i) for i in range(min(b, c) + 1)),
                         sum(comb(n_disc, i) for i in range(max(b, c), n_disc + 1)))
                 / 2 ** n_disc) if n_disc else 1.0
         out["branches"][mode]["mcnemar_vs_cont"] = {"b_cont_only": b, "c_disc_only": c,

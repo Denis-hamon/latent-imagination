@@ -127,9 +127,8 @@ def one_draw(task: dict, k: int) -> dict:
             continue
         mode, diff, err = "no-diff", None, ""
         edited = pr.extract_full_file(out["text"])
-        if edited and original:
-            if len(edited.splitlines()) < len(original.splitlines()) * 0.5:
-                edited = None  # garde-fou whole-file résumé
+        if edited and original and len(edited.splitlines()) < len(original.splitlines()) * 0.5:
+            edited = None  # garde-fou whole-file résumé
         if edited and original and edited.strip() != original.strip():
             diff, mode = pr.make_diff(original, edited, task["target"]), "whole-file"
         else:
@@ -169,7 +168,6 @@ def main() -> int:
     if not todo:
         return 0
     # T=0.7 : on monkey-patche le body de call_model via wrapper
-    orig_call = pr.call_model
 
     def call_t07(prompt):
         import subprocess

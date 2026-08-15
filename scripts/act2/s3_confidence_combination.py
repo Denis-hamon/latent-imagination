@@ -177,7 +177,7 @@ def main() -> int:
         # variante conjonctive : confiant si les DEUX axes sont loin de leur seuil
         thr_g = np.median(g_tr)
         thr_f = np.median(f1_tr)
-        marg_g = np.abs((-e_te - thr_g)) / sd_g
+        marg_g = np.abs(-e_te - thr_g) / sd_g
         marg_f = np.abs(f1_te - thr_f) / sd_f
         methods["GxF+zsum+minmarg"][ti, 0] = zsum_te
         methods["GxF+zsum+minmarg"][ti, 1] = np.minimum(marg_g, marg_f)
@@ -216,7 +216,7 @@ def main() -> int:
         curve = []
         order = np.argsort(-conf)
         for cov in COVERAGES:
-            m = max(1, int(round(n * cov)))
+            m = max(1, round(n * cov))
             sel = order[:m]
             k = int((pred[sel] == y[sel]).sum())
             lo, hi = wilson(k, m)

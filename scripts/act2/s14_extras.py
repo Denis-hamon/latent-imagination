@@ -78,7 +78,7 @@ def gbdt_loto(rows: list[dict]) -> dict:
 
 
 def c1_multispace(rows, du, dq, s11) -> dict:
-    norm, loao_energy = s11.norm, s11.loao_energy
+    norm = s11.norm
     logreg_fit = _load("s10_scamper").logreg_fit
     y = np.array([int(r["y"]) for r in rows])
     tasks = np.array([r["task"] for r in rows])
@@ -97,7 +97,7 @@ def c1_multispace(rows, du, dq, s11) -> dict:
         if not y_tr.any() or y_tr.all():
             continue
 
-        def f1s(cdS):
+        def f1s(cdS, te=te, tr=tr, y_tr=y_tr):  # bind loop vars at def-time (B023)
             sims = cdS[te] @ cdS[tr].T
             f1_te = (1 - sims[:, y_tr == 0]).min(1) - (1 - sims[:, y_tr == 1]).min(1)
             f1_tr = ((1 - cdS[tr] @ cdS[tr][y_tr == 0].T).min(1)

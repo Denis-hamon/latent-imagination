@@ -56,7 +56,7 @@ import math
 import re
 from pathlib import Path
 
-_SUBMIT_DIFF_RE = re.compile(r"<diff>\r?\n(.*)</diff>", re.S)
+_SUBMIT_DIFF_RE = re.compile(r"<diff>\r?\n(.*)</diff>", re.DOTALL)
 
 
 def extract_last_diff(messages_json):
@@ -220,7 +220,7 @@ def report(name, pred, conf, sco, y, maj):
     best = 0.0
     order = np.argsort(-conf)
     for cov in COVERAGES:
-        m = max(1, int(round(n * cov)))
+        m = max(1, round(n * cov))
         sel = order[:m]
         k = int((pred[sel] == y[sel]).sum())
         lo, hi = wilson(k, m)
@@ -238,7 +238,6 @@ def report(name, pred, conf, sco, y, maj):
 # ---------------------------------------------------------------- stage join
 def stage_join() -> int:
     import pyarrow.parquet as pq
-
     from public_corpora.experiments import fetch_smith_matched
     from public_corpora.smith_tasks import fetch_smith_task_statements
 
@@ -457,7 +456,7 @@ def stage_eval() -> int:
 
     # --- stratification de la queue (produit : qui habite la haute confiance ?)
     order = np.argsort(-conf)
-    m = max(1, int(round(len(y7) * 0.25)))
+    m = max(1, round(len(y7) * 0.25))
     top = order[:m]
     k_ext = int((pred[top][camp[top] == "ext"]
                  == y7[top][camp[top] == "ext"]).sum())

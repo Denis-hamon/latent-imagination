@@ -63,16 +63,15 @@ def reextract(stage: str) -> dict:
             attempt = int(rawf.stem.split("-a")[1])
             mode = None
             edited = pr.extract_full_file(raw)
-            if edited and original:
-                if len(edited.splitlines()) < len(original.splitlines()) * 0.5:
-                    edited = None
+            if edited and original and len(edited.splitlines()) < len(original.splitlines()) * 0.5:
+                edited = None
             if edited and original and edited.strip() != original.strip():
                 got = (pr.make_diff(original, edited, task["target"]),
                        "whole-file", attempt)
                 break
             san = pr.extract_diff_sanitized(raw)
             if san and original:
-                diff, err = pr.apply_and_export_debug(
+                diff, _err = pr.apply_and_export_debug(
                     original, san + "\n", task["target"])
                 if diff:
                     got = (diff, "model-applied-reexport", attempt)

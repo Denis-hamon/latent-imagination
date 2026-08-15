@@ -21,7 +21,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 
 ROOT = Path(__file__).resolve().parents[2]
 POOL_MD = ROOT / "data/landing/act2-pilot/latent-pool.json"
@@ -59,7 +59,6 @@ class LoRALayer(nn.Module):
 
 def add_lora(model, last_n=2):
     """Injecte des LoRA sur attention (query,value) des derniers blocs."""
-    import transformers.models.roberta.modeling_roberta as rob
     for layer in model.encoder.layer[-last_n:]:
         layer.attention.self.query = LoRALayer(layer.attention.self.query)
         layer.attention.self.value = LoRALayer(layer.attention.self.value)
@@ -99,7 +98,7 @@ def batched_encode(model, tok, texts, bs=16, device=None):
 def main() -> int:
     from transformers import AutoModel, AutoTokenizer
     random.seed(6769); np.random.seed(6769); torch.manual_seed(6769)
-    dev = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu") if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+    dev = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"device: {dev}", flush=True)
 
     rows = json.loads(POOL_MD.read_text())

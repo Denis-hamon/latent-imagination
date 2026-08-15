@@ -15,7 +15,7 @@ TASKS = JOBS / "pilot-tasks.json"
 
 
 def sh(cmd: list[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=900, check=False)  # callers inspect rc
 
 
 def run_one(task: dict) -> dict:

@@ -112,7 +112,7 @@ def report(name, pred, conf, sco, y, maj):
     best = 0.0
     order = np.argsort(-conf)
     for cov in COVERAGES:
-        m = max(1, int(round(n * cov)))
+        m = max(1, round(n * cov))
         sel = order[:m]
         k = int((pred[sel] == y[sel]).sum())
         lo, hi = wilson(k, m)
@@ -172,7 +172,7 @@ def main() -> int:
             mu = S.mean(0)
             U = np.linalg.svd(S - mu, full_matrices=False)[2].T
             Vp = U[:, k_pc:]                                  # sous-espace gardé
-            def proj(A):
+            def proj(A, mu=mu, Vp=Vp):  # bind loop vars at def-time (B023)
                 return (A - mu) @ Vp
             E_s, E_d, E_g = proj(EU["E_state"]), proj(EU["E_diff"]), proj(EU["E_goal"])
             E_sn, E_dn, E_gn = norm(E_s), norm(E_d), norm(E_g)
@@ -195,7 +195,7 @@ def main() -> int:
     for held in sorted(set(tasks)):
         te, tr = tasks == held, tasks != held
         y_tr = y[tr]
-        def f1s(cdS):
+        def f1s(cdS, te=te, tr=tr, y_tr=y_tr):  # bind loop vars at def-time (B023)
             sims = cdS[te] @ cdS[tr].T
             f1_te = (1 - sims[:, y_tr == 0]).min(1) - (1 - sims[:, y_tr == 1]).min(1)
             f1_tr = ((1 - cdS[tr] @ cdS[tr][y_tr == 0].T).min(1)
