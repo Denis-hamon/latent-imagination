@@ -45,3 +45,21 @@ certificate_rehearsal.py`) runs offline only.
    direction carries the same signature discipline (§7).
 6. **Verify.** Anyone with ledger + artifacts re-derives validity offline:
    `verify_certificate_bytes` + `currently_valid` — no network, no credentials.
+
+## First-issuance ceremony (Story 7.5, FR-21)
+
+The first blocking authorization is a PUBLIC ceremony — phase 4 starts on a
+witnessed, reproducible footing. The ceremony composes the certificate into a
+release packet via the 2.6 release machinery (`release_ceremony.
+build_release_artifacts` + `anchor_chain`), the ledger carries the release
+row, and the ceremony page (rendered from `governance/certificates/templates/
+issued.md`) links the 7.1 revocation-drill artifacts.
+
+The LIVE ceremony (real OTS anchor, WORM bucket, Zenodo DOI, HF mirror, real
+verdict hash citing a crossing-bar probe verdict) is GATED by doctrine — no
+arm crossed 0.8889 (branch iii). The ceremony machinery is proven on fixtures
+(`scripts/prereg/certificate_ceremony.py`) with the same offline-simulated-
+with-disclosure pattern as 7.1's rehearsal. Field validation
+(`tests/e2e/test_certificate_ceremony_field_validation.py`) proves blocking is
+active ONLY under certificate + local-check conditions — the integration test
+tying 7.1+7.2+7.3+7.4 together.
