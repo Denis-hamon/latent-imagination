@@ -147,7 +147,7 @@ b0 (feedback neutre, contrôle « 2ᵉ chance ») vs b1 (bloc consequence-contex
 `--dry-run` vérifié : 64 slots, 0 call), `rct_analyze.py` (McNemar apparié).
 Node : `pilot_node_exec.py` accepte désormais `PILOT_ARMS=b0,b1`. Côté produit :
 4ᵉ tool MCP `risk_scan` (l'axe goal-free 0.709) live-testé dans
-`scripts/mcp/energy_gate_server.py`. Reste à la main de l'owner : signature du
+`scripts/mcp/ghost_server.py (GHOST MCP)`. Reste à la main de l'owner : signature du
 prereg + 5 commandes du runbook (dont ~64-96 calls galere).
 
 ## 6. Risques honnêtes
@@ -156,7 +156,11 @@ prereg + 5 commandes du runbook (dont ~64-96 calls galere).
    est un **rang**, pas un verdict.
 2. Le RCT peut être nul → plan de publication déjà écrit pour ce cas.
 3. Généralisation : bugs injectés, un LLM auteur, mono-hunk 95 % → extension
-   organique = corpus v1, pas promesse.
+   organique = corpus v1, pas promesse. **S11 (2026-08-14) l'a mesuré dur :
+   15 170 trajectoires externes saines (claude-3.7, labels harness officiel)
+   donnent AUC 0.576 — l'instrument est lié à la distribution d'auteur ET de
+   géométrie de diff de son pool, pas seulement à sa taille
+   (`pilot-phase-report.md`, addendum S11).**
 4. Le goal-axis suppose un but fourni ; hors harness, l'utilisateur peut fournir
    l'énoncé de tests — validité de CE proxy non mesurée (next : G2 sur le panel).
 
@@ -164,4 +168,4 @@ prereg + 5 commandes du runbook (dont ~64-96 calls galere).
 
 - Artefacts nuit : `g1-goal-free.json`, `scripts/act2/g1_goal_free_energy.py`.
 - Rapport de campagne : addendum dans `governance/act2/pilot-phase-report.md`.
-- MCP live : `scripts/mcp/energy_gate_server.py` — extension 2-axes = le chantier code qui suit le RCT.
+- MCP live : `scripts/mcp/ghost_server.py (GHOST MCP)` — extension 2-axes = le chantier code qui suit le RCT.

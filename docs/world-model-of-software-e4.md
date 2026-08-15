@@ -121,7 +121,7 @@ uv run --no-project --with torch,transformers,numpy python scripts/act2/e3_macro
 
 Corpus release v0: https://doi.org/10.5281/zenodo.21837153 —
 mirrors on HF `denishamon/latent-imagination-releases`.
-Deployment artefact: `scripts/mcp/energy_gate_server.py`
+Deployment artefact: `scripts/mcp/ghost_server.py (GHOST MCP)`
 (calibration `governance/act2/arm-artifacts/predictor-mcp-calibration.json`).
 
 Full audit trail (ten addenda, French): `governance/act2/pilot-phase-report.md`.

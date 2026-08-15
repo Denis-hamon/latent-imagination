@@ -18,7 +18,64 @@ hf_hub_calls = "owner-run, tokens hors-repo"
 rule = "si un cap est atteint au milieu d'une série, la série se PUBLIE partielle avec le pourcentage couvert dans le header — jamais d'extension silencieuse"
 
 [usage_log]
+# 2026-08-14: fenêtre S12 pool-gen PRÉ-ENREGISTRÉE AVANT DÉPENSE (accord owner
+# "fais de la génération galere"). 156 slots = 78 tâches v6 × 2 tirages T=0.7 ;
+# cap 250 calls retries instrumentés inclus ; auteur-modèle déclaré :
+# MLX-Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled-bf16 (substitut
+# in-family — Qwen3.6-35B-A3B-FP8 retiré du roster galere, mesuré le jour même) ;
+# max_tokens 16000 (ladder finding #4 : reasoning long) ; raw persistée dès le
+# 1er appel ; prompt/panel/harness identiques à la classe v6 (buggy.py verbatim,
+# diff-only, sanitize→recount→re-export). Objectif : pool 200+ patchs labelisés.
+# Labellisation docker : wmel-gpu (docker.io installé le jour même ;
+# WMEL-gpu-strong injoignable — KVM owner requis si on le veut en relève).
 # 2026-08-07: 1 appel consommé (pilote Kimi-K3, boltons c1c25da, résultat: false start, 94 s).
 galere_used_2026_08_07 = 359  # call-log.jsonl: ladder + itérations harness + fenêtre v2 (retry instrumenté). Modèle figé: Qwen/Qwen3.6-35B-A3B-FP8 — voir pilot-phase-report.md
 hf_hub_used = "1 mirror op (28 fichiers, denishamon/latent-imagination-releases)"
 galere_used_2026_08_10 = 119  # + 1 validation chain fixée (apply OK), RCT fenêtre-1 écartée (29) + debug (1) — voir rct-prereg-v1.md amendement 1
+# 2026-08-14 (suite): fenêtre S13 LLM-judge PRÉ-ENREGISTRÉE AVANT DÉPENSE
+# (accord owner "oui allons y"). Baseline demandée : Qwen3.8-2.4T-A95B-NVFP4
+# (roster vérifié en ligne) comme juge zero-shot des 177 lignes du pool v7 :
+# entrée = state + diff candidat EXACTEMENT l'information des instruments
+# (jamais le gold — la comparaison honnête est goal-free, le GxF des rapports
+# voit lui le gold, déclaré dans l'addendum) ; sortie JSON {"probability": 0-100} ;
+# température 0 ; un appel par ligne + 1 retry si parse échoue ; protocole de
+# prompt figé (sha256 loggé dans s13-judge/call-log.jsonl, raw persistée dès le
+# 1er appel) ; cap 250 calls pour cette fenêtre ; métriques = AUC / acc100 /
+# cov@≥0.95 du harness s12_pool (fonction report identique), appariées aux
+# recalculs GOLD v7 (0.824) et GxF strict v7 (0.867) sur les mêmes 177 lignes.
+# Aucune gate nouvelle déclarée : c'est une mesure de référence, pas un gate.
+# Contamination déclarée : repos swe-smith publics vus au prétraining probable
+# de Qwen3.8 (mêmes termes que la clause S8) ; labels = mutants non publiés.
+# AMENDEMENT (mesures row 0, avant tout run complet) : le thinking du 2.4T n'est
+# pas débrayable ("Disabling thinking is not supported") ; à max_tokens 4000
+# puis 16000 il sature le budget en raisonnement → content vide, parse
+# impossible (finish_reason=length, raisonnement convergent mais coupé, mesuré).
+# max_tokens fixé à 32000 (même ordre que la ladder finding #4). ~8 calls de
+# calibration protocole consommés en sus des appels du run. Protocole inchangé
+# sinon (prompt, T=0, 1 retry parse, cap 250, métriques).
+# CONSOMMÉ (addendum 2026-08-15) : S13 juge = 229 calls loggés fenêtre
+# s13-judge/call-log.jsonl (177 lignes v7 jugées avant 01:00 le 15, + 29 lignes
+# v8 jugées le matin dans le même cap — extension déclarée dans l'addendum ;
+# 1 ligne v8 sans score, row 187). W-GEN-S14 = 235 calls (120 slots, fenêtre
+# s14-gen/call-log.jsonl). W-GEN-S15 NON consommée (arrêt au retour owner).
+# Correctif hors-budget appliqué entre les deux : sanitize_diff (pilot_run.py) +
+# ré-extraction 0 call (29 slots récupérés) — voir addendum 2026-08-15.
+# 2026-08-14 (nuit): fenêtre AUTONOMIE 8h PRÉ-ENREGISTRÉE AVANT DÉPENSE (accord
+# owner "je te laisse les 8 prochaines heures en totale autonomie, itère jusqu'à
+# un score de qualité"). Objectif = gate v2 pré-déclarée (AUC > 0.864 ET
+# cov@≥0.95 > 30 %, poteaux inchangés), itérations génération→label→embed→pool
+# →éval. Moyens déclarés :
+#   - W-GEN-S14 : 60 tâches HORS v6 × 2 tirages = 120 slots (82 tâches hors v6
+#     avec buggy+gold repérées, 22 sans meta exploitable — pas de f2p/target
+#     dans les fichiers de tâches), auteur-modèle IDENTIQUE à S12
+#     (MLX-Qwen3.5-35B-A3B-…-Distilled-bf16, T=0.7, max 16000,
+#     prompt/extract/sanitize identiques classe v6, 1 retry instrumenté), cap
+#     350 calls ; images docker manquantes pullées avant label (0 call).
+#   - W-GEN-S15 (conditionnelle, si le temps reste après cycle 1) : cap 250.
+#   - Enveloppe galère totale nuit ≤ 600 calls (hors S13 juge déjà pré-enregistré).
+#   - Labellisation docker wmel-gpu (protocole S12-L inchangé), embeddings uxc
+#     node, pools v8/v9, éval LOAO-strict harness s12_pool/s11 (0 call), refit
+#     predictor GBDT v3 (0 call, stdlib). Arrêt : gate atteinte OU 8h OU enveloppe.
+#   - Zéro promotion automatique : pools vX candidats, canonique reste v6 ;
+#     rapport intermédiaire dans autonomy-8h/journal.md, addendum final au return.
+galere_used_2026_08_14 = 251  # fenêtre S12 pool-gen : stop au cap 250 (le 251e call était en vol). 144/156 slots complétés, 4 interrompus (3 sans raw — appel jamais terminé ; ea842rxy-d1 : raw persisté, extraction seule → diff unappliable → no-diff, 0 nouvel appel), 8 jamais démarrés. S12-L complet (wmel-gpu) sur les 148 slots S12-G : 83 no-diff, 39 apply OK/f2p échec, 23 f2p vert (dont 4 avec p2p), 3 gen-incomplète (meta manquante). Pool v7 = v6 + 32 construits/évalués le jour même (s12_pool.py, 0 call après la fenêtre) : GxF strict AUC 0.867/cov 30 % — barre AUC gate v2 touchée, cov pile à 30 % → candidate NON promue, canonique reste v6. Zéro promotion pool — entrée pool + gate v2 restent à la main de l'owner. Voir s12-gen/run.log, s12-gen/call-log.jsonl, s12-label.log, s12-pool-v7-eval.json, addendum 2026-08-14b.

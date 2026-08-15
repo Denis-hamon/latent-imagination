@@ -662,3 +662,241 @@ fp16) + `s8-qwen7b.json`. Script : `scripts/act2/s8_cwm_probe.py` (fp16 forcé s
 Turing). Note ops : le node WMEL-gpu-strong est resté down ~3 h (20:14→23:10) après
 arrêt manuel du vLLM OpenResearcher — repris via KVM owner ; probe tourné sur
 wmel-gpu (RTX 5000).
+
+---
+
+## Addendum 2026-08-11/14 — S11 : le « POISON » du 11 était une corruption de join ; les données externes saines sont POISON quand même (OOD mesuré, wmel-gpu)
+
+**S11 (run initial 2026-08-11, node wmel-gpu)** : extension du pool par les
+trajectoires EXTERNES HF `SWE-bench/SWE-smith-trajectories` (8 shards, 25 826 traj
+claude-3.7/3.5/gpt-4o, labels `resolved` du harness officiel). Verdict initial :
+contrôle v6 OK, **ext seul AUC 0.495 → POISON déclaré**. Ce verdict était
+**contaminé par un bug amont** :
+
+**La corruption (mesurée nommément le 14)** : la colonne `patch` de l'export HF est
+DÉSALIGNÉE de sa colonne `instance_id` (15 910 diffs sur 16 052 dans un autre repo
+que leur tâche ; ex. tâche boltons → diff dask). L'AUC 0.495 du 11 mesurait le
+désalignement, pas les patchs externes. Fichiers du run v0 renommés
+`*.v0-corrupt-patchcol.*` et conservés (Mac + node), aucun chiffre v0 publié.
+
+**Le fix (2026-08-14, 0 call)** : le diff final de l'agent est reconstruit depuis la
+colonne `messages` (trajectoire SWE-agent : dernier bloc `<diff>…</diff>` de
+l'observation de submit — texte TEL QU'ÉCRIT, règle S6). Validation : 97 % des diffs
+extraits partagent ≥1 fichier avec le gold sur sonde ; audit join final :
+**98,5 % des résolus partagent ≥1 fichier gold** (6 784/6 887) — les labels sont
+alignés. Join corrigé : **15 170 lignes** (8 396 sans diff de submit, 2 147 dédup),
+**11 094 tâches nouvelles**, positifs 45,4 %. Embed uxc-base sur node (RTX 5000).
+
+**Résultats (LOAO-strict, critères pré-enregistrés du 11 inchangés)** :
+
+| mesure | valeur | lecture |
+|---|---|---|
+| contrôle v6 GOLD | AUC 0.822 / acc 0.779 | repro exacte ✓ |
+| **ext seul GOLD** | **AUC 0.576** / acc 0.556 | **< 0.65 → POISON confirmé** |
+| diff↔gold seul (recette S10) | 0.579 | égal à l'énergie conjointe |
+| F1 attracteur goal-free (recette G1) | 0.333 | **inversé**, pas neutre |
+
+**Stratification (aucun sous-ensemble ne sauve le signal)** : partage-fichier-gold
+0.568 (n=14 602) vs non-partage 0.561 (n=568) ; diff court 0.551 vs long 0.548 ;
+claude-3.7 0.576 vs claude-3.5 0.555 ; mono-fichier quasi absent (8 lignes — ces
+trajectoires embarquent systématiquement les fichiers scratch de l'agent) ;
+rang-moyen GOLD+F1 = 0.437 (la combinaison qui gagnait +0.021 sur le pool v6
+s'inverse elle aussi sur l'externe).
+
+**Lecture doctrine** : ce n'est plus une corruption, c'est un fait de distribution —
+l'instrument v6 (patchs galere mono-hunk) est **lié à sa distribution d'auteur et de
+géométrie de diff** ; les trajectoires externes multi-fichiers habitent une région
+latente où ni l'énergie-but ni l'attracteur d'échecs ne transfèrent (l'axe F1
+s'inverse : les succès externes sont *loin* de l'amas d'échecs v6). Leçon produit
+ajoutée à la leçon S6 (08-10g) : **le modèle-auteur du pool est un facteur de
+première classe, au même titre que la fidélité textuelle** — un pool « mélangé » ne
+s'improvise pas, il se mesure d'abord.
+
+**Verdict final S11** : pool canonique **v6 inchangé (145)** ; la gate v2
+(AUC > 0.864 ET cov > 30 %) n'est approchée ni par v7 (= v6+v0-corrupt, jamais
+construit), ni par aucun sous-ensemble externe déclaré ici. Les 15 170 lignes
+restent archivées sur le node (artefact `s11-ext-pool.npz`) pour toute étude future
+sur l'OOD — pas pour le gate.
+
+**Nota protocole (GxF)** : le recalcul 2026-08-14 sur v6 a révélé que la feature F1
+côté TRAIN de `gxf_loao` incluait les voisines de même tâche (+ la diagonale) —
+fuite douce, non conforme au LOAO-strict déclaré. Version corrigée (exclusion tâche
+partout) : v6 GxF **AUC 0.858 / acc100 0.786 / cov 30 %** vs 0.828/0.710/20 %
+laxiste — le strict est meilleur. Les chiffres GxF des addenda S3/S5/S7/S10 sont
+ceux de la variante laxiste ; GOLD (contrôle de tous les runs) est inchangé.
+
+**Zéro call galere sur toute la session S11.** Artefacts Mac :
+`data/landing/act2-pilot/s11-pool-v7.json`, `s11-diag.json`, `s11-diag.v1b.log`,
+`s11-eval.v1.log`, `s11-embed.v1.log`, `*.v0-corrupt-patchcol.*`. Node :
+embeddings 15 170×3 (`s11-ext-pool.npz`). Scripts : `scripts/act2/s11_ext_pool.py` (join corrigé,
+extraction `messages`, gxf strict, AUC par rangs), `scripts/act2/s11_diag.py`.
+
+---
+
+## Addendum 2026-08-14b — S12 : la fenêtre de génération complétée, pool v7 (v6 + 32), et première AUC au-dessus de la barre gate v2
+
+**Complétion S12-G/S12-L.** La génération a été arrêtée au cap pré-enregistré
+(251 calls / cap 250, entrée budget du 14), à 144/156 slots complétés — 4 slots
+interrompus en vol (3 sans raw : l'appel n'a jamais terminé ; 1 avec raw,
+`ea842rxy-d1` : extraction seule a posteriori, diff unappliable → `no-diff`,
+0 nouvel appel), 8 jamais démarrés. La labellisation docker (wmel-gpu) a crashé
+sur les 3 orphelins sans `meta.json` ; garde ajoutée dans `s12_label_exec.py`
+(meta manquante → erreur enregistrée, plus d'arrêt du run). Bilan S12-L des
+148 slots : **83 no-diff, 7 non-compilables, 62 appliqués — 23 f2p vert, 0 p2p
+régressé**. Tally final : `s12-label.log` (`== S12-L : 145 déjà mesurés, 4 exécutés ==`).
+
+**Construction du pool (stage `pool` de `s12_pool.py`, 0 call).** Règle de
+promotion : appliqué ∧ compile ; `y=1` ssi f2p ∧ (p2p ok ou non déclaré) ;
+dédup sha256(diff) contre v6 ; state/gold repris de la ligne v6 de la même
+tâche. Sur les 62 appliqués : **23 dédupliqués — dont 16 des 23 verts sont
+byte-identiques à des diffs v6 existants** (le modèle redécouvre les mêmes
+corrections, signal de convergence, pas de nouveauté), 7 écartés car ils ne
+compilent pas, **32 promus (7 positifs, 25 négatifs applicables-mais-faux)**.
+**Pool v7 = 145 + 32 = 177 lignes, 59 positifs, 78 tâches.** (Le nom `v7` est
+réutilisé : le fichier `s11-pool-v7.json` est un verdict POISON, pas un pool.
+L'objectif pré-enregistré « 200+ patchs labelisés » n'est pas atteint — 177 ;
+la dédup contre v6 et les 12 slots jamais complétés expliquent l'écart.)
+
+**Évaluation (stage `eval`, LOAO-strict inchangé, numpy seul, 0 call ;
+embeddings uxc des 32 nouvelles lignes sur node, concat bit-identique aux 145
+v6 — contrôle positif : repro exacte 0.8215/0.7793 ✓ attendus 0.822/0.779).**
+
+| instrument | v6 (n=145) | **v7 (n=177)** | lecture |
+|---|---|---|---|
+| GOLD uxc (contrôle) | 0.822 / 0.779 / cov 20 % | 0.824 / 0.774 / **cov 25 %** | AUC plate (IC recouvrent), couverture +5 pts |
+| **GxF strict** | 0.858 / 0.786 / cov 30 % | **0.867 / 0.797 / cov 30 %** | **première AUC > 0.864 mesurée du projet** ; à cov 30 % fixe, acc 0.962 [0.872,0.990] (n=53) ; cov 10 % : 18/18 |
+
+**Queue haute-confiance (top 25 %, n=44, GxF strict)** : 35 lignes v6
+(acc 0.943) + **9 lignes s12, toutes bien classées (9/9)** — l'assort généré
+n'a pas dilué la queue, il l'a épaissie avec des lignes correctes.
+
+**Verdict gate v2 pré-déclarée (AUC > 0.864 ET cov@≥0.95 > 30 %)** : GxF strict
+v7 passe la barre AUC (0.867) mais cov = 30 % pile, pas strictement supérieure
+→ **NE PASSE PAS, tel que déclaré.** Les poteaux ne bougent pas : v7 est
+enregistré comme CANDIDAT, pool canonique reste v6 tant que l'owner n'a pas
+décidé. C'est la première fois qu'un instrument touche la barre AUC ; il manque
+de la couverture, donc du label — exactement ce que la fenêtre S12 visait.
+
+**Limites déclarées** : (i) les 32 lignes viennent de 78 tâches déjà présentes
+dans v6 — le LOAO reste propre (tâche entière hors fold) mais la nouveauté est
+« nouveaux diffs sur tâches connues », pas « nouvelles tâches » ; (ii) 16 verts
+déduplés byte-identiques = le taux de nouveauté utile de la fenêtre est plus
+bas que son taux de succès brut (23) ne le suggère ; (iii) le variant C1
+4-espaces (uxc+Qwen) et R1 temporel n'ont pas été re-mesurés sur v7 (embeddings
+Qwen non recalculés pour les 32 lignes — à faire avant toute décision de
+promotion si la combinaison multi-espaces reste l'instrument visé).
+
+**Zéro call galere sur toute la construction/évaluation v7.** Artefacts :
+`latent-pool-v7.json/.npz` (177×3×768), `s12-new-embed.npz`,
+`s12-pool-build.json`, `s12-pool-v7-eval.json`, `s12-label.log`. Scripts :
+`s12_gen.py`, `s12_label_exec.py` (garde meta), `s12_pool.py`
+(stages pool/embed/eval).
+
+---
+
+## Addendum 2026-08-15 — nuit autonome S13/S14 : le juge LLM, le bug d'extraction, le pool v8 (n=207), et l'ensemble 0-paramètre qui passe la gate v2
+
+**Nuit 2026-08-14→15, accord owner (« 8 h en totale autonomie, itérer jusqu'à un
+score de qualité »).** Pré-enregistrement : fenêtre S13 juge (cap 250) + fenêtre
+S14 gen (cap 350 puis W-S15 conditionnelle cap 250 ; enveloppe ≤ 600 hors S13).
+
+**S13 — juge Qwen3.8-2.4T-A95B-NVFP4 zero-shot (nuit, 00:08).** 177 lignes v7,
+T=0, entrée = state+diff (jamais le gold), sortie {"probability": 0-100}.
+Finding protocole d'abord : le thinking du 2.4T n'est pas débrayable sur ce
+backend (« Disabling thinking is not supported ») et saturait 4 000 puis
+16 000 tokens de raisonnement sans produire le content (mesuré row 0,
+finish_reason=length, raisonnement convergent mais coupé) → max_tokens 32 000,
+amendement loggé avant tout run complet (~8 calls de calibration).
+**Juge : AUC 0.818 | cov@≥0.95 30 % | acc@30 % 0.981 [0.901,0.997] | 18/18 @10 %**
+— jeu égal avec GOLD uxc (0.824) *sans voir le gold*, la condition de production.
+Pairing vs GxF strict : erreurs complémentaires (97 accord correct, 44 GxF seul,
+24 juge seul, 12 les deux faux). 229 calls fenêtre S13 (cap 250), 1 ligne v8
+sans score (row 187, parse ×2 échoué — non reprise, déclarée).
+
+**S14-G (nuit, 03:38) — génération sur 60 tâches HORS v6 × 2 tirages =
+120 slots, auteur identique S12, 235 calls.** Fait marquant : **112/120 no-diff**,
+contre 56 % en S12. Diagnostic au matin : les raws contiennent des diffs valides
+tronqués par **un bug de `sanitize_diff`** — une ligne de contexte vide du modèle
+(`" "` → `""` après rstrip) déclenchait le `break` en plein hunk. Victimes
+mesurées : 42 des 83 no-diff S12 + 47 des 112 no-diff S14. Bug ancien (jamais
+exposé en S12 où les petits hunks de mutants évitaient les lignes vides ;
+le panel S14 à hunks longs l'a révélé). **Correctif** (`pilot_run.py`,
+amendement documenté dans la fonction) : ligne vide dedans d'un hunk déjà
+ouvert reprise comme contexte. Prompt/panel/harness inchangés sinon.
+
+**Ré-extraction (matin, 0 call)** : `s14_reextract.py` rejoue la chaîne
+d'extraction corrigée sur les raws persistées des no-diff S12+S14 :
+**29 slots récupérés** (15 S12 + 14 S14 ; les ~106 restants deviennent
+« unappliable » explicites — le modèle n'avait pas produit de diff applicable,
+cette fois pour de vrai). Labellisation docker : S14-L 120 slots
+(21/22 appliqués, **9 verts**, 0 p2p régressé), S12-récupérés 15 slots
+(15/15 appliqués, **8 verts**).
+
+**Pool v8 = v7 + 30 lignes nettes = 207 (73 positifs, 94 tâches).**
+19 lignes S14 + 11 lignes S12-récupérées ; 6 autres S12-récupérées dédupliquées
+byte-identiques à v7. Objectif pré-enregistré « 200+ patchs labelisés » atteint.
+Embeddings uxc node (concat bit-identique, contrôle v6 0.822/0.779 repro ✓) +
+Qwen2.5-Coder-7B-last (207×3, recette S8).
+
+**Mesures v8 (LOAO-strict)** :
+
+| instrument | AUC | acc100 | cov@≥0.95 | lecture |
+|---|---|---|---|---|
+| GOLD uxc | 0.825 | 0.763 | 25 % | +0.001 vs v7, cov stable |
+| GxF strict uxc | 0.855 | 0.787 | **0 %** | recule vs v7 (0.867/30 %) |
+| C1 GxF 4 espaces (uxc+Qwen, λ=2) | 0.843 | 0.720 | 10 % | recule vs v6 (0.856) |
+| GBDT v3 features (refit) | dégénéré tout-positif | 0.377 | — | l'instrument features ne scale pas |
+
+**Lecture honnête de la régression GxF** : restreint aux 177 lignes v7, GxF
+dans la géométrie v8 monte à **AUC 0.870** (> 0.867) — les lignes nouvelles
+servent d'ancres aux anciennes. Les 30 nouvelles lignes, elles, ne font que
+**0.750** : familles de tâches/mutations inédites (lm_rewrite, combine, 16
+nouvelles tâches), la géométrie apprise n'y est pas encore fiable, et leurs
+erreurs confiantes cassent la couverture. Le signal global progresse, la queue
+sélective se dilue — le coût prévu de l'extension de domaine.
+
+**L'ensemble 0-paramètre (proposition après observation de la complémentarité
+S13 — déclaré ici, pas pré-enregistré)** : moyenne arithmétique des probabilités
+`0.5×GxF + 0.5×juge`, zéro paramètre appris (esprit « z-somme naïve » S3).
+
+| ensemble (v8, 206 lignes) | AUC | cov@≥0.95 | acc@30 % |
+|---|---|---|---|
+| GxF seul | 0.854 | 0 % | 0.935 |
+| juge seul | 0.830 | 30 % | 0.984 |
+| **moy-probas** | **0.891** | **50 %** | **1.000 [0.942,1.000]** (n=62) |
+| moy-rangs (descriptive) | 0.906 | 20 % | 0.919 |
+
+**Test d'honnêteté sur v7 (toutes lignes déjà jugées à 00:08, avant toute
+donnée S14)** : l'ensemble y passait déjà — **AUC 0.893 / cov 50 % /
+acc@30 % 1.000 [0.932,1.000]**. La passe n'est donc pas un artefact du lot
+de nuit ; mais l'instrument a été construit après avoir vu le pairing, et le
+critère « passé sur v7 » est post-hoc — le statut est **CANDIDAT v3**, pas
+promu. Pour une validation prospective : geler le combinateur (identique,
+0 paramètre) et le mesurer sur des lignes JAMAIS vues (prochaine fenêtre de
+génération W-S15, tirages d3-d4 sur les 60 tâches S14, pré-enregistrée cap
+250, non consommée).
+
+**Verdict gate v2 (pré-déclarée 2026-08-10, poteaux inchangés)** : l'ensemble
+moy-probas satisfait les deux critères sur v7 et v8 ; GOLD et GxF seuls non.
+Promotion = décision owner, sur validation prospective recommandée.
+
+**Budget consommé** : S13 juge 229 calls (+ ~8 calibration), W-GEN-S14 235
+calls. Aucune dépense hors fenêtres déclarées. W-S15 non entamée (arrêt de
+l'autonomie au retour owner ; la dépense suivante est sa décision).
+
+**Incident supervision (nuit)** : le run autonome a généré les 120 slots
+correctement mais s'est arrêté à 03:39 sans labelliser — rsync vers le node
+échoué (répertoire cible jamais créé, rsync sans `--mkpath`) et le script de
+gen est mort sur `UnboundLocalError` (variable `mode` non initialisée quand les
+2 appels d'un slot échouent — corrigé). Le superviseur et `s14_gen.py` sont
+patchés (mkdir avant rsync, retry de phase, marqueur de reprise). Rien n'a été
+perdu : les 120 slots étaient complets sur disque au matin.
+
+**Artefacts** : `latent-pool-v8.json/.npz` (207), `latent-pool-v8-qwen7b-last.npz`,
+`s14-pool-build.json`, `s14-pool-v8-eval.json`, `s14-extras.json`,
+`reextract-report.json`, `s13-judge.json` + `s13-judge/` (raws probas 206/207),
+`s14-label-c1.log`, `s12-label-reextract.log`, `autonomy-8h/journal.md`.
+Scripts : `s13_llm_judge.py`, `s13_judge_extend.py`, `s14_gen.py`,
+`s14_reextract.py`, `s14_pool.py`, `s14_qwen_embed.py`, `s14_extras.py`,
+`autonomy_8h.sh` (patché), `pilot_run.py::sanitize_diff` (correctif),
+`s12_label_exec.py` (garde meta + stage paramétrable).
