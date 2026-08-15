@@ -100,7 +100,9 @@ class TestJoinProtocol:
                                 _label("att-2", "false_start_tests_ran_no_flip")]])
         rep = build_workload_history(_log(tmp_path, [_annotated(h, 0.9)]), store)
         assert rep.n_matched == 0
-        assert rep.n_ambiguous >= 1
+        assert rep.n_ambiguous == 1  # exact count: one annotation, one
+        # ambiguity (epic-7 review patch 3 — conflicting attempts count once,
+        # not once per attempt; the loose >= 1 would let double-counting back in)
 
     def test_abstentions_counted_and_excluded(self, tmp_path):
         h = _sha(DIFF_NORMAL)

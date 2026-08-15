@@ -50,6 +50,13 @@ class TestWorkloadRowStrictness:
             with pytest.raises(ValidationError):
                 _row(bad)
 
+    def test_out_of_range_probability_rejected(self):
+        for bad in (1.5, -0.3, 2.0, -1e-9):  # [0,1] closed range, exact cases
+            with pytest.raises(ValidationError, match=r"flip_probability must be in \[0,1\]"):
+                _row(bad)
+        assert _row(0.0).flip_probability == 0.0  # boundary included
+        assert _row(1.0).flip_probability == 1.0
+
     def test_bad_sha_and_tier_and_outcome_rejected(self):
         with pytest.raises(ValidationError):
             WorkloadRow(patch_sha256="zzz", flip_probability=0.5,
