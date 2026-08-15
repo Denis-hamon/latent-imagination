@@ -16,6 +16,7 @@ REPRODUCIBLE_CLASSES = frozenset(
         "bundle",
         "arm-artifact",
         "prereg-commit",
+        "threshold-certificate",
         "release-manifest",
         "corpus-item-set",
         "corpus-release",

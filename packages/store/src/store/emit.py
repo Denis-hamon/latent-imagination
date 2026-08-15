@@ -31,7 +31,7 @@ WRITERS: dict[str, tuple[str, ...]] = {
     "traces-ingest": ("canonical-snapshot",),
     "labeling": ("labels", "quarantine"),
     "harness": ("figure", "bundle"),
-    "prereg": ("prereg-commit",),
+    "prereg": ("prereg-commit", "threshold-certificate"),
     "publication": ("release-manifest",),
     "corpus": ("corpus-item-set", "corpus-release"),
     "tools-ranking": ("ranking-report",),
@@ -45,6 +45,7 @@ _DIR_BY_TYPE = {
     "figure": "figures",
     "bundle": "bundles",
     "prereg-commit": "prereg",
+    "threshold-certificate": "prereg",
     "release-manifest": "releases",
     # corpus item-sets are reproducible and live in canonical/ so the
     # content-addressed store_version covers them (AD-13 citations hold).

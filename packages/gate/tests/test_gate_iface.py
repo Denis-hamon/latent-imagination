@@ -162,11 +162,34 @@ class TestDecisionLog:
             append_decision(blocker / "decisions.jsonl", ev)  # parent is a file
 
 
-def test_no_blocking_surface_anywhere_in_the_package():
-    """FR-19: scan ALL gate modules for a blocking surface."""
+def test_blocking_surface_is_only_certificate_authorized():
+    """EVOLVED guard (story 7.3; second supersession). Provenance chain:
+    5.1's test_no_blocking_surface_anywhere_in_the_package banned ANY blocking
+    surface (FR-21 machinery did not exist); 7.1 evolved it to allow ONLY the
+    certificate-authorization seam in gate/blocking.py; 7.3 extends that ONE
+    module with the decision path (evaluate_blocking / patch_blocked_event /
+    budget loader) — blocking becomes reachable in code but still impossible
+    without certificate + local check + budget + prediction, all proved
+    behaviorally in BOTH directions (test_blocking_authorization.py,
+    test_blocking_decision.py incl. the no-below-bar property sweep). A guard
+    proves the function, not its presence (Epic 5 review); the name scan below
+    stays as the cheap tripwire it always was. Advisory (intercept.annotate)
+    remains the package's ONLY candidate-facing behavior.
+    """
     import gate
+    from gate import blocking as seam
 
+    # the seam exposes exactly the allowlisted surface, nothing else
+    assert set(seam.__all__) == {
+        "BLOCKING_IFACE_VERSION", "DECISION_IFACE_VERSION",
+        "BlockContext", "BlockDecision", "BlockingAuthorization",
+        "FalseBlockBudget", "LocalCheckState",
+        "authorize_blocking", "evaluate_blocking",
+        "load_false_block_budget", "patch_blocked_event", "refuse_blocking"}
     for f in Path(gate.__file__).parent.glob("*.py"):
         src = f.read_text()
         for banned in ("def block", "def halt", "def deny"):
-            assert banned not in src, f"{f.name} grew a blocking surface"
+            assert banned not in src, (
+                f"{f.name} grew an unallowlisted blocking surface "
+                f"(only gate/blocking.py's authorize_blocking/refuse_blocking may exist)"
+            )

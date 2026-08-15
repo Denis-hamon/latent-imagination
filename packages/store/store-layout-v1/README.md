@@ -18,7 +18,7 @@ against it; readers need only this README + `duckdb`.
   figures/<figure_id>/<version>/{*.json,*.csv,*.png}
   figures/manifests/…
   bundles/                                    # replay bundles (harness-owned)
-  prereg/                                     # preregistration manifests
+  prereg/                                     # preregistration manifests + threshold-certificate (story 7.1, FR-21)
   releases/                                   # release manifests
 ```
 
@@ -71,7 +71,7 @@ Raw adapter deposits do NOT live here — they land in `data/landing/`
 | traces-ingest | canonical-snapshot |
 | labeling | labels, quarantine |
 | harness | figure, bundle |
-| prereg | prereg-commit |
+| prereg | prereg-commit, threshold-certificate |
 | publication | release-manifest |
 | corpus | corpus-item-set, corpus-release |
 | tools-ranking | ranking-report |

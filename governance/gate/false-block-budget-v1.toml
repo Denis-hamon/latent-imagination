@@ -1,0 +1,34 @@
+# False-block budget — pre-registration (story 7.3, FR-22 c1).
+#
+# FR-22: "the false-block budget value and its derivation inputs are
+# pre-registered before §5.6 ships." This file is the registration. It is
+# cited by sha256 (its seal) in every patch_blocked trace; the seal hash is
+# recorded in governance/gate/workload-check-protocol.md.
+#
+# Values move BY AMENDMENT ONLY (decision.toml discipline). Tagged
+# [ASSUMPTION] until the first certificate ceremony (story 7.5) ratifies them:
+# no real block can occur before then, so the budget cannot be validated by
+# observation yet — it is registered machinery, honestly labeled.
+
+[budget]
+# Max tolerable share of BLOCKED candidates whose realized outcome shows the
+# blocked patch would have been a valid flip (a "false block"). Measured by
+# story 7.4's shadow-mode twins (SM-C1). [ASSUMPTION]
+max_false_block_rate = 0.05
+
+[derivation]
+# Same measured cost basis as the Net-Positive Precision Bar
+# (governance/probe-design/decision.toml [bar], Epic-2 costs).
+cost_exec_usd = 0.0025
+cost_regen_usd = 0.0200
+# The shadow-sampling rate that OBSERVES this budget lands in story 7.4's
+# policy file (pointer, not a value dependency).
+shadow_sampling_ptr = "governance/gate/shadow-sampling-policy-v1.toml (story 7.4)"
+rationale = """
+A false block costs one regeneration (cost_regen) plus the trust erosion that
+the budget exists to cap; a missed block costs one wasted execution
+(cost_exec). At the registered bar the expected costs balance; the budget
+holds the FALSE side of that balance below 5% of blocks, observed via
+shadow-mode sampling (SM-C1) and enforceable by revocation (FR-21 c3) if a
+re-measurement of the false-block rate exceeds it.
+"""

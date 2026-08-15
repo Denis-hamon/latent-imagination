@@ -1,0 +1,20 @@
+# Workload-check policy (story 7.2, FR-21 c1) — loaded FAIL-CLOSED by
+# gate.workload_check.load_workload_policy (no defaults anywhere).
+#
+# Values move BY AMENDMENT ONLY (decision.toml discipline). Tagged
+# [ASSUMPTION] until the first certificate ceremony (story 7.5) ratifies them:
+# they govern blocking authorization, so a real deployment must pre-register
+# its own values before enabling Blocking Mode.
+
+[cadence]
+# A workload check older than this authorizes nothing; blocking lapses to
+# advisory until the deployer re-runs the check (FR-21: checks re-run on
+# schedule). [ASSUMPTION]
+max_age_days = 14
+
+[measurement]
+# Flip predicted iff flip_probability > threshold (strict). 0.5 mirrors the
+# probe training regime's sklearn LogReg predict() boundary; the local
+# workload check must state the threshold it binarized with in every report.
+# [ASSUMPTION]
+binarization_threshold = 0.5

@@ -19,3 +19,29 @@ Freeze → hash → anchor → record. Anything that governs a decisive run
 ## Verification by a third party
 
 Anyone with the ledger + the artifact can run `li-prereg.verify_offline(manifest, record)` — no network, no credentials.
+
+## Threshold certificate ceremony (Story 7.1, FR-21)
+
+Certificates are prereg artifacts (AD-9): issuance and supersession follow this
+runbook; the FIRST LIVE ceremony is Story 7.5 and requires a probe verdict that
+crossed the registered bar — machinery rehearsal (`scripts/prereg/
+certificate_rehearsal.py`) runs offline only.
+
+1. **Assemble.** `li-prereg.assemble_certificate(...)` — fail-closed: refusal
+   `LI-PRERE-002` if certified precision is at/below the registered bar
+   (no configuration permits issuing there). Citations bind the verdict
+   artifact, the sealed probe-design package, and decision.toml by sha256.
+2. **Byte-verify.** `li-prereg.verify_certificate_bytes(cert, verdict_bytes,
+   package_manifest_bytes, decision_bytes)` — equality proofs on bytes.
+3. **Store.** `store.write_artifact("prereg", "threshold-certificate", ...)`
+   — reproducible class, zone `prereg/`, inputs block cites the three content
+   hashes + code commit (AD-13).
+4. **Anchor.** Live: `scripts/prereg/ceremony.sh <certificate_hash>` (OTS);
+   fallback lane per `governance/anchor-fallback.md` (decision recorded
+   2026-08-15: OTS primary). Rehearsal: offline-simulated with disclosure.
+5. **Record.** Append `li-prereg.ledger.certificate_entry(...)` to the ledger.
+   Supersession appends a NEW row naming the revoked certificate + reason —
+   do NOT delete or edit ledger rows (AD-3, erratum-protocol.md). Negative
+   direction carries the same signature discipline (§7).
+6. **Verify.** Anyone with ledger + artifacts re-derives validity offline:
+   `verify_certificate_bytes` + `currently_valid` — no network, no credentials.

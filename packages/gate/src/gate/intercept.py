@@ -2,8 +2,9 @@
 
 One seam for every adapter: a CandidateCtx IN, an annotated StoreEvent OUT,
 every decision appended to the deployer-local log. Advisory by CONSTRUCTION:
-no public callable returns or signals "halt execution". FR-21's blocking mode
-is a different phase's package with measured-precision certificates.
+no public callable here returns or signals "halt execution". FR-21's blocking
+authorization seam lives in gate/blocking.py (story 7.1) and can only refuse
+without a currently-valid pinned certificate; annotate() stays strictly advisory.
 
 Abstention is a first-class event (`prediction_refused`) — per the OQ-10
 resolution, a gate without a denominator emits silence-on-purpose, recorded.

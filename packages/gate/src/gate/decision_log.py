@@ -15,7 +15,10 @@ from pathlib import Path
 from core_schema.errors import SchemaError
 from core_schema.events import StoreEvent
 
-_ALLOWED_KINDS = frozenset({"gate_annotated", "prediction_refused", "candidates_ranked"})
+_ALLOWED_KINDS = frozenset({"gate_annotated", "prediction_refused",
+                            "candidates_ranked", "blocking_refused",
+                            "workload_checked", "patch_blocked",
+                            "sm_c1_reported"})
 
 
 def _inside_store_root(p: Path) -> bool:

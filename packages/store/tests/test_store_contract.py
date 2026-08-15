@@ -151,8 +151,54 @@ class TestValidate:
         assert compute_store_version(root) == EMPTY_STORE_VERSION
 
 
+class TestThresholdCertificate:
+    """Story 7.1: prereg owns the threshold-certificate artifact type (AD-4)."""
+
+    def _cert_inputs(self) -> dict:
+        return {
+            "verdict_hash": "v" * 64,
+            "package_hash": "p" * 64,
+            "decision_hash": "d" * 64,
+            "code_commit": "f" * 40,
+        }
+
+    def test_prereg_writes_certificate_into_prereg_zone(self, store_root):
+        f = _mkfile(store_root.parent / "w", "certificate.json",
+                    b'{"kind": "threshold-certificate-v1"}')
+        art = write_artifact("prereg", "threshold-certificate", "cert-rehearsal-a", "v1",
+                             [f], self._cert_inputs(), store_root)
+        man = json.loads(art.manifest_path.read_text())
+        assert man["artifact_class"] == "reproducible"
+        assert man["producer"] == "prereg"
+        assert "created_at" not in man  # AD-7: content-only body
+        assert art.artifact_dir.relative_to(store_root).parts == ("prereg", "cert-rehearsal-a", "v1")
+        assert man["inputs"] == self._cert_inputs()
+        report = validate_store(store_root)
+        assert report.ok, report.errors
+
+    def test_created_at_refused_on_certificate(self, store_root):
+        f = _mkfile(store_root.parent / "w", "certificate.json", b"{}")
+        with pytest.raises(StoreWriteError, match="LI-STORE-002"):
+            write_artifact("prereg", "threshold-certificate", "cert-x", "v1",
+                           [f], self._cert_inputs(), store_root,
+                           created_at="2026-08-15T10:00:00Z")
+
+    def test_missing_inputs_refused_on_certificate(self, store_root):
+        f = _mkfile(store_root.parent / "w", "certificate.json", b"{}")
+        with pytest.raises(StoreWriteError, match="LI-STORE-003"):
+            write_artifact("prereg", "threshold-certificate", "cert-y", "v1",
+                           [f], None, store_root)
+
+    def test_only_prereg_owns_certificate_writes(self, store_root):
+        f = _mkfile(store_root.parent / "w", "certificate.json", b"{}")
+        with pytest.raises(StoreWriteError, match="LI-STORE-001"):
+            write_artifact("publication", "threshold-certificate", "cert-z", "v1",
+                           [f], self._cert_inputs(), store_root)
+
+
 class TestWritersTable:
     def test_ownership_matches_spine(self):
         assert set(WRITERS["labeling"]) == {"labels", "quarantine"}
         assert set(WRITERS["harness"]) == {"figure", "bundle"}
+        assert set(WRITERS["prereg"]) == {"prereg-commit", "threshold-certificate"}
         assert "quarantine" not in WRITERS.get("traces-ingest", ())

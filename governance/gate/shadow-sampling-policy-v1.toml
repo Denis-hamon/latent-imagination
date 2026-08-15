@@ -1,0 +1,28 @@
+# Shadow-sampling policy — pre-registration (story 7.4, FR-22 c3).
+#
+# FR-22 c3 makes shadow-mode sampling the MANDATED measurement path for the
+# false-block rate while blocking is on (SM-C1). This file pre-registers the
+# sampling share and its replay domain separator, and is the artifact the
+# story-7.3 false-block budget's `shadow_sampling_ptr` names.
+#
+# Values move BY AMENDMENT ONLY (decision.toml discipline). Tagged
+# [ASSUMPTION] until the first certificate ceremony (story 7.5) ratifies them:
+# no live block can occur before then, so the rate cannot be validated by
+# observation yet — pre-registered machinery, honestly labeled.
+
+[sampling]
+# Share of BLOCKING decisions that are ALSO executed as advisory twins (the
+# patch is run anyway under observation, its realized outcome recorded) so the
+# false-block rate is measurable while blocking engages. 0.10 = 1 in 10 blocks
+# is shadowed. [ASSUMPTION]
+shadow_rate = 0.10
+
+# Replay domain separator mixed into the sampling identity. Changing the salt
+# re-rolls which decisions are shadowed without touching the registered rate —
+# it exists so a supersession/ceremony can rotate the sample intentionally, and
+# so the scheme is explicit rather than implicit.
+salt = "shadow-v1"
+
+# SM-C1 = false_block_rate = (#shadowed blocks whose realized outcome was a
+# valid flip) / (#shadowed blocks), with a Wilson 95% interval, compared
+# against [budget] max_false_block_rate in false-block-budget-v1.toml.
