@@ -134,6 +134,11 @@ class TestFailClosedInputs:
         w = _world(tmp_path)
         assert _run(w, n_blocks=-1) == 3
 
+    def test_more_twins_than_block_decisions_refused(self, tmp_path):
+        """Corrupted/cooked input: 40 twins cannot come from 3 block decisions."""
+        w = _world(tmp_path)
+        assert _run(w, n_blocks=3) == 3
+
     def test_naive_now_rejected(self, tmp_path):
         w = _world(tmp_path)
         assert _run(w, now="2026-08-15T12:00:00") == 3

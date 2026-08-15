@@ -171,6 +171,12 @@ def compute_sm_c1(twins: Sequence[ShadowTwin], *, n_block_decisions: int) -> SMR
         raise SchemaError("LI-GATE-010", "n_block_decisions must be a non-negative integer",
                           {"got": n_block_decisions})
     n_sampled = len(twins)
+    if n_sampled > n_block_decisions:
+        # shadowed twins are BY DEFINITION a subset of block decisions; more
+        # twins than decisions = corrupted/cooked input — refuse, never normalize
+        raise SchemaError("LI-GATE-010",
+                          "more shadowed twins than block decisions — inconsistent input",
+                          {"n_sampled": n_sampled, "n_block_decisions": n_block_decisions})
     n_false = sum(1 for t in twins if t.is_false_block)
     rate = (n_false / n_sampled) if n_sampled else None
     wilson = wilson95_interval(n_false, n_sampled) if n_sampled else None

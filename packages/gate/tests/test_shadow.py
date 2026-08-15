@@ -130,6 +130,13 @@ class TestTwinsAndSM:
         with pytest.raises(SchemaError):
             compute_sm_c1([], n_block_decisions=-1)
 
+    def test_more_twins_than_decisions_refused(self):
+        twins = [make_twin(sha256(f"p{i}".encode()).hexdigest(), CERT, "valid_execution")
+                 for i in range(3)]
+        with pytest.raises(SchemaError) as ei:
+            compute_sm_c1(twins, n_block_decisions=2)
+        assert ei.value.code == "LI-GATE-010"
+
 
 class TestBudgetComparison:
     def _rep(self, rate):

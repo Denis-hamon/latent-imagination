@@ -131,11 +131,11 @@ def main(argv: list[str] | None = None) -> int:
         policy = load_shadow_policy(args.policy)
         budget = load_false_block_budget(args.budget)
         twins, stats = load_samples(args.samples)
+        report = compute_sm_c1(twins, n_block_decisions=args.n_block_decisions)
     except SchemaError as exc:
         print(json.dumps({"status": "error", "code": exc.code, "message": exc.message}))
         return 3
 
-    report = compute_sm_c1(twins, n_block_decisions=args.n_block_decisions)
     verdict = compare_against_budget(report, max_false_block_rate=budget.max_false_block_rate)
     append_decision(args.decisions, sm_c1_event(
         report=report, verdict=verdict, policy_rate=policy.shadow_rate,
