@@ -105,8 +105,9 @@ def main() -> int:
                "note": "aucune tâche CI récoltée localement ; quota Q2 (10×2) "
                        "exécuté seulement si récolte dans les droits enregistrés"},
     }, indent=1, sort_keys=True)
-    OUT.write_text(blob + "\n")
-    digest = sha256(blob.encode()).hexdigest()
+    data = blob + "\n"
+    OUT.write_text(data)
+    digest = sha256(data.encode()).hexdigest()  # seal = sha256 of the file bytes
 
     by_fam = Counter(r["family"] for r in picked)
     report = {
