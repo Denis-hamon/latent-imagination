@@ -27,6 +27,8 @@ import importlib.util
 import json
 import os
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
@@ -51,6 +53,39 @@ _spec.loader.exec_module(pr)
 
 class BudgetExhausted(Exception):
     """The hard call cap was reached — the window must stop cleanly."""
+
+
+def call_t07(prompt: str) -> dict:
+    """Wrapper auteur-modèle GELÉ (forme s12) : modèle pinned, T=0.7,
+    max_tokens 16000. pilot_run.call_model hardcode T=0.2/6000 — le window exige
+    la forme s12/s14, donc on installe ce wrapper sur pr.call_model (gen_patch
+    résout call_model à l'appel → le wrapper s'applique)."""
+    import subprocess
+
+    key = os.environ.get("LI_GALERE_KEY") or os.environ.get("OPENCODE_GALERE_KEY")
+    body = json.dumps({
+        "model": MODEL, "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+        "max_tokens": int(os.environ.get("PILOT_MAX_TOKENS", "16000")),
+    })
+    cmd = ["curl", "-sS", "--max-time", "580", "-X", "POST", pr.GALERE,
+           "-H", "Content-Type: application/json",
+           "-H", "User-Agent: opencode/1.0", "--data-binary", "@-"]
+    if key:
+        cmd += ["-H", f"Authorization: Bearer {key}"]
+    p2 = subprocess.run(cmd, input=body.encode(), capture_output=True, check=False)
+    if p2.returncode != 0:
+        raise RuntimeError(f"curl galere rc={p2.returncode}: {p2.stderr[-300:].decode()}")
+    j = json.loads(p2.stdout.decode())
+    if "choices" not in j:
+        raise RuntimeError(f"galere payload: {str(j)[:300]}")
+    mmsg = j["choices"][0]["message"]
+    return {"text": (mmsg.get("content") or "") + "\n"
+            + (mmsg.get("reasoning") or mmsg.get("reasoning_content") or ""),
+            "usage": j.get("usage", {})}
+
+
+pr.call_model = call_t07  # installation à l'import : la classe d'appel est gelée ici
 
 
 def _campaign_dir(quota: str) -> str:
@@ -98,74 +133,117 @@ def nodiff_abort_rate(done: int, nodiff: int) -> float | None:
     return nodiff / done
 
 
-def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path, log: Path):
+def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path, log: Path,
+              parallel: int | None = None):
+    """Exécution parallèle thread-safe : réservation d'appel SOUS LOCK avant
+    chaque appel (le cap n'est jamais dépassé en concurrence), reprise
+    idempotente (slot avec rec.json déjà fait = skip), arrêt no-diff/budget
+    signalé par le dict `stop` puis levé proprement après shutdown."""
+    if parallel is None:
+        parallel = int(os.environ.get("GENFAM_PARALLEL", "4"))
     window_start_calls = window_calls_used()
-    attempts_made = nodiff = done = 0
-    rows = []
+    state = {"attempts": 0, "nodiff": 0, "done": 0, "rows": []}
+    stop = {"reason": None}
+    lock = threading.Lock()
     log.parent.mkdir(parents=True, exist_ok=True)
-    for task in panel:
+    results.mkdir(parents=True, exist_ok=True)
+
+    def reserve() -> bool:
+        with lock:
+            if stop["reason"] or window_start_calls + state["attempts"] >= cap:
+                stop["reason"] = stop["reason"] or "cap"
+                return False
+            state["attempts"] += 1
+            return True
+
+    def run_slot(task: dict, k: int) -> dict | None:
         iid = task["instance_id"]
-        for k in range(1, draws + 1):
-            slot = f"{iid.replace('/', '_')}-d{k}"
-            work = results / slot
-            work.mkdir(parents=True, exist_ok=True)
-            (work / "task.json").write_text(json.dumps(
-                {kk: v for kk, v in task.items() if kk != "_buggy"},
-                indent=1, default=str))
-            original = task["_buggy"]
-            diff = None
-            feedback = ""
-            for attempt in (1, 2):
-                if attempts_made + window_start_calls >= cap:
-                    _check_budget_midway(attempts_made + window_start_calls, cap, results)
-                g = pr.gen_patch(task, feedback)
-                attempts_made += 1
-                with log.open("a") as fh:
-                    fh.write(json.dumps({
+        slot = f"{iid.replace('/', '_')}-d{k}"
+        work = results / slot
+        if (work / "rec.json").is_file():
+            return None  # reprise idempotente
+        work.mkdir(parents=True, exist_ok=True)
+        (work / "task.json").write_text(json.dumps(
+            {kk: v for kk, v in task.items() if kk != "_buggy"},
+            indent=1, default=str))
+        original = task["_buggy"]
+        diff, feedback, local_calls = None, "", 0
+        for attempt in (1, 2):
+            if not reserve():
+                break
+            g = pr.gen_patch(task, feedback)
+            with lock, log.open("a") as fh:  # append-only log, un appel = une ligne
+                fh.write(json.dumps({
                         "ts": datetime.now(UTC).isoformat(), "window": "gen-families-v1",
                         "quota": quota, "slot": slot, "attempt": attempt, "model": MODEL,
                         "campaign": task["campaign"],
                         "prompt_sha256": g["prompt_sha256"],
                         "reply_sha256": g["reply_sha256"],
                         "raw_reply": g["raw_reply"], "usage": g["usage"],
-                    }) + "\n")  # raw persisted from the FIRST call (lesson 08-10f S5)
-                edited = pr.extract_full_file(g["raw_reply"])
-                this_diff, _err, raw = None, "", None
-                if (edited and edited.strip() != original.strip()
-                        and len(edited.splitlines()) >= len(original.splitlines()) * 0.5):
-                    this_diff = pr.make_diff(original, edited, task["target"])
-                if this_diff is None:
-                    raw = pr.extract_diff_sanitized(g["raw_reply"])
-                    if raw:
-                        this_diff, _err = pr.apply_and_export_debug(original, raw + "\n", task["target"])
-                if this_diff:
-                    diff = this_diff
-                    break
-                feedback = _err if raw else \
-                    "no parseable diff found in your reply (must contain one ```diff block)"
-            status = "ok" if diff else "no-diff"
-            if not diff:
-                nodiff += 1
-            done += 1
+                        "temperature": 0.7,
+                        "calls_used_window": window_start_calls + state["attempts"],
+                    }) + "\n")
+            local_calls += 1  # raw persistée dès le PREMIER appel (leçon 08-10f S5)
+            edited = pr.extract_full_file(g["raw_reply"])
+            this_diff, _err, raw = None, "", None
+            if (edited and edited.strip() != original.strip()
+                    and len(edited.splitlines()) >= len(original.splitlines()) * 0.5):
+                this_diff = pr.make_diff(original, edited, task["target"])
+            if this_diff is None:
+                raw = pr.extract_diff_sanitized(g["raw_reply"])
+                if raw:
+                    this_diff, _err = pr.apply_and_export_debug(original, raw + "\n", task["target"])
+            if this_diff:
+                diff = this_diff
+                break
+            feedback = _err if raw else \
+                "no parseable diff found in your reply (must contain one ```diff block)"
+        if local_calls == 0:
             rec = {"task": iid, "campaign": task["campaign"], "window": "gen-families-v1",
-                   "author": MODEL, "slot": slot, "draw": k, "status": status,
-                   "diff_sha256": sha256(diff.encode()).hexdigest() if diff else None,
-                   "n_calls_used": window_start_calls + attempts_made}
-            rows.append(rec)
+                   "author": MODEL, "slot": slot, "draw": k, "status": "budget-stopped",
+                   "diff_sha256": None, "n_calls_used": window_start_calls + state["attempts"]}
             (work / "rec.json").write_text(json.dumps(rec, indent=1))
-            if diff:
-                (work / "diff.patch").write_text(diff)
-            rate = nodiff_abort_rate(done, nodiff)
-            if rate is not None and rate > NODIFF_ABORT:
-                summary = {"window": "gen-families-v1", "quota": quota, "aborted": "no-diff>60%",
-                           "no_diff_rate": round(rate, 3), "done": done,
-                           "diagnosis_needed": "sanitize/extraction regression check (règle d'abort du window)"}
-                (results / "summary.json").write_text(json.dumps(summary, indent=1))
-                raise SystemExit(f"HALT {quota}: no-diff rate {rate:.0%} > 60 % après {done} slots — diagnostic requis, fenêtre stoppée (disclosé, S14)")
-        if window_start_calls + attempts_made >= cap:
-            _check_budget_midway(window_start_calls + attempts_made, cap, results)
+            return rec  # jamais compté dans done/nodiff : aucun appel n'a eu lieu
+        status = "ok" if diff else "no-diff"
+        rec = {"task": iid, "campaign": task["campaign"], "window": "gen-families-v1",
+               "author": MODEL, "slot": slot, "draw": k, "status": status,
+               "diff_sha256": sha256(diff.encode()).hexdigest() if diff else None,
+               "n_calls_used": window_start_calls + state["attempts"]}
+        (work / "rec.json").write_text(json.dumps(rec, indent=1))
+        if diff:
+            (work / "diff.patch").write_text(diff)
+        with lock:
+            state["rows"].append(rec)
+            state["done"] += 1
+            if not diff:
+                state["nodiff"] += 1
+            rate = nodiff_abort_rate(state["done"], state["nodiff"])
+            if rate is not None and rate > NODIFF_ABORT and not stop["reason"]:
+                stop["reason"] = "no-diff"
+                stop["rate"] = rate
+        return rec
+
+    slots = [(t, k) for t in panel for k in range(1, draws + 1)]
+    with ThreadPoolExecutor(max_workers=max(1, parallel)) as ex:
+        futs = [ex.submit(run_slot, t, k) for t, k in slots]
+        for f in as_completed(futs):
+            f.result()  # propage les erreurs (jamais de perte silencieuse)
+    done, nodiff = state["done"], state["nodiff"]
+    calls = window_start_calls + state["attempts"]
+    if stop["reason"] == "cap":
+        _check_budget_midway(calls, cap, results)
+    if stop["reason"] == "no-diff":
+        (results / "summary.json").write_text(json.dumps({
+            "window": "gen-families-v1", "quota": quota, "aborted": "no-diff>60%",
+            "no_diff_rate": round(stop["rate"], 3), "done": done,
+            "diagnosis_needed": "sanitize/extraction regression check (règle d'abort du window)"}, indent=1))
+        raise SystemExit(f"HALT {quota}: no-diff rate {stop['rate']:.0%} > 60 % après {done} slots — diagnostic requis, fenêtre stoppée (disclosé, S14)")
+    (results / "rows.jsonl").write_text("".join(json.dumps(r) + "\n" for r in state["rows"]))
+    (results / "summary.json").write_text(json.dumps({
+        "quota": quota, "slots_done": done, "no_diff": nodiff, "calls_used": calls,
+        "cap": cap, "window": "gen-families-v1"}, indent=1))
     return {"quota": quota, "slots_done": done, "no_diff": nodiff,
-            "calls_used": window_start_calls + attempts_made, "cap": cap, "rows": rows}
+            "calls_used": calls, "cap": cap, "rows": state["rows"]}
 
 
 def _check_budget_midway(calls: int, cap: int, results: Path):
@@ -197,9 +275,6 @@ def main() -> int:
     results = JOBS / f"genfam-{key}" / "gen-results"
     log = JOBS / f"genfam-{key}" / "call-log.jsonl"
     out = gen_panel(key, panel, args.draws, args.cap, results, log)
-    (results / "summary.json").write_text(json.dumps(
-        {kk: v for kk, v in out.items() if kk != "rows"}, indent=1))
-    (results / "rows.jsonl").write_text("".join(json.dumps(r) + "\n" for r in out["rows"]))
     print(f"{key}: {out['slots_done']} slots, {out['no_diff']} no-diff, "
           f"{out['calls_used']}/{out['cap']} appels")
     return 0

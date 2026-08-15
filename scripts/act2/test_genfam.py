@@ -72,6 +72,10 @@ def test_stop_at_cap_halts_cleanly_and_discloses(tmp_path, monkeypatch):
     summary = json.loads((results / "summary.json").read_text())
     assert summary["aborted"] == "cap-reached" and summary["calls_used"] == 3
     assert log.read_text().count("\n") == 3  # exactly 3 calls logged, 351st never started
+    # slots interrompus par le budget: rec.json = budget-stopped, JAMAIS comptés no-diff
+    recs = [json.loads(f.read_text()) for f in results.glob("*/rec.json")]
+    stopped = [r for r in recs if r["status"] == "budget-stopped"]
+    assert len(stopped) == 3 and all(r["status"] == "ok" for r in recs if r not in stopped)
 
 
 def test_nodiff_abort_halts_with_disclosure(tmp_path, monkeypatch):
