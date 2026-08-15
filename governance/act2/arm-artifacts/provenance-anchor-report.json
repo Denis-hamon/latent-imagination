@@ -1,0 +1,28 @@
+{
+ "ceremony": "9.3-pool-provenance-anchoring",
+ "generated_at": "2026-08-15T19:32:24.082161Z",
+ "anchored": [
+  {
+   "provenance": "pool-v8-provenance.json",
+   "sha256": "7a61dac7f060a3b25786d2c88ee844e8c079dad2139e39c9f55423f81f4d3d45",
+   "anchor_mode": "ots-live",
+   "proof": "data/release-store/proofs/prov-7a61dac7f060a3b2.ots",
+   "offline_verification": "OK (digest lié, attestation présente)",
+   "anchored_at": "2026-08-15T19:32:22.026627Z"
+  },
+  {
+   "provenance": "pool-v9-provenance.json",
+   "sha256": "98d19eca99aa72b9cd03f432d4e6880f93b497b79d4b308a2ce03039be32053e",
+   "anchor_mode": "ots-live",
+   "proof": "data/release-store/proofs/prov-98d19eca99aa72b9.ots",
+   "offline_verification": "OK (digest lié, attestation présente)",
+   "anchored_at": "2026-08-15T19:32:23.298197Z"
+  }
+ ],
+ "tsa_fallback_live_test": {
+  "status": "OK",
+  "detail": "TSA OK imprint vérifié, token sauvé: tsa-test-98d19eca99aa72b9.tsr"
+ },
+ "ledger": "data/release-store/prereg-ledger.jsonl",
+ "seal_note": "content-addressed: chaque digest ancré = sha256 du fichier provenance TEL QUEL (pré-ancrage). Les fichiers ne sont PAS réécrits après scellement — la réception d'ancrage vit dans le ledger append-only + ce rapport, contrat release_ceremony/AD-3."
+}
