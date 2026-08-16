@@ -67,7 +67,7 @@ def ovh_embed(texts: list[str]) -> np.ndarray:
             r = subprocess.run(["curl", "-sS", "--max-time", "300", "-X", "POST", API,
                                 "-H", "Content-Type: application/json",
                                 "-H", f"Authorization: Bearer {token}",
-                                "--data-binary", body], capture_output=True, text=True)
+                                "--data-binary", body], capture_output=True, text=True, check=False)
             if r.returncode == 0 and r.stdout.strip():
                 try:
                     j = json.loads(r.stdout)
