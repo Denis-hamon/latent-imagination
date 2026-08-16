@@ -1,0 +1,207 @@
+{
+ "arms": {
+  "flash": {
+   "campaign": "coverage-ts-10-flash",
+   "draws": 2,
+   "model": "DeepSeek-V4-Flash",
+   "tasks": [
+    "omniroute__lite.lookback_window_zeroed",
+    "omniroute__usage.buffer_subtracted_not_added",
+    "omniroute__affinity.priority_strategy_unrecognized",
+    "omniroute__trc.double_json_guard_errline",
+    "omniroute__trc.double_shell_dedup_grep_label",
+    "omniroute__hb.double_preserve_proportional",
+    "omniroute__hb.double_priority_overbudget",
+    "omniroute__seam.double_falsy_target_gates",
+    "zod__checks.double_inclusive_bounds",
+    "zod__checks.double_min_max_bagpair",
+    "zod__str.ulid_and_nanoid",
+    "zod__checks.single_max_inclusive",
+    "date_fns__bizdays.double_weekend_weeks",
+    "date_fns__addDays.amount_subtracted"
+   ]
+  },
+  "pinned": {
+   "campaign": "coverage-ts-10-pinned",
+   "draws": 3,
+   "model": "MLX-Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled-bf16",
+   "tasks": [
+    "omniroute__lite.triple_coordinated",
+    "omniroute__affinity.triple_coordinated",
+    "omniroute__usage.triple_coordinated",
+    "omniroute__trc.triple_errline_keep_jsonsize",
+    "omniroute__hb.triple_preserve_proportional_overbudget",
+    "zod__checks.triple_minmax_bag",
+    "date_fns__bizdays.triple_weeks_ternary_start"
+   ]
+  }
+ },
+ "arms_caps": {
+  "flash": 40,
+  "pinned": 40
+ },
+ "envelope_calls_cap": 80,
+ "frozen_at": "2026-08-16T19:56:59.368147Z",
+ "probe_calls_consumed": 6,
+ "probe_note": "4 appels sur mauvaises tâches (bug sed, disclosé) + 2 corrects (Flash 0/2 triples neufs => amendement dual-author)",
+ "quota_manifest_sha256": "b1b5f161bd11da96ac646fa897a9adf80138227e13d228486f26c7cd1170afbf",
+ "sonde_resultat": {
+  "flash_triples_neufs": "0/2 NO-DIFF (zod: arrêt prématuré 390 tok sur prompt 10.4k ; date-fns: hunk mal formé) => triples réaffectés à l'épinglé (amendement ledger)",
+  "pinned_triples_v9": "2/2 applicables (rappel v9 : 4/6 ok, 100% négatifs)"
+ },
+ "tasks": [
+  {
+   "buggy_sha256": "26f92c7242cb9a925b0ca56cf7120f20c6e1a10dee42857d89814bb68db0de1c",
+   "instance_id": "omniroute__lite.lookback_window_zeroed",
+   "n_f2p": 1,
+   "repo": "omniroute",
+   "tier": "ts10-easy"
+  },
+  {
+   "buggy_sha256": "a788828a0ec795279c2de1f1271d7c96c264101079d751bf39a647a1e3e2e46d",
+   "instance_id": "omniroute__usage.buffer_subtracted_not_added",
+   "n_f2p": 1,
+   "repo": "omniroute",
+   "tier": "ts10-easy"
+  },
+  {
+   "buggy_sha256": "c09377aacdef7c5c29943fda9fb908e416b01d6fb766af7dc28c31266f500e9f",
+   "instance_id": "omniroute__affinity.priority_strategy_unrecognized",
+   "n_f2p": 2,
+   "repo": "omniroute",
+   "tier": "ts10-easy"
+  },
+  {
+   "buggy_sha256": "81095d885f3ddb030fb672551d4d41491f251fe304b009cb57e75f10e6f39993",
+   "instance_id": "omniroute__trc.double_json_guard_errline",
+   "n_f2p": 4,
+   "repo": "omniroute",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "76f23e3265c62184724018c76f707f34b700e9f54ff96fac935f12c7a4e45e9a",
+   "instance_id": "omniroute__trc.double_shell_dedup_grep_label",
+   "n_f2p": 3,
+   "repo": "omniroute",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "8cb793cc32e5041ea30ba3cb40ca9f1c8bf5e4c7c30044c5c02616267eca7bfa",
+   "instance_id": "omniroute__hb.double_preserve_proportional",
+   "n_f2p": 11,
+   "repo": "omniroute",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "a422f8f362d22bcfb6fd8ee2e4751ed9381f7411663680e30f089815a1ad19d8",
+   "instance_id": "omniroute__hb.double_priority_overbudget",
+   "n_f2p": 3,
+   "repo": "omniroute",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "121ebd8c4d4470813e994dfee3967f81fa31c15efb592dc14ac1a70fba06b719",
+   "instance_id": "omniroute__seam.double_falsy_target_gates",
+   "n_f2p": 1,
+   "repo": "omniroute",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "8bfa59e2c001535d87b114a64b629ef01896cb4ac7c3d784c3bd437be6709b25",
+   "instance_id": "zod__checks.double_inclusive_bounds",
+   "n_f2p": 7,
+   "repo": "zod",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "32a74283e14c5df5801ff77710efa06705722507c081212e58fc96943a39e0e7",
+   "instance_id": "zod__checks.double_min_max_bagpair",
+   "n_f2p": 5,
+   "repo": "zod",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "4425872319c546b9e209f99f697054b4728cd1d9f4c1bc5589efbb64a5e28cf1",
+   "instance_id": "zod__str.ulid_and_nanoid",
+   "n_f2p": 3,
+   "repo": "zod",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "cb74f18ac0729bc139b0c97e01169037d0dde73e18ec9c79f9ce66eea5776f30",
+   "instance_id": "zod__checks.single_max_inclusive",
+   "n_f2p": 3,
+   "repo": "zod",
+   "tier": "ts10-easy"
+  },
+  {
+   "buggy_sha256": "c85ad43d5b808b752e660a9ba7fb9e3ce4d680791bb575ea65bf7e88b2e9b7ff",
+   "instance_id": "omniroute__lite.triple_coordinated",
+   "n_f2p": 3,
+   "repo": "omniroute",
+   "tier": "ts10-triple"
+  },
+  {
+   "buggy_sha256": "9375a9620b22c114dd6e4b962f77eebf6ef74de866f70be5c46685fa5c3e24e0",
+   "instance_id": "omniroute__affinity.triple_coordinated",
+   "n_f2p": 2,
+   "repo": "omniroute",
+   "tier": "ts10-triple"
+  },
+  {
+   "buggy_sha256": "a726b420d8e3d97049b83d97aea2fd6db3dce5b41c86752cf97d99a7b2144ddb",
+   "instance_id": "omniroute__usage.triple_coordinated",
+   "n_f2p": 2,
+   "repo": "omniroute",
+   "tier": "ts10-triple"
+  },
+  {
+   "buggy_sha256": "25ca217a300f1f97c1b00ba6f30fed776826c8b429dad3517f5c2eb8cb0cb0c4",
+   "instance_id": "omniroute__trc.triple_errline_keep_jsonsize",
+   "n_f2p": 6,
+   "repo": "omniroute",
+   "tier": "ts10-triple"
+  },
+  {
+   "buggy_sha256": "a8790dfecaa650e0f888cfa1082e50110624252a9302a0ba9b27ef0dc8718cef",
+   "instance_id": "omniroute__hb.triple_preserve_proportional_overbudget",
+   "n_f2p": 11,
+   "repo": "omniroute",
+   "tier": "ts10-triple"
+  },
+  {
+   "buggy_sha256": "9ba2dc52e5843be5fb3cb5b9e7a4924922fce3e7c7aebaa78116979e317077a6",
+   "instance_id": "date_fns__bizdays.double_weekend_weeks",
+   "n_f2p": 12,
+   "repo": "date-fns",
+   "tier": "ts10-double"
+  },
+  {
+   "buggy_sha256": "f3f3c446f4bb27c3cd7bb332da7b81afc2a10d52d4568e9cc04a71038e691904",
+   "instance_id": "date_fns__addDays.amount_subtracted",
+   "n_f2p": 3,
+   "repo": "date-fns",
+   "tier": "ts10-easy"
+  },
+  {
+   "buggy_sha256": "364096e7ccd33a7f6856147e29720e381c202db2a07328c7dad238728f80782a",
+   "instance_id": "zod__checks.triple_minmax_bag",
+   "n_f2p": 8,
+   "repo": "zod",
+   "tier": "ts10-triple"
+  },
+  {
+   "buggy_sha256": "ebc9596ac5e7eed32fc37c23df65089f094bc7fc1c0e5f26dd62646da8e222f4",
+   "instance_id": "date_fns__bizdays.triple_weeks_ternary_start",
+   "n_f2p": 12,
+   "repo": "date-fns",
+   "tier": "ts10-triple"
+  }
+ ],
+ "tiers": {
+  "ts10-double": 9,
+  "ts10-easy": 5,
+  "ts10-triple": 7
+ },
+ "window": "coverage-ts-v10"
+}

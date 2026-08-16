@@ -1,0 +1,21 @@
+{
+ "arm": "embedder-retest-jina-pooled4",
+ "prereg": "df5aa51e + addendum",
+ "generated_at": "2026-08-16T21:02:11.521000Z",
+ "population": "pooled4 113 lignes (80+/33-), textes identiques protocole",
+ "unixcoder_controle": {
+  "auc": 0.6951,
+  "ic95": [
+   0.5954,
+   0.793
+  ]
+ },
+ "jina": {
+  "auc": 0.7428,
+  "ic95": [
+   0.6402,
+   0.8402
+  ]
+ },
+ "verdict_grille": "PROMOUVABLE (AUC>=0.70 ET IC lo>0.60 ET > unixcoder)"
+}

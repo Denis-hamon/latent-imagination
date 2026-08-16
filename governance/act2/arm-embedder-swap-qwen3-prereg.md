@@ -48,3 +48,13 @@ baseline exact est **0.6739 IC95 [0.5474, 0.7951]**. Le contrôle du run a
 reproduit 0.6739 à l'identique avant tout appel API ⇒ aucun drift, erreur de
 constante dans le texte. Grille de décision inchangée : >=0.65 ET IC95
 excluant 0.60 => PROMOUVABLE, sinon CLOS. Ligne ledger d'amendement ajoutée.
+
+## ADDENDUM 2026-08-17 — re-test jina-v2-base-code sur pooled4 (113 lignes)
+
+Suite DW-41 : pooled4 (80+/33-) atteint AUC unixcoder 0.6951 IC95
+[0.595, 0.793] p(<0.60)=0.032. Le bras sweep df5aa51e est RÉ-OUVERT pour un
+re-test unique de jina-v2-base-code (meilleure estimation du sweep : +0.049
+sur pooled2) avec la MÊME grille scellée : PROMOUVABLE seulement si
+AUC >= 0.70 ET IC95 lo > 0.60 ; sinon CLOS définitif (aucun 3e round).
+Textes identiques (state=problem[:1200]+f2p, diff=diff.patch) sur les 113
+lignes ; contrôle unixcoder recalculé même run. Coût API ~$0.05.

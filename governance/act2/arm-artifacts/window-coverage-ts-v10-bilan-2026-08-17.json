@@ -1,0 +1,43 @@
+{
+ "window": "coverage-ts-v10",
+ "closed_at": "2026-08-16T21:02:23.254772Z",
+ "anchor": "45b189d7",
+ "selection": "dcad96f6",
+ "amendements": [
+  "#1 sonde sur mauvaises tâches (bug sed, 4 appels audités)",
+  "#2 dual-author post-sonde : Flash 0/2 triples (arrêts prématurés sur prompts 10k+) => triples réaffectés épinglé",
+  "#3 backend épinglé DOWN (7 err vides) => Qwen3.8 8 appels audités (réponses raisonneur 60k, fences incomplètes = incompatible classe extract gelée) => pivot GLM-5.2, sous-cap 17 pour tenir l'enveloppe 80"
+ ],
+ "generation": {
+  "flash": "28 slots 17 ok / 11 no-diff (39% — early-termination stochastique sur long fichiers) / 40 lignes log",
+  "pinned": "0 ok, 7 err endpoint (backend down), 12 budget-stopped, 8 lignes auditées",
+  "qwen3.8": "0 applicable / 8 réponses raisonneur tronquées, 8 lignes auditées",
+  "glm": "5 ok / 5 no-diff / 11 budget-stopped au cap 17 (stop propre)",
+  "total": "80 lignes auditées / cap 80 respecté (3 bras perdus en chemin = coût honnête de la découverte d'infra)"
+ },
+ "labels": {
+  "flash": "17 = 13 pos / 4 neg",
+  "glm": "5 = 4 pos / 1 neg",
+  "quarantaine": "0% partout",
+  "incident_labeling": "DW-42 : cache vitest node_modules/.vite + parseur prefix 'N - ' ont falsifié 8 contrôles positifs ; fix --no-cache + _clean() = labels re-mesurés identiques aux validations quota"
+ },
+ "mesures": [
+  {
+   "pooled4": "113 lignes (80+/33-) — population TS agrégée de référence",
+   "poison": "PASS 0.6951 [0.595,0.793] p(<0.60)=0.032"
+  },
+  {
+   "embedder_retest_jina": "PROMOUVABLE par grille scellée : 0.7428 [0.640,0.840] p(<0.60)=0.003 vs unixcoder 0.6951 — premier franchissement du levier représentationnel",
+   "condition": "bras MIGRATION distinct requis (re-embed pool v10 219, re-calibration conforme, contrôle v6-GOLD, gates 9.1) — décision owner"
+  }
+ ],
+ "lecons": [
+  "GLM répare les triples que l'épinglé échoue (4/5 pos vs 0/4 en v9) — la paire (auteur,tâche) reste imprédictible a priori, la sonde est indispensable",
+  "Flash sur long fichiers (10k+ tokens) = arrêts prématurés ~39% : doubles/easy OK, triples non",
+  "l'enveloppe 80 a été entièrement consommée par la découverte d'infra (3 backends testés) — un plan dual-author devrait provisionner les fallbacks"
+ ],
+ "deliverables": [
+  "pooled4 = mesure de référence TS (remplace pooled2)",
+  "jina PROMOUVABLE => décision de migration owner"
+ ]
+}
