@@ -1,9 +1,8 @@
 # Window COVERAGE-TS — croissance real-work TS/Next.js (pré-enregistrement v1)
 
-Status: PRE-REGISTERED — valeurs gelées ci-dessous, mouvement BY AMENDMENT ONLY
-avant toute dépense. Exécution seulement après APPROBATION OWNER de
-l'enveloppe (précédent window-gen-families-v1) + ancrage ledger du document
-approuvé (précédent 9.3/10.1). Supersède le DRAFT 2026-08-15 (l'option 2 du
+Status: APPROVED 2026-08-16 — enveloppe ratifiée par l'owner (80 appels,
+quota 10×2=20 slots, issue B incluse). Valeurs gelées, mouvement BY AMENDMENT
+ONLY avant toute dépense. Supersède le DRAFT 2026-08-15 (l'option 2 du
 draft — abstention nommée sans couverture — reste la sortie de secours si la
 source 14.1 ne s'étend pas ; elle est enregistrée ci-dessous comme issue B).
 
@@ -82,6 +81,12 @@ fausse couverture.
 
 ## Seal record (remplir à l'approbation + ancrage)
 
-- frozen_sha256: (recorded at anchor)
-- ledger_row: (recorded at anchor)
-- approved_by / envelope: (owner, at session approval)
+> Le frozen_sha256 couvre l'état APPROUVÉ (seal record non rempli) ; les champs
+> ci-dessous sont la réception écrite après coup — l'identité canonique vit dans
+> le ledger (précédent 9.3/window-gen-families).
+- frozen_sha256: `0a47182eaa688ebc7114e5deed8acd79820dd3d77e476e43fd5ab3eefc49b77f`
+- ledger_row: `data/release-store/prereg-ledger.jsonl` ligne `window-approved` (chain_hash = frozen_sha256)
+- ots_proof_ref: `data/release-store/proofs/window-ts-0a47182eaa688ebc.ots` (ancré 2026-08-16T11:53:44Z)
+- approved_by / envelope: Denis (owner), 2026-08-16 session — enveloppe telle
+  qu'enregistrée ci-dessus approuvée inchangée (80 appels cap ; 20 slots ;
+  classe < 5 ⇒ archivage ; issue B si source insuffisante).
