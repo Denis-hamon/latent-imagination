@@ -1,0 +1,54 @@
+{
+ "window": "coverage-ts-v4",
+ "source": "public-omniroute-ts (MIT, commit e646fe84)",
+ "closed_at": "2026-08-16T14:12:56.068877Z",
+ "window_anchor": "44cbca34fd5dcc87391704387d7b6529333a652c7e65b6f8537975a976b2795b",
+ "selection_frozen": "governance/act2/coverage-ts-v4-selection.json (6343b4e5)",
+ "quota": {
+  "target": 12,
+  "validated": 8,
+  "shortfall": 4,
+  "shortfall_causes": "4 candidates écartées sans signal (8376 tests ne couvrent pas les branches mutées ×3 ; tiebreak affinity non testé) + diversité modules 3/4",
+  "tiers": {
+   "ts4-easy": 4,
+   "ts4-hard": 4
+  }
+ },
+ "envelope": {
+  "call_cap": 120,
+  "calls_consumed": 36,
+  "probe_calls": 9,
+  "generation+retries": 27,
+  "underspend": 84
+ },
+ "generation": {
+  "slots": 16,
+  "no-diff": 8,
+  "ok": 8,
+  "no_diff_rate": 0.5,
+  "lecture": "l'étage hard échoue à EXTRAIRE un diff applicable (50% no-diff) : les triples coordonnés cassent la capacité de l'auteur à produire un patch cohérent sur 286+ lignes — c'est un échec fort mais qui produit peu de lignes labellisables"
+ },
+ "labeling": {
+  "measured": 8,
+  "errors": 0,
+  "y1": 5,
+  "y0": 3,
+  "quarantine": 0,
+  "chain": "node:test+tsx TAP distant sérialisé, leçons v2/v3 (patch -l, sha)"
+ },
+ "mesures": [
+  {
+   "poison_ext_loao_auc": 0.9333,
+   "gate": 0.65,
+   "verdict": "AUC 0.93 FORTEMENT séparable — mais classe min 3 < 5 ⇒ DÉGÉNÉRÉE ⇒ quota archivé, NON mixé (règle scellée)"
+  },
+  {
+   "advprobe_prospective_auc": 0.7333,
+   "gate": 0.5977,
+   "verdict": "FRANCHIE (3e validation consécutive : v2 0.60, v3 0.85, v4 0.73 — toutes sur familles jamais vues)"
+  }
+ ],
+ "structure_identifiee": "plafond structurel des fenêtres de mutants : easy → flips (positifs), hard triple → no-diff (pas de ligne du tout). Les NÉGATIFS labellisables (diff applicable mais faux) sont rares : il faut une classe de difficulté INTERMÉDIAIRE (doubles mutants) pour produire ≥5 négatifs par quota",
+ "decision": "v10 inchangé (règle appliquée) ; issue B servie ; le candidat advprobe reste registered avec 3 validations prospectives",
+ "piste_v5_pre_enregistree_ici": "fenêtre de difficulté intermédiaire : ~10 doubles mutants coordonnés (2 défauts) sur OmniRoute — la classe attendue pour produire des diffs applicables-mais-faux en quantité certifiable"
+}
