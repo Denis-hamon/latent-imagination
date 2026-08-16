@@ -45,7 +45,8 @@ def main() -> int:
     for f in sorted(RAW.glob("train-*.parquet")):
         for r in pq.read_table(
                 str(f), columns=["instance_id", "patch", "FAIL_TO_PASS",
-                                 "image_name", "problem_statement"]).to_pylist():
+                                 "PASS_TO_PASS", "image_name",
+                                 "problem_statement"]).to_pylist():
             parq.setdefault(r["instance_id"], r)
 
     tasks, quarantined = [], []
@@ -69,6 +70,7 @@ def main() -> int:
             "image": p["image_name"],
             "patch": p["patch"],
             "f2p": list(p["FAIL_TO_PASS"]),
+            "p2p": list(p["PASS_TO_PASS"]),
             "problem": p["problem_statement"].strip(),
             "target": tgt,
         })
