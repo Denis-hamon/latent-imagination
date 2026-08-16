@@ -41,3 +41,18 @@ tie → baseline, promotion prospective seulement.
    validation prospective obligatoire.
 
 Aucun amendement des gates n'a été nécessaire ; aucun réglage post-mesure.
+
+## MISE À JOUR 2026-08-16 (soir) — validation certifiable échouée
+
+La première population TS CERTIFIABLE (coverage-ts-v5 : 7 pos / 6 neg, les deux
+classes ≥ 5) a mesuré le candidat advprobe à **AUC 0.4286 < 0.5977 → non
+franchie**. Les trois validations antérieures (0.60 v2 / 0.85 v3 / 0.73 v4)
+portaient toutes sur des populations dégénérées (1-3 négatifs) où l'AUC n'a
+quasiment aucun pouvoir discriminant : elles n'étaient PAS prédictives. 
+
+Statut mis à jour : advprobe **RÉTROGRADÉ** de « CANDIDATE en validation » à
+« évidence non confirmée » — archivé avec toutes ses mesures (le candidat n'est
+pas supprimé : une future population certifiable pourra le re-tester contre la
+même gate gelée, mais rien n'est dû). C'est la règle classe-min qui a protégé
+le pool : sans elle, trois « validations » dégénérées auraient suffi à promouvoir
+un candidat qui échoue au premier test réel.

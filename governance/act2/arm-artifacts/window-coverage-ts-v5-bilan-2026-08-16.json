@@ -1,0 +1,49 @@
+{
+ "window": "coverage-ts-v5",
+ "closed_at": "2026-08-16T14:50:00.035201Z",
+ "window_anchor": "588be21efd6c5d7ed9c9d4d4cf9969978abc27272b96412f3ab14edea87008f1",
+ "selection_frozen": "96bbee31 (10 tâches, 4 easy/6 double, zéro shortfall)",
+ "sonde": "classe double pure 2/2 no-diff => règle d'escalade gelée appliquée => quota mixte easy+double",
+ "generation": {
+  "slots": 20,
+  "no-diff": 7,
+  "ok": 13,
+  "no_diff_rate": 0.35,
+  "appels": "32 générés + 2 sondes réconciliées = 34 audités / cap 70"
+ },
+ "labeling": {
+  "mesures": 13,
+  "erreurs": 0,
+  "y1": 7,
+  "y0": 6,
+  "quarantaine": 0,
+  "premiere_population_TS_certifiable": "OUI (les deux classes >= 5)"
+ },
+ "gates": [
+  {
+   "poison_ext_loao": {
+    "auc": 0.6429,
+    "gate": 0.65,
+    "marge": -0.0071,
+    "verdict": "POISON (0.6429 < 0.65) — quota archivé, NON mixé. Le signal TS est PRESQUE au niveau de la gate, mais la règle scellée ne se négocie pas à 0.007 près"
+   }
+  },
+  {
+   "advprobe_prospective": {
+    "auc": 0.4286,
+    "gate": 0.5977,
+    "verdict": "NON FRANCHIE — le candidat advprobe échoue sur la première population certifiable alors qu'il avait « franchi » les trois validations dégénérées précédentes ; candidat rétrogradé dans le verdict E13"
+   }
+  }
+ ],
+ "incidents": {
+  "reconciliation_sondes": "2 appels sonde loggés par erreur dans le ledger v3, réconciliés append-only avec notes croisées (disclosé)"
+ },
+ "lectures": [
+  "la règle classe-min >= 5 a démontré sa nécessité : les trois validations dégénérées d'advprobe n'étaient pas prédictives de l'échec certifiable",
+  "le signal TS réel (0.6429) est à une marge razor-thin de la gate : la prochaine population TS plus grande pourrait la franchir — ou confirmer que la famille unique est sous le seuil",
+  "les doubles coordonnés donnent bien des négatifs labellisables (6/13) : la conception de difficulté intermédiaire est validée comme mécanique",
+  "le no-diff reste élevé (35%) : l'auteur échoue souvent à produire un diff applicable sur les fichiers 280+ lignes, indépendamment de la difficulté sémantique"
+ ],
+ "consequence": "v10 inchangé, issue B servie, quota archivé pour étude"
+}
