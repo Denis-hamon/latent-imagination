@@ -1,0 +1,23 @@
+{
+ "quota": "q1",
+ "generated_at": "2026-08-16T18:03:43.908444Z",
+ "metric": "LOAO-F1 ext-only, AUC Mann-Whitney, propre tâche exclue",
+ "n_rows": 18,
+ "n_pos": 14,
+ "n_neg": 4,
+ "pos_rate_wilson95": [
+  0.5478497354769452,
+  0.90999218086618
+ ],
+ "auc_ext_only": 0.0893,
+ "gate": 0.65,
+ "verdict": "DÉGÉNÉRÉE (classe min 4 < 5 — AUC non certificatoire, quota archivé, NON mixé, règle scellée)",
+ "positive_control": {
+  "pool": "v9",
+  "auc_loao_f1": 0.6777,
+  "n_pos": 78,
+  "n_neg": 135,
+  "note": "même métrique (LOAO-F1 goal-free) sur le pool servi — ancrage d'échelle"
+ },
+ "rule": "règle S11 gelée : AUC ext-only < 0.65 ⇒ quota exclu du mix, archivé pour étude"
+}

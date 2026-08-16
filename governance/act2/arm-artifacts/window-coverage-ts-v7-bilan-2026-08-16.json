@@ -1,0 +1,64 @@
+{
+ "window": "coverage-ts-v7",
+ "closed_at": "2026-08-16T18:04:08.758962Z",
+ "window_anchor": "df227e6bbb3549e3",
+ "selection_frozen": "57e80ac5",
+ "sonde": "zod string-bounds 1/2 + date-fns bizdays 1/2 => VALIDÉS (4 appels)",
+ "generation": {
+  "slots": 20,
+  "ok": 20,
+  "no-diff": 0,
+  "endpoint-error": 0,
+  "appels": "26 audités (sonde 4 + gen 22 tentatives dont retries) / cap 95",
+  "note": "première génération à 0% no-diff : la source dans le prompt est le facteur dominant"
+ },
+ "labeling": {
+  "labels": 18,
+  "y1": 14,
+  "y0": 4,
+  "quarantaine": 2,
+  "quarantaine_share": 0.1,
+  "erreurs": 0,
+  "par_famille": {
+   "zod__checks": "9/10 pos",
+   "zod__str": "0/2 (2 neg)",
+   "date_fns__bizdays": "3/4 pos",
+   "date_fns__addDays": "2/2 pos"
+  },
+  "quarantaines": "2/2 slots date_fns__bizdays.double_round_weekend : hazard DW-35 réalisé — les variantes patchées par l'auteur bouclent infiniment (bug-phase 9 F2P OK, post-patch timeout 240 s) => quarantaine honnête, pile au plafond 10 %"
+ },
+ "gates": [
+  {
+   "poison_v7_seul": {
+    "auc": 0.0893,
+    "verdict": "DÉGÉNÉRÉE (4 neg < 5) — archivé, non certifiable. L'AUC inversée (0.09) sur 4 neg/2 tâches est un avertissement descriptif : les réparations partielles zod ressemblent géométriquement aux succès"
+   }
+  },
+  {
+   "poison_pooled3": {
+    "auc": 0.5849,
+    "ic95": [
+     0.4559,
+     0.7139
+    ],
+    "n": 98,
+    "classes": "75+/23-",
+    "verdict": "POISON — l'ajout de 18 lignes zod/date-fns a BAISSE l'AUC poolée de 0.6739 à 0.5849. Une famille neuve sparse sans densité interne dégrade la mesure globale : le volume seul ne suffit pas"
+   }
+  },
+  {
+   "advprobe_pooled3": {
+    "auc": 0.4087,
+    "verdict": "non franchie (5e échec consécutif — 0.60/0.85/0.73 dégénérés puis 0.43/0.50/0.49/0.37/0.41 certifiables)"
+   }
+  }
+ ],
+ "lecons": [
+  "LA DIFFICULTÉ EST SPÉCIFIQUE À LA PAIRE (AUTEUR, FAMILLE) : les doubles zod (bornes numériques) que la classe 'intermédiaire' prédisait négatifs sont réparés 9/10 par l'auteur épinglé. Le calibrage OmniRoute v5 ne transfère pas.",
+  "Une nouvelle famille sans >=5 neg ET sans densité interne ABÎME le signal poolé (0.6739 -> 0.5849) : la diversification doit être équilibrée par famille, pas volumétrique.",
+  "Le négatif est produit quand l'auteur échoue PARTIELLEMENT : sur zod, seule la tâche ulid+nanoid (deux régions regex éloignées) a résisté. Conception futures : doubles à régions éloignées et hétérogènes.",
+  "DW-35 réalisé en production : le timeout 240 s a contenu la boucle infinie sans perdre la fenêtre (2 quarantaines exactes au plafond)."
+ ],
+ "consequence": "v10 inchangé, pooled2 (0.6739) reste la meilleure population agrégée mesurée ; v7 archivé ; la trajectoire AUC n'est PAS monotone en volume",
+ "hypothese_v8": "multi-auteurs : un auteur plus faible/divers (DeepSeek-V4-Flash 0.6 s, GLM-5.2, Qwen3.8-2.4T mesurés au bench) devrait échouer partiellement là où l'épinglé réussit => usine à négatifs à latence 10-100x moindre. Chaque auteur = population propre, même gate scellée."
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Window coverage-ts-v6 — SONDE PRÉ-GEL : 2 candidats doubles sur fichiers
+"""Window coverage-ts-v7 — SONDE PRÉ-GEL : 2 candidats doubles sur fichiers
 NEUFS (toolResultCompressor, hardBudget) × 2 tirages = 4 appels max, comptés
 à l'enveloppe v6 (cap 110). Règle gelée (doc fenêtre) : ≥1 tirage par fichier
 produit un diff applicable ⇒ fichier validé ; 2/2 no-diff ⇒ SWAP de fichier
