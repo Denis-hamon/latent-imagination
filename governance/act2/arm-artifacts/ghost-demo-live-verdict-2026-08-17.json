@@ -1,0 +1,25 @@
+{
+ "demo": "ghost-host-agent-live-15.5",
+ "at": "2026-08-16T22:10:15.622337Z",
+ "ticket": "omniroute__usage.triple_coordinated (triple bug réel, MIT OmniRoute)",
+ "candidats": "8 diffs réels multi-auteurs (Flash x3, épinglé x3, GLM x2, fenêtres v4-v10)",
+ "boucle_produit": [
+  "1. compare_patches(candidates, budget_n=8) via HTTP MCP live => PHASE plan : les 8 à exécuter, AUCUNE reco (n<8)",
+  "2. host-agent exécute réellement (node --test sur Kimsufi, mécanisme 15.1) => 8 issues groundées (3+/5-), identiques aux labels historiques = fidélité chaîne",
+  "3. compare_patches + issues => PHASE recommandation : régime local, tau conforme 0.659, reco a1 basis 'issue mesurée y=1'"
+ ],
+ "eval": {
+  "recommandation": "a1",
+  "verite_terrain": true,
+  "positifs_reels": [
+   "a1",
+   "a3",
+   "a6"
+  ],
+  "reco_dans_positifs": true,
+  "p_success_cluster": "0.387-0.411 (candidats quasi-dupliqués : le prior ne les sépare pas — honnêtement non masqué)",
+  "holdout": "K=8=n_min => tout est mesuré avant recommandation (comportement règle n>=8) ; le test prédictif sur holdouts reste la démo 15.4 (G1 4/4)"
+ },
+ "interpretation": "Sur un set de candidats quasi-identiques, le produit fait exactement ce qu'il promet : recommander le patch dont la réussite est MESURÉE, divulguer que le classement des autres est incertain, ne jamais inventer. C'est le contraste avec un copilote qui hallucine une confiance : Ghost dit 'a1 marche (prouvé), les autres sont indiscernables à ce niveau d'évidence'.",
+ "etat_serveur": "GHOST v0.7.0 pool v11 jina conforme-mondrian"
+}
