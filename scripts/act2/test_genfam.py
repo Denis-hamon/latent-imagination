@@ -91,6 +91,38 @@ def test_nodiff_abort_halts_with_disclosure(tmp_path, monkeypatch):
     assert summary["aborted"].startswith("no-diff>60%")
 
 
+def test_endpoint_errors_are_infra_not_model_failure(tmp_path, monkeypatch):
+    monkeypatch.setattr(gg, "JOBS", tmp_path)
+    results = tmp_path / "gen-results"; log = tmp_path / "call-log.jsonl"
+    calls = []
+
+    def flaky(task, feedback=""):
+        calls.append(1)
+        if len(calls) <= 2:  # les 2 premières tentatives du slot 1 : 500 serveur
+            raise RuntimeError("galere payload: {'error': ..., 'code': '500'}")
+        return {"prompt_sha256": "p" * 64, "reply_sha256": "r" * 64,
+                "raw_reply": "```python\ndef f():\n    return 2\n```", "usage": {}, "api_calls": 1}
+
+    monkeypatch.setattr(gg.pr, "gen_patch", flaky)
+    monkeypatch.setattr(gg.pr, "extract_full_file", lambda t: t.strip("`python\n ") or None)
+    monkeypatch.setattr(gg.pr, "make_diff",
+                        lambda o, m, rel: "--- a/f.py\n+++ b/f.py\n@@\n-x\n+y\n")
+    panel = [_task("acme__repo.deadbeef.func_fail__s", True) for _ in range(1)]
+    out = gg.gen_panel("q1", panel, draws=2, cap=10, results=results, log=log, parallel=1)
+    recs = {r["slot"]: r["status"] for r in out["rows"]}
+    # slot 1 : 2 tentatives = 2 erreurs endpoint, aucune réponse valide → endpoint-error
+    assert recs["acme__repo.deadbeef.func_fail__s-d1"] == "endpoint-error"
+    # slot 2 (3e appel) : réponse valide → ok
+    assert recs["acme__repo.deadbeef.func_fail__s-d2"] == "ok"
+    # les erreurs n'ont pas pollué le taux no-diff
+    assert out["no_diff"] == 0
+    # mais les appels consommés restent comptés au budget (3 lignes log)
+    assert log.read_text().count("\n") == 3
+    # et l'erreur est journalisée, jamais cachée (discipline S14)
+    logged = [json.loads(l) for l in log.read_text().splitlines()]
+    assert sum(1 for r in logged if "error" in r) == 2
+
+
 def test_load_panel_never_fakes_missing_extraction(tmp_path, monkeypatch):
     monkeypatch.setattr(gg, "JOBS", tmp_path)
     (tmp_path / "genfam-q1").mkdir(parents=True)

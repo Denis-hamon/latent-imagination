@@ -92,6 +92,32 @@ def _campaign_dir(quota: str) -> str:
     return f"genfam-{quota}"
 
 
+def apply_fuzz_reexport(original: str, patch_text: str, rel: str) -> tuple[str | None, str]:
+    """Lane de récupération (lignage sanitize 3516b5e) : git apply strict échoue
+    souvent sur la géométrie de hunk (off-by-one EOF des modèles T=0.7) alors que
+    le diff est sémantiquement correct. patch --fuzz=3 applique, puis ré-export
+    canonique via git diff — même contrat que apply_and_export_debug."""
+    import subprocess
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as td:
+        tdp = Path(td)
+        f = tdp / rel
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(original)
+        subprocess.run(["git", "-C", td, "init", "-q"], check=False, capture_output=True)
+        subprocess.run(["git", "-C", td, "add", "-f", rel], check=False, capture_output=True)
+        r = subprocess.run(["patch", "-p1", "--fuzz=3", "-s", "-i", "-"],
+                           input=patch_text, capture_output=True, text=True, cwd=td, check=False)
+        if r.returncode != 0:
+            return None, (r.stderr or r.stdout or "patch fuzz rejected")[-300:]
+        out = subprocess.run(["git", "-C", td, "diff", "--no-color", "--no-ext-diff", "--", rel],
+                             check=False, capture_output=True, text=True)
+        if not out.stdout.strip():
+            return None, "diff vide après patch fuzz (aucun changement net)"
+        return out.stdout, ""
+
+
 def window_calls_used() -> int:
     """Cap commun Q1+Q2 : on compte TOUS les appels persistés des deux quotas."""
     n = 0
@@ -160,18 +186,34 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
         iid = task["instance_id"]
         slot = f"{iid.replace('/', '_')}-d{k}"
         work = results / slot
-        if (work / "rec.json").is_file():
-            return None  # reprise idempotente
+        rec_file = work / "rec.json"
+        if rec_file.is_file() and json.loads(rec_file.read_text())["status"] in ("ok", "no-diff"):
+            return None  # slot traité (ok) ou exhausté offline (no-diff → genfam_recover)
         work.mkdir(parents=True, exist_ok=True)
         (work / "task.json").write_text(json.dumps(
             {kk: v for kk, v in task.items() if kk != "_buggy"},
             indent=1, default=str))
         original = task["_buggy"]
-        diff, feedback, local_calls = None, "", 0
+        diff, diff_mode, feedback = None, None, ""
+        local_calls = n_errors = 0  # local_calls = appels CONSOMMÉS par ce slot
         for attempt in (1, 2):
             if not reserve():
                 break
-            g = pr.gen_patch(task, feedback)
+            local_calls += 1  # décompté dès la réservation (succès OU erreur endpoint)
+            try:
+                g = pr.gen_patch(task, feedback)
+            except Exception as e:  # noqa: BLE001 — erreur endpoint : appel consommé = journalisé (précédent S12/S14), retry via feedback au tour suivant du slot
+                with lock, log.open("a") as fh:
+                    fh.write(json.dumps({
+                        "ts": datetime.now(UTC).isoformat(), "window": "gen-families-v1",
+                        "quota": quota, "slot": slot, "attempt": attempt, "model": MODEL,
+                        "campaign": task["campaign"], "error": str(e)[:300],
+                        "temperature": 0.7,
+                        "calls_used_window": window_start_calls + state["attempts"],
+                    }) + "\n")
+                feedback = "endpoint error on previous call; retry"
+                n_errors += 1
+                continue
             with lock, log.open("a") as fh:  # append-only log, un appel = une ligne
                 fh.write(json.dumps({
                         "ts": datetime.now(UTC).isoformat(), "window": "gen-families-v1",
@@ -183,7 +225,6 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
                         "temperature": 0.7,
                         "calls_used_window": window_start_calls + state["attempts"],
                     }) + "\n")
-            local_calls += 1  # raw persistée dès le PREMIER appel (leçon 08-10f S5)
             edited = pr.extract_full_file(g["raw_reply"])
             this_diff, _err, raw = None, "", None
             if (edited and edited.strip() != original.strip()
@@ -193,20 +234,35 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
                 raw = pr.extract_diff_sanitized(g["raw_reply"])
                 if raw:
                     this_diff, _err = pr.apply_and_export_debug(original, raw + "\n", task["target"])
+                    if this_diff is None:
+                        this_diff, _err2 = apply_fuzz_reexport(original, raw + "\n", task["target"])
+                        if this_diff:
+                            diff_mode = "fuzz-reexport"
             if this_diff:
                 diff = this_diff
+                if diff_mode is None:
+                    diff_mode = "whole-file" if edited else "strict-git"
                 break
             feedback = _err if raw else \
                 "no parseable diff found in your reply (must contain one ```diff block)"
         if local_calls == 0:
             rec = {"task": iid, "campaign": task["campaign"], "window": "gen-families-v1",
                    "author": MODEL, "slot": slot, "draw": k, "status": "budget-stopped",
-                   "diff_sha256": None, "n_calls_used": window_start_calls + state["attempts"]}
+                   "diff_sha256": None, "diff_mode": None,
+                   "n_calls_used": window_start_calls + state["attempts"]}
             (work / "rec.json").write_text(json.dumps(rec, indent=1))
             return rec  # jamais compté dans done/nodiff : aucun appel n'a eu lieu
-        status = "ok" if diff else "no-diff"
+        if diff:
+            status = "ok"
+        elif n_errors == local_calls:
+            status = "endpoint-error"  # aucun appel n'a produit de réponse valide :
+            # c'est une perte d'infra, pas un échec du modèle → hors taux no-diff,
+            # retenté à la prochaine reprise (les appels restent comptés au cap)
+        else:
+            status = "no-diff"
         rec = {"task": iid, "campaign": task["campaign"], "window": "gen-families-v1",
                "author": MODEL, "slot": slot, "draw": k, "status": status,
+               "diff_mode": diff_mode,
                "diff_sha256": sha256(diff.encode()).hexdigest() if diff else None,
                "n_calls_used": window_start_calls + state["attempts"]}
         (work / "rec.json").write_text(json.dumps(rec, indent=1))
@@ -214,6 +270,8 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
             (work / "diff.patch").write_text(diff)
         with lock:
             state["rows"].append(rec)
+            if status == "endpoint-error":
+                return rec  # hors décompte done/nodiff : taux no-diff = échecs du modèle seulement
             state["done"] += 1
             if not diff:
                 state["nodiff"] += 1
@@ -239,9 +297,16 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
             "diagnosis_needed": "sanitize/extraction regression check (règle d'abort du window)"}, indent=1))
         raise SystemExit(f"HALT {quota}: no-diff rate {stop['rate']:.0%} > 60 % après {done} slots — diagnostic requis, fenêtre stoppée (disclosé, S14)")
     (results / "rows.jsonl").write_text("".join(json.dumps(r) + "\n" for r in state["rows"]))
+    modes = {}
+    for r in state["rows"]:
+        key = r.get("diff_mode") or r["status"]
+        modes[key] = modes.get(key, 0) + 1
     (results / "summary.json").write_text(json.dumps({
         "quota": quota, "slots_done": done, "no_diff": nodiff, "calls_used": calls,
-        "cap": cap, "window": "gen-families-v1"}, indent=1))
+        "cap": cap, "window": "gen-families-v1", "diff_modes": modes,
+        "note": "diff_mode fuzz-reexport = diff récupéré par patch --fuzz + ré-export git "
+                "(lignage sanitize 3516b5e) ; les slots no-diff restants sont exhaustés "
+                "offline par genfam_recover.py, jamais par de nouveaux appels"}, indent=1))
     return {"quota": quota, "slots_done": done, "no_diff": nodiff,
             "calls_used": calls, "cap": cap, "rows": state["rows"]}
 
