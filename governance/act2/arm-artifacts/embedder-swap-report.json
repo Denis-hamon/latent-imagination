@@ -1,0 +1,41 @@
+{
+ "arm": "embedder-swap-qwen3-embedding-8b",
+ "prereg_anchor": "a0d799d4",
+ "generated_at": "2026-08-16T19:31:07.149556Z",
+ "model": "Qwen3-Embedding-8B",
+ "api": "OVH AI Endpoints oai.endpoints.kepler.ai.cloud.ovh.net",
+ "dim": 4096,
+ "n_rows": 80,
+ "texts": "identiques au protocole unixcoder (state=problem[:1200]+f2p[:6], diff=diff.patch, goal=0)",
+ "control_unixcoder": {
+  "name": "unixcoder (contrôle)",
+  "auc": 0.6739,
+  "ic95": [
+   0.5479,
+   0.7972
+  ],
+  "p_below_0_60": 0.134
+ },
+ "Qwen3-Embedding-8B": {
+  "ediff": {
+   "name": "Qwen3-Embedding-8B (E_diff)",
+   "auc": 0.6273,
+   "ic95": [
+    0.4875,
+    0.761
+   ],
+   "p_below_0_60": 0.359
+  },
+  "state_plus_diff": {
+   "name": "Qwen3-Embedding-8B (state+diff, descriptif)",
+   "auc": 0.6048,
+   "ic95": [
+    0.4651,
+    0.7377
+   ],
+   "p_below_0_60": 0.4775
+  }
+ },
+ "grille_decision": "CLOS (unixcoder confirmé)",
+ "disclosure": "pooling API (Qwen3 default) != CLS unixcoder — différence de protocole notée, textes identiques"
+}
