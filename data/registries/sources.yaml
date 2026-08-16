@@ -97,3 +97,19 @@ sources:
     source_version: 1
     registered_at: "2026-08-16T15:00:00Z"
     notes: "commit figé à l'enregistrement ; classe de tests plus dure que mutants mono-fonction (état, multi-fichiers) — candidat naturel pour obtenir des négatifs groundés"
+
+  # REAL entry (pilote 2026-08-16) : OmniRoute release/v3.8.50 — MIT, 4384 tests
+  # unitaires numérotés par issue (bug-fix réels + non-régression), runner
+  # node:test via tsx, validé vert sur Kimsufi-standard ; pilote chaîne F2P/P2P
+  # + sonde auteur bi-étage OK (easy 2/2 réparés, triple 0/1).
+  - source_id: public-omniroute-ts
+    origin_class: own_repo_mutant_tasks
+    license: "MIT"
+    usage_rights: "full (allowlist licences)"
+    covered_families: ["omniroute__app"]
+    covered_generations: ["2026"]
+    snapshot_content_hash: "8c5ef7c75a456ad3bec211bc4379dba48df0836169798a6d2cff224fab259316"
+    coverage_gaps: ["pilote sur 1 module (compression/lite) ; l'extension du catalogue mutants aux autres modules se fait à la construction du quota"]
+    source_version: 1
+    registered_at: "2026-08-16T17:00:00Z"
+    notes: "commit figé e646fe84c76d ; tests exécutés sur Kimsufi-standard (npm install fait, package-lock restauré post-install) ; classe de difficulté validée par sonde : mutants easy réparés, triples coordonnés échoués"
