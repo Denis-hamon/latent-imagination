@@ -56,3 +56,8 @@ pas supprimé : une future population certifiable pourra le re-tester contre la
 même gate gelée, mais rien n'est dû). C'est la règle classe-min qui a protégé
 le pool : sans elle, trois « validations » dégénérées auraient suffi à promouvoir
 un candidat qui échoue au premier test réel.
+
+**Confirmation sur population agrégée (même jour)** : pooled 63 lignes
+(51 pos/12 neg, 4 repos — voir arm-artifacts/ts-dedicated-geometry-memo-2026-08-16.md)
+→ advprobe 0.4951 < 0.5977, second échec certifiable consécutif. Le candidat
+est définitivement clos sur l'état actuel des évidences.
