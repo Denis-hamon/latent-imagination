@@ -79,8 +79,10 @@ pour étude.
 
 ## Seal record (remplir à l'approbation + ancrage)
 
-- frozen_sha256: (recorded at anchor)
-- ledger_row: (recorded at anchor)
+> Identité canonique dans le ledger (précédents 9.3/v1/v2) ; frozen_sha256
+> couvre l'état approuvé pré-seal.
+- frozen_sha256: `e19a227278f8e64c7cf093e4c4cf81a255b461b9bc5b42c5ab9133c065895025`
+- ledger_row: prereg-ledger.jsonl ligne `window-approved` (preuve window-ts-v3-e19a227278f8.ots)
 - approved_by / envelope: Denis (owner), 2026-08-16 session — cap 110 appels,
   quota bi-étage 12 tâches × 2 tirages, classe triple-coordonnée validée par
   sondes (mono 2/2, double 2/2, triple 0/1), droits AGPL analyse-interne.
