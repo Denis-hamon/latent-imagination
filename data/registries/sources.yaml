@@ -43,3 +43,19 @@ sources:
     source_version: 1
     registered_at: "2026-08-06T00:00:00Z"
     notes: "harvest governed by governance/corpus/harvest-policy-v1.toml (pre-registered, story 4.1)"
+
+  # REAL entry (story 14.1, 2026-08-16) : première source own-repo TS à signal
+  # de test exécutable (vitest). Pilote F2P/P2P prouvé bout-en-bout, zéro juge
+  # (bug sémantique -> tests nommés échouent -> gold reverdit). snapshot = le
+  # pilot-task scellé.
+  - source_id: own-acre-blocks-ts
+    origin_class: own_repo_mutant_tasks
+    license: "ours"
+    usage_rights: "full"
+    covered_families: ["acre__blocks"]
+    covered_generations: ["2026"]
+    snapshot_content_hash: "0215a8fb773c8e844046c28aedda667c218b7b950d4fa9e927a938cb2e8a773a"
+    coverage_gaps: ["un seul module prouvé (diff3-merge) ; l'extension à d'autres modules/packages acre est une fenêtre à part"]
+    source_version: 1
+    registered_at: "2026-08-16T14:00:00Z"
+    notes: "vitest 4.1.10 ; repo = Acre worktree wt-20-13 (packages/blocks) ; mutant protocole = swe-smith répliqué TS ; FR-3 labels re-derivables des traces vitest"
