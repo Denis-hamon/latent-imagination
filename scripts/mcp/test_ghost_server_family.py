@@ -246,6 +246,21 @@ CONFORMAL_FILE = (Path(__file__).resolve().parents[2] / "governance" / "act2"
                   / "arm-artifacts" / "risk-scan-v10-conformal.json")
 
 
+class TestTsFlavor:
+    """Story 14.4 issue B : détection TS/monorepo conservative (fonction pure)."""
+
+    def test_ts_extensions(self):
+        assert gs.ts_flavor("x", "diff --git a/apps/front/page.tsx b/apps/front/page.tsx")
+        assert gs.ts_flavor("import { x } from './mod.cts'", "")
+
+    def test_react_next_markers(self):
+        assert gs.ts_flavor('from "react"', "")
+        assert gs.ts_flavor("config next/route", "")
+
+    def test_python_not_flagged(self):
+        assert not gs.ts_flavor("def foo():\n    return 1", "diff --git a/src/x.py b/src/x.py")
+
+
 @NEEDS_POOL
 class TestRiskScanConformalServing:
     """12.2 integration : risk_scan sert l'abstention conforme + disclosures
@@ -276,6 +291,21 @@ class TestRiskScanConformalServing:
                    reporter="pytest-fixture")
         out = gs.do_risk_scan(big)
         assert any("3000" in d for d in out["disclosures"])
+
+    def test_ts_query_abstains_with_named_non_coverage(self, offline_server, monkeypatch):
+        # requête au signal TS qui s'abstient ⇒ named_non_coverage (issue B),
+        # le pool v10 n'ayant aucune strate TS (coverage-ts-1 archivée)
+        def sparse_embed(text):
+            v = np.zeros(768, dtype=np.float32)
+            v[hash(text) % 768] = 1.0
+            return v
+        monkeypatch.setattr(gs, "embed", sparse_embed)
+        out = gs.do_risk_scan({"state_text": "Next.js app",
+                               "diff_text": "diff --git a/apps/front/page.tsx b/apps/front/page.tsx\n+1\n",
+                               "reporter": "pytest-fixture"})
+        if out.get("abstain"):
+            assert "named_non_coverage" in out
+            assert "TS/monorepo" in out["named_non_coverage"]
 
     def test_no_conformal_env_means_legacy_tau_regime(self, offline_server, monkeypatch):
         monkeypatch.setattr(gs, "CONFORMAL_CALIB", Path(""))

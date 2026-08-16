@@ -1,0 +1,99 @@
+{
+ "envelope_calls_cap": 80,
+ "frozen_at": "2026-08-16T11:58:40.593419Z",
+ "quota_note": "quota gel\u00e9 = 10 t\u00e2ches ; 9 valid\u00e9es par le builder (2 candidates \u00e9cart\u00e9es sans signal nomm\u00e9s, journalis\u00e9es) \u21d2 shortfall de 1 DISCLOS\u00c9 (un quota est un plafond, jamais une garantie)",
+ "tasks": [
+  {
+   "buggy_sha256": "cd92ea8917482cd4e66ca93e6a67928c6b2809eb9946f3d1e8c7593aa89ed38f",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.diff3-merge.apply_resolutions_swap",
+   "n_f2p": 3,
+   "n_p2p": 11,
+   "patch_sha256": "a4764c3825a7b15316de4795481736fb2c127adb07faeae0b498d5b5c76c6deb"
+  },
+  {
+   "buggy_sha256": "f38f69fe4d27d719ad82ac040ad07cf0307cd4508f86fb3069d744e0807f3d88",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.diff3-merge.has_unresolved_inverted",
+   "n_f2p": 2,
+   "n_p2p": 12,
+   "patch_sha256": "6d129725ce0447e281e8bf208c0bf2adbda99b596ff944cfa8d9eca64b10d26a"
+  },
+  {
+   "buggy_sha256": "49c671545a3f27a2ae3f2e5a2fd0ce39372176be8e25cd34d6b4f8a9385e7ac1",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.frontmatter.known_keys_inverted",
+   "n_f2p": 4,
+   "n_p2p": 10,
+   "patch_sha256": "a7c285823bf03686ec2268ae55d8165f99ef5278cb349aa6abf9ec1a05cef407"
+  },
+  {
+   "buggy_sha256": "92c260cfb00e96ff77f5b30daa263c271e5cab9580866cf9913e1f7145eaeb4a",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.wikilinks.embed_link_swap",
+   "n_f2p": 9,
+   "n_p2p": 3,
+   "patch_sha256": "152efbfe410445f4ab55a10a7b1984a575a48653be3f46530147bdf273f3b58e"
+  },
+  {
+   "buggy_sha256": "4ea684105f95574ec83f56d1e836369731535a9e74839938c6019aab285233f2",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.wikilinks.fragment_kept",
+   "n_f2p": 1,
+   "n_p2p": 11,
+   "patch_sha256": "cf423d9dae176b968a24d15829d6c7af7ac4e6b3ad8525ad813527de9223a15b"
+  },
+  {
+   "buggy_sha256": "70ebc780ad434e1112baec01429b8816b82a44f15b187aa98b06407c570fba9b",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.block-diff.kind_inverted",
+   "n_f2p": 9,
+   "n_p2p": 3,
+   "patch_sha256": "aaed3cf3ebd10c5caa61e0bd0ed409770fac2c6bfab6acc2408f5474986b0a21"
+  },
+  {
+   "buggy_sha256": "fa409f4d02759aa2c5c70c9850b0a30d66a0cee68f247b5886e38a48dbf34ac9",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.block-diff.wrong_matched_set",
+   "n_f2p": 1,
+   "n_p2p": 11,
+   "patch_sha256": "2e15cb91e359bd29fd9bb4d1e360744e19d6d76c47abc2167775be36a0ef5d10"
+  },
+  {
+   "buggy_sha256": "8a2b7c9843f8399e671f60b91fb0dd147964a3f118c1d42d483657f0e70196cc",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.md-mapping.toggle_collapsed_inverted",
+   "n_f2p": 3,
+   "n_p2p": 24,
+   "patch_sha256": "6dabfaab49ba81738f879bc75976f0b782598ca3d1206007a01ada3f7eb5f9c6"
+  },
+  {
+   "buggy_sha256": "f31f41a1593555ff19b1a23ee3c7189042a12f6899cf29210c8c04b2f2e28647",
+   "campaign": "coverage-ts-1",
+   "draws": 2,
+   "family": "acre__blocks",
+   "instance_id": "acre__blocks.md-mapping.callout_wrong_node",
+   "n_f2p": 3,
+   "n_p2p": 24,
+   "patch_sha256": "44b1a059589c48dfe02f369b66e837e19dc4067ae174f24b43fc389fa76514d7"
+  }
+ ],
+ "window": "coverage-ts-v1",
+ "window_approval_anchor": "0a47182eaa688ebc7114e5deed8acd79820dd3d77e476e43fd5ab3eefc49b77f"
+}

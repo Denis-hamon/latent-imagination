@@ -29,9 +29,12 @@ _spec.loader.exec_module(s11)
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--quota", choices=("q1", "q2"), default="q1")
+    ap.add_argument("--quota", default="q1")
+    ap.add_argument("--dir", default=None,
+                    help="répertoire campagne sous act2-pilot (défaut genfam-<quota>)")
     args = ap.parse_args()
-    q = BASE / f"genfam-{args.quota}"
+    cdir = args.dir or f"genfam-{args.quota}"
+    q = BASE / cdir
     staging = {t["instance_id"]: t for t in
                json.loads((q / "staging-extract.json").read_text())["tasks"]}
     labels = json.loads((q / "labels" / "genfam-label-report.json").read_text())
@@ -77,19 +80,19 @@ def main() -> int:
     model = AutoModel.from_pretrained("microsoft/unixcoder-base").eval()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
-    print(f"embed {len(rows)} lignes genfam-{args.quota} sur {device}", flush=True)
+    print(f"embed {len(rows)} lignes {cdir} sur {device}", flush=True)
     E_s = s11.batched_embed(model, tok, [r["state"] for r in rows])
     E_d = s11.batched_embed(model, tok, [r["diff"] for r in rows])
     E_g = np.zeros((len(rows), E_s.shape[1]), dtype=E_s.dtype)  # goal_free : zéro explicite
 
-    np.savez_compressed(q / "genfam-q1-embed.npz", E_state=E_s, E_diff=E_d, E_goal=E_g)
+    np.savez_compressed(q / f"{cdir}-embed.npz", E_state=E_s, E_diff=E_d, E_goal=E_g)
     meta = [{k: r[k] for k in ("task", "slot", "family", "campaign", "window",
                                "author", "draw", "y", "goal_free", "diff_sha256")}
             for r in rows]
-    (q / "genfam-q1-rows.json").write_text(json.dumps(meta, indent=1) + "\n")
+    (q / f"{cdir}-rows.json").write_text(json.dumps(meta, indent=1) + "\n")
     pos = sum(r["y"] for r in rows)
     print(f"OK : {len(rows)} lignes ({pos} positives, {len(rows) - pos} négatives) "
-          f"-> {q.name}/genfam-q1-embed.npz ({E_s.shape[1]}-d)")
+          f"-> {q.name}/{cdir}-embed.npz ({E_s.shape[1]}-d)")
     return 0
 
 

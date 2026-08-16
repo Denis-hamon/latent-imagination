@@ -29,6 +29,10 @@ governance/act2/arm-artifacts/risk-scan-v8-calibration.json), sinon "abstain"
 
 N'écrit jamais JSON ailleurs que sur stdout. Pas de dépendance au net.
 
+v0.5.1 (2026-08-16) : abstention NOMMÉE TS/monorepo (story 14.4 issue B) —
+une requête au signal TS qui s'abstient porte `named_non_coverage` explicite
+(« hors couverture connue »), pas une abstention générique silencieuse.
+
 v0.5.0 (2026-08-16) : abstention CONFORME Mondrian par famille (story 12.2) —
 LI_CONFORMAL_CALIB posée ⇒ seuil par strate avec garantie « erreur ≤ 10 % parmi
 les réponses retenues » (repli pooled disclosé si strate insuffisante) ;
@@ -201,6 +205,21 @@ def _family_coverage(pc, exclude: list[bool] | None = None) -> dict:
         m = (fams == f) & keep
         cov[f] = {"n": int(m.sum()), "positives": int(y[m].sum())}
     return cov
+
+
+# Registre des strates TS/monorepo CONNUES hors pool (fenêtres archivées —
+# mécanique, disclosé : coverage-ts-1 archivée 2026-08-16, gate dégénérée).
+KNOWN_TS_FAMILIES = frozenset({"acre__blocks"})
+
+_TS_MARKERS = (".ts", ".tsx", ".cts", ".mts", "apps/front", "apps/api",
+               "from \"react\"", "from 'react'", "next/")
+
+
+def ts_flavor(state_text: str, diff_text: str) -> bool:
+    """Signal TS/monorepo dans la requête (heuristique conservative, additive —
+    ne change JAMAIS la décision ; story 14.4 issue B : nommer la non-couverture)."""
+    blob = ((state_text or "") + "\n" + (diff_text or "")).lower()
+    return any(m in blob for m in _TS_MARKERS)
 
 
 def _family_diagnosis(q_s, pc) -> dict:
@@ -406,7 +425,7 @@ def handle(msg: dict) -> dict | None:
         return _resp(mid, {
             "protocolVersion": "2025-06-18",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "ghost", "version": "0.5.0"},
+            "serverInfo": {"name": "ghost", "version": "0.5.1"},
         })
     if method == "notifications/initialized":
         return None
@@ -624,6 +643,17 @@ def do_risk_scan(args: dict) -> dict:
             f"hors régime fiable ; famille la plus proche '{out['family']['nearest_family']}' "
             f"({cov['n']} lignes pool, {cov['positives']} positives) — la géométrie "
             f"n'a pas assez de masse ici pour trancher à acc ≥0.95")
+    # Issue B (14.4) : abstention NOMMÉE pour le travail TS/monorepo — pas
+    # d'abstention générique quand la famille est connue hors couverture.
+    if out.get("abstain") and ts_flavor(args.get("state_text", ""), args.get("diff_text", "")):
+        pool_fams = set(pc["families"].tolist())
+        ts_covered = pool_fams & KNOWN_TS_FAMILIES
+        if not ts_covered:
+            out["named_non_coverage"] = (
+                "famille TS/monorepo hors couverture connue — aucune strate TS "
+                "dans le pool servi (coverage-ts-1 archivée 2026-08-16 : gate "
+                "poison dégénérée, quota non mixé). Le fantôme NE PEUT PAS "
+                "trancher sur ce terrain ; diagnostic additif, décision inchangée.")
     reporter = args.get("reporter") or ""
     if not reporter:
         out["reporter_note"] = ("reporter absent — ce résultat ne pourra pas être "

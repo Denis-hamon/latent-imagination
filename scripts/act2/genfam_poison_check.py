@@ -38,23 +38,30 @@ _spec.loader.exec_module(s11)
 POISON_AUC = 0.65
 
 def _loao_auc(npz_path: Path, rows: list[dict]) -> tuple[float, int, int]:
+    # Dégénérescence pré-déclarée (fenêtres gen-families & coverage-ts) : une
+    # classe vide ⇒ AUC indéfinie ⇒ float("nan"), jamais un chiffre inventé.
     d = np.load(npz_path)
-    cd = s11.norm(d["E_diff"].astype(np.float32))
     y = np.array([int(r["y"]) for r in rows])
+    n_pos, n_neg = int((y == 1).sum()), int((y == 0).sum())
+    if n_pos == 0 or n_neg == 0:
+        return float("nan"), n_pos, n_neg  # mono-classe : AUC indéfinie
+    cd = s11.norm(d["E_diff"].astype(np.float32))
     tasks = np.array([r["task"] for r in rows])
     f1 = s11._loao_f1_features(cd, tasks, y)
     # f1 = d(neg-voisin) − d(pos-voisin) ; f1 grand = la ligne ressemble aux succès
     # (convention identique à la calibration v9)
     pos, neg = f1[y == 1], f1[y == 0]
-    return s11.auc(pos, neg), int(pos.size), int(neg.size)
+    return s11.auc(pos, neg), n_pos, n_neg
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--quota", choices=("q1", "q2"), default="q1")
+    ap.add_argument("--quota", default="q1")
+    ap.add_argument("--dir", default=None)
     args = ap.parse_args()
-    q = PILOT / f"genfam-{args.quota}"
-    npz, rows_f = q / "genfam-q1-embed.npz", q / "genfam-q1-rows.json"
+    cdir = args.dir or f"genfam-{args.quota}"
+    q = PILOT / cdir
+    npz, rows_f = q / f"{cdir}-embed.npz", q / f"{cdir}-rows.json"
     if not npz.is_file():
         print("embed absent — lancer genfam_embed.py sur le node d'abord")
         return 1
@@ -71,7 +78,12 @@ def main() -> int:
                    "n_pos": p9, "n_neg": n9,
                    "note": "même métrique (LOAO-F1 goal-free) sur le pool servi — ancrage d'échelle"}
 
-    gate = "PASS" if auc_ext >= POISON_AUC else "POISON (quota HORS pool, archivé)"
+    import math
+    if math.isnan(auc_ext):
+        gate = ("DÉGÉNÉRÉ (classe manquante — AUC indéfinie : quota archivé, "
+                "NON mixé, règle scellée « indéfini ≠ conforme »)")
+    else:
+        gate = "PASS" if auc_ext >= POISON_AUC else "POISON (quota HORS pool, archivé)"
     report = {
         "quota": args.quota, "generated_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "metric": "LOAO-F1 ext-only, AUC Mann-Whitney, propre tâche exclue",
@@ -82,13 +94,14 @@ def main() -> int:
         "positive_control": control,
         "rule": "règle S11 gelée : AUC ext-only < 0.65 ⇒ quota exclu du mix, archivé pour étude",
     }
-    out = q / f"poison-check-{args.quota}.json"
+    out = q / f"poison-check-{cdir}.json"
     out.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
     print(f"AUC ext-only {args.quota}: {auc_ext:.4f} (gate {POISON_AUC}) → {gate}")
     if control:
         print(f"contrôle pool v9 (même métrique): {control['auc_loao_f1']}")
     print(f"→ {out.relative_to(ROOT)}")
-    return 0 if auc_ext >= POISON_AUC else 2
+    import math
+    return 0 if (not math.isnan(auc_ext) and auc_ext >= POISON_AUC) else 2
 
 
 if __name__ == "__main__":

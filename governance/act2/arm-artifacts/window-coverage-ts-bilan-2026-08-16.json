@@ -1,0 +1,53 @@
+{
+ "window": "coverage-ts-v1",
+ "quota": {
+  "tasks_validated": 9,
+  "quota_registered": 10,
+  "shortfall": "1 tâche manquante (2 candidates écartées sans signal nommé, journalisées dans discarded.jsonl) — plafond, pas garantie"
+ },
+ "closed_at": "2026-08-16T12:14:10.428675Z",
+ "window_approval_anchor": "0a47182eaa688ebc7114e5deed8acd79820dd3d77e476e43fd5ab3eefc49b77f",
+ "selection_frozen": "governance/act2/coverage-ts-selection-v1.json (0bf8cd0113c569f8)",
+ "envelope": {
+  "call_cap": 80,
+  "calls_consumed": 24,
+  "calls_model_ok": 22,
+  "calls_500": 2,
+  "underspend": "56 appels non consommés (plafond respecté, jamais rempli de force)"
+ },
+ "generation": {
+  "slots": 18,
+  "ok": 14,
+  "no-diff": 4,
+  "no_diff_rate": 0.2222,
+  "note": "22 % no-diff, sous la ligne d'abort 60 % ; l'auteur épinglé répare bien mieux les mutants TS ciblés (14/14) que les tâches smith mixtes genfam (35 % no-diff)"
+ },
+ "labeling": {
+  "measured": 14,
+  "errors": 0,
+  "labels_y1": 14,
+  "labels_y0": 0,
+  "quarantine": 0,
+  "chain": "vitest stricte sérialisée sur worktree : bug→F2P rouges (contrôle positif)→diff candidat→F2P vertes+P2P vertes→restauration arbre",
+  "all_positive_controls_red": true
+ },
+ "mesures_avant_mix": [
+  {
+   "mesure": "poison-check ext-LOAO",
+   "resultat": "DÉGÉNÉRÉE (AUC indéfinie : 14 pos / 0 neg)",
+   "consequence": "quota archivé, NON mixé — règle scellée « indéfini ≠ conforme », pas d'exception"
+  },
+  {
+   "mesure": "validation prospective advprobe (13.5)",
+   "resultat": "DÉGÉNÉRÉE (mono-classe) ; descriptif : 1/14 prédit positif, scores sous le seuil v10",
+   "consequence": "ne peut pas statuer ; deviendra statuable avec des échecs groundés TS"
+  }
+ ],
+ "decision_14_4": "AUCUN mix au pool (quota archivé data/landing/act2-pilot/coverage-ts-1/, append-only, matériel d'étude) ; issue B appliquée : abstention NOMMÉE « TS/monorepo hors couverture connue » servie en production (GHOST v0.5.1, vérifiée live)",
+ "lecons": [
+  "les mutants trop faciles produisent un quota mono-classe : la chaîne strict-label est saine mais la gate poison et la validation prospective deviennent indéfinissables — un quota mesurable exige des tâches où l'auteur ÉCHOUE parfois",
+  "l'auteur épinglé (MLX-Qwen3.5-35B distillé) est très fort sur les mutations sémantiques locales TS (14/14) — les futurs quotas TS doivent monter la difficulté (multi-fichiers, logique d'état, types) pour obtenir des négatifs",
+  "la généralisation du harness multi-fenêtres (campaign-dir scopé, budget par fenêtre) a fonctionné : 24/80 appels, zéro dépassement, zéro incident endpoint sur cette fenêtre"
+ ],
+ "issue_B_serving": "GHOST v0.5.1 déployé : named_non_coverage sur signal TS + registre KNOWN_TS_FAMILIES mécanique, 30 tests MCP verts"
+}

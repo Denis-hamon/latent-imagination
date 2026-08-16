@@ -121,30 +121,42 @@ def apply_fuzz_reexport(original: str, patch_text: str, rel: str) -> tuple[str |
         return out.stdout, ""
 
 
-def window_calls_used() -> int:
-    """Cap commun Q1+Q2 : on compte TOUS les appels persistés des deux quotas."""
+def window_calls_used(campaign_dirs: tuple[str, ...] | None = None) -> int:
+    """Appels persistés du scope budgétaire. Défaut historique : cap commun
+    genfam Q1+Q2. Autre fenêtre ⇒ campaign_dirs explicite (l'enveloppe de
+    chaque fenêtre compte ses propres appels — jamais de cap croisé)."""
+    if campaign_dirs is None:
+        campaign_dirs = ("genfam-q1", "genfam-q2")
     n = 0
-    for q in ("q1", "q2"):
-        log = JOBS / f"genfam-{q}" / "call-log.jsonl"
+    for cd_ in campaign_dirs:
+        log = JOBS / cd_ / "call-log.jsonl"
         if log.is_file():
             n += sum(1 for line in log.read_text().splitlines() if line.strip())
     return n
 
 
-def load_panel(quota: str, selection: dict) -> list[dict]:
-    """Rows of one quota, joined with their frozen problem/patch/image from staging."""
-    staging_path = JOBS / f"genfam-{quota}" / "staging-extract.json"
+def load_panel(quota: str, selection: dict | None = None,
+               campaign_dir: str | None = None) -> list[dict]:
+    """Panel d'une fenêtre. Deux formes :
+    - genfam (legacy) : selection{quota:[ids]} jointe au staging-extract ;
+    - staging direct (fenêtres suivantes, ex. coverage-ts-1) : selection=None,
+      les tâches du staging-extract SONT le panel (quota = clé manifeste)."""
+    cdir = campaign_dir or f"genfam-{quota}"
+    staging_path = JOBS / cdir / "staging-extract.json"
     if not staging_path.is_file():
         return []
-    staging = {t["instance_id"]: t for t in json.loads(staging_path.read_text())["tasks"]}
+    tasks = json.loads(staging_path.read_text())["tasks"]
+    staged = {t["instance_id"]: t for t in tasks}
+    ids = ([row["instance_id"] for row in selection[quota]]
+           if selection is not None else [t["instance_id"] for t in tasks])
     panel = []
-    for row in selection[quota]:
-        st = staging.get(row["instance_id"])
+    for iid in ids:
+        st = staged.get(iid)
         if st is None:
             continue
-        p = JOBS / f"genfam-{quota}" / f"{row['instance_id'].replace('/', '_')}.buggy.py"
+        p = JOBS / cdir / f"{iid.replace('/', '_')}.buggy.py"
         if not p.is_file():
-            continue  # extraction not done yet; reported at summary, not faked
+            continue  # pas de source buggy ⇒ pas de ligne inventée (disclose au summary)
         panel.append({**st, "_buggy": p.read_text()})
     return panel
 
@@ -163,14 +175,14 @@ def nodiff_abort_rate(done: int, nodiff: int) -> float | None:
 
 
 def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path, log: Path,
-              parallel: int | None = None):
+              parallel: int | None = None, budget_scope: tuple[str, ...] | None = None):
     """Exécution parallèle thread-safe : réservation d'appel SOUS LOCK avant
     chaque appel (le cap n'est jamais dépassé en concurrence), reprise
     idempotente (slot avec rec.json déjà fait = skip), arrêt no-diff/budget
     signalé par le dict `stop` puis levé proprement après shutdown."""
     if parallel is None:
         parallel = int(os.environ.get("GENFAM_PARALLEL", "4"))
-    window_start_calls = window_calls_used()
+    window_start_calls = window_calls_used(budget_scope)
     # Le taux no-diff est celui de la QUOTA entière (tous runs confondus) :
     # les reprises sautent les slots ok → un compteur local seul serait biaisé
     # vers l'échec et déclencherait un abort faux (bug réel du 2026-08-16).
@@ -372,22 +384,29 @@ def _check_budget_midway(calls: int, cap: int, results: Path):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--quota", choices=("q1", "q2"), default="q1")
+    ap.add_argument("--quota", default="q1",
+                    help="étiquette quota (q1/q2 genfam ; autre fenêtre : libre)")
+    ap.add_argument("--campaign-dir", default=None,
+                    help="répertoire campagne sous act2-pilot (défaut genfam-<quota>)")
+    ap.add_argument("--selection", default=None,
+                    help="manifeste de sélection (défaut genfam ; absent = staging direct)")
     ap.add_argument("--cap", type=int, default=DEFAULT_CAP)
     ap.add_argument("--draws", type=int, default=2)
     args = ap.parse_args()
-    os.environ["PILOT_CAMPAIGN_DIR"] = _campaign_dir(args.quota)
-    pr.os.environ["PILOT_CAMPAIGN_DIR"] = _campaign_dir(args.quota)  # même process import
-    sel = json.loads(SEL.read_text())
-    key = args.quota
-    panel = load_panel(key, sel)
+    cdir = args.campaign_dir or _campaign_dir(args.quota)
+    os.environ["PILOT_CAMPAIGN_DIR"] = cdir
+    pr.os.environ["PILOT_CAMPAIGN_DIR"] = cdir  # même process import
+    sel = json.loads(Path(args.selection).read_text()) if args.selection else None
+    panel = load_panel(args.quota, sel, campaign_dir=cdir)
     if not panel:
-        print(f"Aucune tâche prête pour {key} (extraction non faite ?) — rien à générer, disclose.")
+        print(f"Aucune tâche prête pour {args.quota} ({cdir}) — rien à générer, disclose.")
         return 1
-    results = JOBS / f"genfam-{key}" / "gen-results"
-    log = JOBS / f"genfam-{key}" / "call-log.jsonl"
-    out = gen_panel(key, panel, args.draws, args.cap, results, log)
-    print(f"{key}: {out['slots_done']} slots, {out['no_diff']} no-diff, "
+    scope = ("genfam-q1", "genfam-q2") if cdir.startswith("genfam") else (cdir,)
+    results = JOBS / cdir / "gen-results"
+    log = JOBS / cdir / "call-log.jsonl"
+    out = gen_panel(args.quota, panel, args.draws, args.cap, results, log,
+                    budget_scope=scope)
+    print(f"{args.quota}: {out['slots_done']} slots, {out['no_diff']} no-diff, "
           f"{out['calls_used']}/{out['cap']} appels")
     return 0
 

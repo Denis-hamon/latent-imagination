@@ -168,9 +168,12 @@ def build(qdir: Path) -> tuple[int, dict]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--quota", choices=("q1", "q2"), default="q1")
+    ap.add_argument("--quota", default="q1")
+    ap.add_argument("--campaign-dir", default=None,
+                    help="répertoire campagne (défaut genfam-<quota>)")
     args = ap.parse_args()
-    qdir = ROOT / "data" / "landing" / "act2-pilot" / f"genfam-{args.quota}"
+    cdir = args.campaign_dir or f"genfam-{args.quota}"
+    qdir = ROOT / "data" / "landing" / "act2-pilot" / cdir
     rc, rep = build(qdir)
     if rep.get("status") == "EMPTY":
         print(rep["note"])
