@@ -113,3 +113,42 @@ sources:
     source_version: 1
     registered_at: "2026-08-16T17:00:00Z"
     notes: "commit figé e646fe84c76d ; tests exécutés sur Kimsufi-standard (npm install fait, package-lock restauré post-install) ; classe de difficulté validée par sonde : mutants easy réparés, triples coordonnés échoués"
+
+  # REAL entry (2026-08-16, autonomie owner option géométrie/échelle) :
+  # zod (colinhacks/zod @ 5e608851) — MIT confirmé (packages/zod/LICENSE),
+  # monorepo pnpm, vitest ; runner validé sur Kimsufi-standard
+  # (packages/zod/src/v4/classic/tests/string.test.ts : 94 tests verts, ~7.5 s).
+  # Logique applicative pure densément testée (validations, coercions,
+  # comparaisons numériques/dates/enums) — candidat naturel pour mutants
+  # doubles négatifs-first et familles Mondrian nombreuses.
+  - source_id: public-zod-ts
+    origin_class: own_repo_mutant_tasks
+    license: "MIT"
+    usage_rights: "full (allowlist licences)"
+    covered_families: ["zod__v4"]
+    covered_generations: ["2026"]
+    snapshot_content_hash: "64e4a1210548121c4ae8611891fc49ea87eebf2d190a7cb3fefd1075cc7e1072"  # pré-ingestion : sha256("zod@<commit>") ;
+    # remplacé par le sha256 du contenu ingéré à la première fenêtre (précédent ci-seed)
+    coverage_gaps: ["aucun mutant construit ni validé à ce jour ; suite vitest complète non encore exécutée (1 fichier validé en pilote)"]
+    source_version: 1
+    registered_at: "2026-08-16T15:45:00Z"
+    notes: "commit figé 5e608851fbc7 à l'enregistrement ; clone Kimsufi-standard:~/zod-source ; pnpm install OK ; tests = packages/zod/src/v4/{classic,core,mini}/tests ; runner: npx vitest run <file>"
+
+  # REAL entry (2026-08-16, autonomie owner — diversification sources) :
+  # date-fns (date-fns/date-fns @ a0a39220) — MIT confirmé (pkgs/core/LICENSE.md),
+  # monorepo pnpm ; runner validé sur Kimsufi-standard
+  # (pkgs/core : npx vitest run src/addDays/test.ts, 9 passed, 173 ms).
+  # Intérêt structurel : ~350 fonctions pures chacune avec son propre test.ts =>
+  # families naturelles nombreuses et fines (date_fns__addDays, ...) pour strates
+  # Mondrian ; logique numérique/frontières temporelles = mutations doubles propres.
+  - source_id: public-date-fns-ts
+    origin_class: own_repo_mutant_tasks
+    license: "MIT"
+    usage_rights: "full (allowlist licences)"
+    covered_families: ["date_fns__core"]
+    covered_generations: ["2026"]
+    snapshot_content_hash: "fc9cc6f661e0905d49a74da267beb929c4d1c4b1fca536de70278d3b044e5e42"  # pré-ingestion : sha256("date-fns@<commit>")
+    coverage_gaps: ["aucun mutant construit ni validé à ce jour ; pilote = 1 fichier test seulement"]
+    source_version: 1
+    registered_at: "2026-08-16T15:50:00Z"
+    notes: "commit figé a0a3922052 à l'enregistrement ; clone Kimsufi-standard:~/date-fns-source ; tests exécutés DEPUIS pkgs/core (racine du monorepo ne matche rien) ; runner: cd pkgs/core && npx vitest run src/<fn>/test.ts"

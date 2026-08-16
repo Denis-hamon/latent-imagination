@@ -1,0 +1,27 @@
+{
+ "story": "13.5-validation-prospective / 14.4",
+ "generated_at": "2026-08-16T16:12:21.306703Z",
+ "device": "cpu",
+ "candidate": "advprobe (combinator gelé 13.3 : h=12, λ=1, lr=1e-3, 300 epochs, seed 20260805, entraîné sur clean slice v10)",
+ "prospective_population": {
+  "source": "coverage-ts-pooled2 (fenêtre TS, créée APRÈS le scellement des gates 13.1)",
+  "n": 80,
+  "positives": 61,
+  "negatives": 19
+ },
+ "gate_13_5": {
+  "metric": "AUC sur scores tête-classifieur",
+  "threshold": 0.5977
+ },
+ "auc": 0.4254,
+ "gate_status": "non franchie",
+ "descriptive_diagnostics": {
+  "threshold_v10_median": -1.2857,
+  "ts_predits_positifs": 41,
+  "ts_score_min": -2.3944,
+  "ts_score_max": 0.0215,
+  "ts_score_median": -1.2508,
+  "note": "descriptif seulement — aucune valeur de gate n'en est dérivée (gate dégénérée tant qu'une classe est vide)"
+ },
+ "verdict": "la validation prospective ne peut pas STATUER sur ce quota mono-classe ; l'invariance famille d'advprobe sur le TS réel deviendra statuable dès qu'un quota TS contient des échecs groundés (mutants plus durs, ou collectes réelles)"
+}

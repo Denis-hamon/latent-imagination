@@ -1,0 +1,99 @@
+{
+ "envelope_calls_cap": 110,
+ "frozen_at": "2026-08-16T15:40:23.196992Z",
+ "probe_calls_already_consumed": 8,
+ "probe_note": "4 appels INVALIDÉS (bug intégration source absente, DW-33) + 4 valides ; tous audités au ledger",
+ "quota_manifest_sha256": "809d162cd3b959bf7602109ddbb0a2a486f5cfbe8f9b9df76b441c60e1e71aee",
+ "quota_note": "10/10 candidats validées zéro-appel ; sonde fichiers neufs : trc 1/2, hb 1/2 => les deux VALIDÉS",
+ "sonde_resultat": {
+  "omniroute__hb.double_preserve_proportional": "FICHIER VALIDÉ (>=1 diff applicable)",
+  "omniroute__trc.double_json_guard_errline": "FICHIER VALIDÉ (>=1 diff applicable)"
+ },
+ "tasks": [
+  {
+   "buggy_sha256": "26f92c7242cb9a925b0ca56cf7120f20c6e1a10dee42857d89814bb68db0de1c",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__lite.lookback_window_zeroed",
+   "n_f2p": 1,
+   "tier": "ts6-easy"
+  },
+  {
+   "buggy_sha256": "a788828a0ec795279c2de1f1271d7c96c264101079d751bf39a647a1e3e2e46d",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__usage.buffer_subtracted_not_added",
+   "n_f2p": 1,
+   "tier": "ts6-easy"
+  },
+  {
+   "buggy_sha256": "c09377aacdef7c5c29943fda9fb908e416b01d6fb766af7dc28c31266f500e9f",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__affinity.priority_strategy_unrecognized",
+   "n_f2p": 2,
+   "tier": "ts6-easy"
+  },
+  {
+   "buggy_sha256": "81095d885f3ddb030fb672551d4d41491f251fe304b009cb57e75f10e6f39993",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__trc.double_json_guard_errline",
+   "n_f2p": 4,
+   "tier": "ts6-double"
+  },
+  {
+   "buggy_sha256": "76f23e3265c62184724018c76f707f34b700e9f54ff96fac935f12c7a4e45e9a",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__trc.double_shell_dedup_grep_label",
+   "n_f2p": 3,
+   "tier": "ts6-double"
+  },
+  {
+   "buggy_sha256": "bf6e69d04251b855ccae0be3ac68ff520166171bea4146d30d64ed6705daf0d2",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__trc.double_keep_lines_json_size",
+   "n_f2p": 5,
+   "tier": "ts6-double"
+  },
+  {
+   "buggy_sha256": "8cb793cc32e5041ea30ba3cb40ca9f1c8bf5e4c7c30044c5c02616267eca7bfa",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__hb.double_preserve_proportional",
+   "n_f2p": 11,
+   "tier": "ts6-double"
+  },
+  {
+   "buggy_sha256": "a422f8f362d22bcfb6fd8ee2e4751ed9381f7411663680e30f089815a1ad19d8",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__hb.double_priority_overbudget",
+   "n_f2p": 3,
+   "tier": "ts6-double"
+  },
+  {
+   "buggy_sha256": "48315659ca22d0d3ebd9741f73907120338bb42d3752d747321c435e8c0ee08d",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__hb.double_early_return_inversions",
+   "n_f2p": 6,
+   "tier": "ts6-double"
+  },
+  {
+   "buggy_sha256": "121ebd8c4d4470813e994dfee3967f81fa31c15efb592dc14ac1a70fba06b719",
+   "campaign": "coverage-ts-6",
+   "draws": 2,
+   "instance_id": "omniroute__seam.double_falsy_target_gates",
+   "n_f2p": 1,
+   "tier": "ts6-double"
+  }
+ ],
+ "tiers": {
+  "ts6-double": 7,
+  "ts6-easy": 3
+ },
+ "window": "coverage-ts-v6"
+}

@@ -1,0 +1,70 @@
+{
+ "window": "coverage-ts-v6",
+ "closed_at": "2026-08-16T16:12:47.921182Z",
+ "window_anchor": "b19583e8d4c9517386046b8fdf660a36899d7c73ee45a1f251ac63b929b22d57",
+ "selection_frozen": "3303c223 (10 taches : 3 ancres easy neuves + 7 doubles negatifs-first)",
+ "sonde": "4 appels invalides par DW-33 (source absente du prompt) + re-sonde 4 appels => trc 1/2, hb 1/2 => fichiers VALIDES",
+ "generation": {
+  "slots": 20,
+  "ok": 17,
+  "no-diff": 3,
+  "endpoint-error": 0,
+  "no_diff_rate": 0.15,
+  "appels": "26 generation audites (+8 sonde dont 4 invalides +1 note) = 35 lignes ledger / cap 110 ; underspend honnete"
+ },
+ "labeling": {
+  "mesures": 17,
+  "erreurs": 0,
+  "y1": 10,
+  "y0": 7,
+  "quarantaine": 0
+ },
+ "shortfall": "objectif fenetre >=15 negatifs NON atteint : 7 negatifs (46%). Disclosure conforme.",
+ "gates": [
+  {
+   "poison_v6_seul": {
+    "auc": 0.6714,
+    "gate": 0.65,
+    "verdict": "PASS (10 pos/7 neg, certifiable)"
+   }
+  },
+  {
+   "poison_pooled2": {
+    "auc": 0.6739,
+    "gate": 0.65,
+    "ic95": [
+     0.5474,
+     0.7951
+    ],
+    "n": 80,
+    "classes": "61+/19-",
+    "verdict": "PASS ; IC95 se resserre vs pooled1 [0.490,0.830] mais n'exclut PAS 0.60 => critere mix v11 NON satisfait => pas de mix"
+   }
+  },
+  {
+   "advprobe_v6": {
+    "auc": 0.3714,
+    "gate": 0.5977,
+    "verdict": "non franchie (3e echec consecutif, candidat clos)"
+   }
+  },
+  {
+   "advprobe_pooled2": {
+    "auc": 0.4254,
+    "gate": 0.5977,
+    "verdict": "non franchie (4e echec consecutif)"
+   }
+  }
+ ],
+ "geometrie_variants": "experience zero-appel : le signal TS vit integralement dans E_diff (0.6634) ; E_state 0.53, E_goal 0.50, fusions inchangees => aucun gain de feature ; seul levier = donnees",
+ "incidents": [
+  "DW-33 sonde invalidee (4 appels audites, re-sonde propre)",
+  "provenance v6 rows.json : fenetre 'gen-families-v1' par defaut (cosmetique, corrige a la construction pooled2)",
+  "DW-34 : vitest typecheck embarque (~7 s/run), evaluer desactivation pour volumes"
+ ],
+ "nouvelles_sources": [
+  "public-zod-ts MIT @5e608851 : runner valide (94 tests), 3 mutants z-zero-appel valides (double 7 F2P/51 P2P, double 4/54, easy 3/55)",
+  "public-date-fns-ts MIT @a0a39220 : runner valide (9 tests/173 ms depuis pkgs/core), 3 candidats en validation"
+ ],
+ "consequence": "v10 inchange (mix refuse par criteres scelles), issue B servie ; trajectoire AUC 0.6429(v5) -> 0.6634(63) -> 0.6739(80), IC se resserre ; decision mix exige IC excluant 0.60 => plus de lignes negatives equilibrees"
+}

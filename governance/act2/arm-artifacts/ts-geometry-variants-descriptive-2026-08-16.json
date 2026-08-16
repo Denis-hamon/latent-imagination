@@ -1,0 +1,56 @@
+{
+ "date": "2026-08-16",
+ "population": "coverage-ts-pooled (63=51+/12-)",
+ "status": "descriptif-non-certifiable",
+ "variants": {
+  "E_diff (scellé)": {
+   "auc": 0.6634,
+   "ic95": [
+    0.4918,
+    0.8301
+   ]
+  },
+  "E_state": {
+   "auc": 0.5335,
+   "ic95": [
+    0.3582,
+    0.7165
+   ]
+  },
+  "E_goal": {
+   "auc": 0.5,
+   "ic95": [
+    0.5,
+    0.5
+   ]
+  },
+  "state+diff": {
+   "auc": 0.6634,
+   "ic95": [
+    0.5089,
+    0.8031
+   ]
+  },
+  "diff+goal": {
+   "auc": 0.6634,
+   "ic95": [
+    0.4884,
+    0.8203
+   ]
+  },
+  "state+diff+goal": {
+   "auc": 0.6634,
+   "ic95": [
+    0.5147,
+    0.8088
+   ]
+  },
+  "concat(s,d,g)": {
+   "auc": 0.6356,
+   "ic95": [
+    0.4697,
+    0.7827
+   ]
+  }
+ }
+}

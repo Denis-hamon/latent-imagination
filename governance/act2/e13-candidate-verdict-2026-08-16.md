@@ -59,5 +59,8 @@ un candidat qui échoue au premier test réel.
 
 **Confirmation sur population agrégée (même jour)** : pooled 63 lignes
 (51 pos/12 neg, 4 repos — voir arm-artifacts/ts-dedicated-geometry-memo-2026-08-16.md)
-→ advprobe 0.4951 < 0.5977, second échec certifiable consécutif. Le candidat
-est définitivement clos sur l'état actuel des évidences.
+→ advprobe 0.4951 < 0.5977, second échec certifiable consécutif. Confirmation
+supplémentaire le même jour sur pooled2 (80 lignes, 61/19) : 0.4254, et sur
+v6 seul (17 lignes, 10/7) : 0.3714 — quatre échecs certifiables consécutifs
+de 0.4951 à 0.3714. Le candidat est définitivement clos sur l'état actuel des
+évidences (toute réouverture exige une population certifiable inédite).
