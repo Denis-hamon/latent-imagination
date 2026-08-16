@@ -1,0 +1,95 @@
+{
+ "envelope_calls_cap": 70,
+ "frozen_at": "2026-08-16T14:26:13.340042Z",
+ "probe_calls_already_consumed": 3,
+ "quota_note": "10/10 candidates validees, zero shortfall ; tiers 4 easy / 6 double",
+ "sonde_resultat": "classe double pure : 2/2 no-diff => escalade regle gelee => quota mixte easy+double",
+ "tasks": [
+  {
+   "buggy_sha256": "9c58e007bd9904734ac398ccb18c96ee482d8512a41f69217f67159bfc6cd32f",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__lite.backward_polarity_inverted",
+   "n_f2p": 1,
+   "tier": "ts5-easy"
+  },
+  {
+   "buggy_sha256": "f4c99e39b0e29f62b23bdc9fdccdf3c5d768ff2a1dc54077ba98fb778c435fec",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__lite.max_length_raised",
+   "n_f2p": 3,
+   "tier": "ts5-easy"
+  },
+  {
+   "buggy_sha256": "09370231a16cbcf581d2394db4e70ab1858e71ed9c701e4a7173914d6bbd93bf",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__affinity.protect_strategy_typo",
+   "n_f2p": 1,
+   "tier": "ts5-easy"
+  },
+  {
+   "buggy_sha256": "2ab9c8360377134d5926c6df30e939ffbc79755317c9c292ec94688a3faaff16",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__usage.buffer_leaks_into_metering",
+   "n_f2p": 3,
+   "tier": "ts5-easy"
+  },
+  {
+   "buggy_sha256": "c358938f2e3623d131b437097be02747eabaf8b7371adfd9066818554c90d66d",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__lite.double_polarity_maxlen",
+   "n_f2p": 3,
+   "tier": "ts5-double"
+  },
+  {
+   "buggy_sha256": "f491a8e835a8818c63f11d2ee66a20d9287bd6b0cf56404243ea49a4c753c552",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__lite.double_role_maxlen",
+   "n_f2p": 3,
+   "tier": "ts5-double"
+  },
+  {
+   "buggy_sha256": "749827dd51d02980e3e8ad88dece2d8fc659274fbe3af02b992c638b44789087",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__usage.double_prompt_estimated",
+   "n_f2p": 2,
+   "tier": "ts5-double"
+  },
+  {
+   "buggy_sha256": "4c958915f68ce11480583c37cdbeb9d4f3a5d1f653b271c6f8cf48800ed6bd07",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__usage.double_input_total",
+   "n_f2p": 4,
+   "tier": "ts5-double"
+  },
+  {
+   "buggy_sha256": "5bdb69dbfb2a37e6a497dd0e9f46a48e750e3a73875c564a0c6571a6f64af672",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__usage.double_total_estimated",
+   "n_f2p": 2,
+   "tier": "ts5-double"
+  },
+  {
+   "buggy_sha256": "bd1165b4d7347812f58e8a671f4f76a7307b8e6378af6818d221aab473564bea",
+   "campaign": "coverage-ts-5",
+   "draws": 2,
+   "instance_id": "omniroute__affinity.double_tiebreak_protect",
+   "n_f2p": 1,
+   "tier": "ts5-double"
+  }
+ ],
+ "tiers": {
+  "ts5-double": 6,
+  "ts5-easy": 4
+ },
+ "window": "coverage-ts-v5",
+ "window_approval_anchor": "588be21efd6c5d7ec16c9e6b4c3e4b0e8c97f6c6d57c2e2b8f9d1e6f4f8c2d8e"
+}
