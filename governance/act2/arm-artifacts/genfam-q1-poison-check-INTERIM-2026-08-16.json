@@ -1,0 +1,24 @@
+{
+ "quota": "q1",
+ "generated_at": "2026-08-16T10:18:39.505529Z",
+ "metric": "LOAO-F1 ext-only, AUC Mann-Whitney, propre tâche exclue",
+ "n_rows": 68,
+ "n_pos": 15,
+ "n_neg": 53,
+ "pos_rate_wilson95": [
+  0.1384889157967965,
+  0.3325696352377016
+ ],
+ "auc_ext_only": 0.4918,
+ "gate": 0.65,
+ "verdict": "POISON (quota HORS pool, archivé)",
+ "positive_control": {
+  "pool": "v9",
+  "auc_loao_f1": 0.6777,
+  "n_pos": 78,
+  "n_neg": 135,
+  "note": "même métrique (LOAO-F1 goal-free) sur le pool servi — ancrage d'échelle"
+ },
+ "rule": "règle S11 gelée : AUC ext-only < 0.65 ⇒ quota exclu du mix, archivé pour étude",
+ "status_note": "INTERIM sur quota incomplet (68/~100+ lignes, 17 slots bloqués par l'instabilité de l'endpoint auteur). La gate scellée (S11 : AUC ext-only < 0.65 ⇒ quota HORS pool, archivé) s'applique au quota COMPLET — verdict final après la fin de la fenêtre Q1. Diagnostic intermédiaire : positifs concentrés sur 4/12 familles, 5 familles à zéro positif ; la géométrie du quota est structurée par famille/difficulté plutôt que par le signal succès."
+}
