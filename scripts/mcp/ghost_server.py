@@ -64,6 +64,13 @@ import time
 from hashlib import sha256
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from ghost_compare import (
+    calibrate_local,
+    goal_free_scores,
+    informative_selection,
+)
+
 ROOT = Path(__file__).resolve().parents[2]
 CALIBRATION_PATH = Path(os.environ.get(
     "LI_CALIBRATION",
@@ -433,6 +440,31 @@ TOOLS = [
         },
     },
     {
+        "name": "compare_patches",
+        "description": "Ghost PR-Simulator : compare K patchs candidats sur un même "
+                       "problème. Phase 1 (issues < 8) : retourne un plan d'exécution "
+                       "(les n patchs à tester réellement en priorité) SANS recommandation. "
+                       "Phase 2 (issues >= 8 fournis par l'appelant, groundés par exécution "
+                       "réelle des tests) : calibration locale conforme => recommandation, "
+                       "probabilités, abstentions, disclosures. Ghost n'exécute jamais les "
+                       "tests lui-même : l'issue vient de l'appelant (grounded_by requis).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "candidates": {"type": "array", "description": "K patchs candidats",
+                               "items": {"type": "object", "properties": {
+                                   "id": {"type": "string"},
+                                   "state_text": {"type": "string", "description": "problème/symptômes + noms de tests qui doivent passer"},
+                                   "diff_text": {"type": "string"}},
+                                   "required": ["id", "state_text", "diff_text"]}},
+                "budget_n": {"type": "integer", "description": "nombre d'exécutions réelles ciblées (défaut 8, minimum produit)", "default": 8},
+                "issues": {"type": "object", "description": "{id: {y: 0|1, grounded_by: str}} — issues mesurées RÉELLEMENT (tests exécutés par l'appelant)", "default": {}},
+                "reporter": {"type": "string"},
+            },
+            "required": ["candidates"],
+        },
+    },
+    {
         "name": "risk_scan",
         "description": "Le fantôme de chaque run passé note votre brouillon de diff. Compare le "
                        "patch à la géométrie des issues antérieures : distance au plus proche "
@@ -476,7 +508,7 @@ def handle(msg: dict) -> dict | None:
         return _resp(mid, {
             "protocolVersion": "2025-06-18",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "ghost", "version": "0.6.0"},
+            "serverInfo": {"name": "ghost", "version": "0.7.0"},
         })
     if method == "notifications/initialized":
         return None
@@ -735,6 +767,65 @@ def do_risk_scan(args: dict) -> dict:
           "diff_sha": sha256(args["diff_text"].encode()).hexdigest(),
           "state_text": args["state_text"][:4000],
           "diff_text": args["diff_text"][:8000]})
+    return out
+
+
+@tool
+def do_compare_patches(args: dict) -> dict:
+    """Ghost PR-Simulator (v0.7.0) : plan d'exécution (n<8) ou recommandation
+    calibrée conforme (n>=8 issues réelles fournies par l'appelant)."""
+    import importlib.util
+
+    import numpy as _np
+    cands = args.get("candidates") or []
+    if not cands or any(not c.get("id") or not c.get("diff_text") for c in cands):
+        raise ToolInputError("candidates requis : [{id, state_text, diff_text}] non vides")
+    n_min = 8
+    budget = int(args.get("budget_n") or n_min)
+    issues_in = args.get("issues") or {}
+    issues = {}
+    for cid, iss in issues_in.items():
+        yv = iss.get("y") if isinstance(iss, dict) else iss
+        if yv in (0, 1):
+            issues[cid] = int(yv)
+    bad = [c for c in issues if c not in {x["id"] for x in cands}]
+    if bad:
+        raise ToolInputError(f"issues inconnues hors candidats : {bad[:3]}")
+    _spec = importlib.util.spec_from_file_location(
+        "s11c", ROOT / "scripts" / "act2" / "s11_ext_pool.py")
+    s11c = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(s11c)
+    pc = _load_pool()
+    ids = [c["id"] for c in cands]
+    E_cand = _np.vstack([s11c.norm(
+        _np.array([(embed(c.get("state_text", "")[:1200]) +
+                    embed(c["diff_text"][:3000])) / 2.0])) for c in cands])
+    scores = goal_free_scores(pc["cd"], pc["y"], pc["tasks"], E_cand, s11c)
+    out = {"tool": "compare_patches", "pool": POOL_JSON.name, "encoder": ENCODER,
+           "n_candidates": len(ids), "n_min_recommend": n_min,
+           "n_issues_mesurees": len(issues),
+           "grounded_by": {cid: (issues_in[cid].get("grounded_by") if isinstance(issues_in.get(cid), dict) else None)
+                           for cid in issues}}
+    if len(issues) < n_min:
+        plan = informative_selection(ids, scores, max(budget, n_min) - len(issues))
+        out.update({"phase": "execution-plan",
+                    "execution_plan": plan,
+                    "disclosure": (f"{len(issues)}/{n_min} issues réelles : AUCUNE recommandation "
+                                   "possible (règle produit mesurée en démo 15.4 : sous n=8, le "
+                                   "prior global ne distingue pas des candidats proches — G1 0/4). "
+                                   "Exécutez réellement les tests des patchs listés (les plus "
+                                   "informatifs selon le prior), puis rappelez avec issues={id:{y,grounded_by}}.")})
+        return out
+    E_issues = {cid: E_cand[ids.index(cid)] for cid in issues}
+    cal = calibrate_local(pc["cd"], pc["y"], E_issues, issues, E_cand, ids, s11c,
+                          alpha=0.10, n_min=n_min)
+    out.update({"phase": "recommendation" if cal.get("regime") == "local" else "abstention",
+                "calibration": cal})
+    if cal.get("regime") == "local":
+        for c in out["calibration"]["candidates"]:
+            c["prior_score"] = round(scores[ids.index(c["id"])], 4)
+    out["warning"] = ("advisory only — la recommandation est une comparaison calibrée, "
+                      "jamais une garantie ; issue réelle requise via report_outcome")
     return out
 
 

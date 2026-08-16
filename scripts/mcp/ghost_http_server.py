@@ -143,6 +143,23 @@ def report_outcome(call_id: str, passed: bool, reporter: str = "",
 
 
 @mcp.tool()
+def compare_patches(candidates: list[dict], budget_n: int = 8,
+                    issues: dict | None = None, reporter: str = "") -> str:
+    """Ghost PR-Simulator : compare K patchs candidats pour un même problème.
+
+    Phase 1 (issues < 8 mesurées) : retourne un PLAN D'EXÉCUTION — les patchs
+    à tester réellement en priorité (sélection informative sur le prior servi)
+    — et AUCUNE recommandation (règle produit mesurée : sous n=8 issues
+    réelles, la géométrie ne distingue pas des candidats proches).
+    Phase 2 (issues ≥ 8) : calibration locale CONFORME sur vos issues réelles
+    => recommandation + probabilités par candidat + abstentions + disclosures.
+    Ghost n'exécute jamais les tests : issues = {id: {y: 0|1, grounded_by}}
+    mesurées PAR VOUS (tests réellement exécutés, jamais un avis de modèle)."""
+    return _run("compare_patches", {"candidates": candidates, "budget_n": budget_n,
+                                    "issues": issues or {}, "reporter": reporter})
+
+
+@mcp.tool()
 def assess_patch(state_text: str, diff_text: str, goal_text: str) -> str:
     """Mode HARNESS/ÉVALUATION seulement : énergie latente goal-bound
     (nécessite le texte du but — indisponible en production). Advisory."""

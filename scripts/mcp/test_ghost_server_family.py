@@ -206,7 +206,7 @@ class TestConformalTau:
     ni embed, ni réseau). Mondrian si la strate a une garantie, repli pooled
     HONNÊTE sinon (jamais de garantie par famille fabriquée, FR-27)."""
 
-    CAL = {
+    CAL = {  # noqa: RUF012 — fixture de test
         "strata_mondrian": {
             "acme__big": {"alpha_0.10": {"tau": 0.2, "n": 40, "guarantee": "≤0.1 stratum",
                                           "realized_err_rate": 0.05}},
@@ -267,7 +267,7 @@ class TestRiskScanConformalServing:
     (régime nommé, calibration auditée, truncation) quand LI_CONFORMAL_CALIB
     est posée ; rollback trivial = variable absente → régime tau-fixe."""
 
-    ARGS = {"state_text": "fixture state", "diff_text": "diff --git a/x b/x\n+1\n"}
+    ARGS = {"state_text": "fixture state", "diff_text": "diff --git a/x b/x\n+1\n"}  # noqa: RUF012
 
     @pytest.fixture()
     def conformal_server(self, offline_server, monkeypatch):
