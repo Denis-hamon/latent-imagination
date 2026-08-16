@@ -1,0 +1,38 @@
+{
+ "story": "13.4-joint-diff-trace",
+ "generated_at": "2026-08-16T11:44:34.193564Z",
+ "pool": "latent-pool-v10",
+ "pool_sha256_16": "88985eb171b4bb9f",
+ "composition_pinned": "cd_joint = norm([cd; ctrace]) — concaténation souple 768+768, composantes normalisées, zéro pondération apprise (épinglé pré-run)",
+ "trace_coverage": {
+  "rows_with_real_trace": 144,
+  "rows_zero_padded": 75,
+  "zero_pad_disclosure": "absence de trace = vecteur nul ; jamais de trace inventée (FR-3)"
+ },
+ "serving_asymmetry": "les traces n'existent QUE pour les lignes du pool, jamais pour la requête : l'évaluation requête zero-padded contre pool joint EST la condition de serving — mesurée telle quelle, pas contournée",
+ "candidate": {
+  "ext_loao_joint": {
+   "auc": 0.4038,
+   "acc": 0.3881,
+   "n_evaluated": 219
+  },
+  "ext_loao_baseline_same_folds": {
+   "auc": 0.5477,
+   "acc": 0.4018,
+   "n_evaluated": 219
+  },
+  "in_family_loao": {
+   "auc": 0.6694
+  }
+ },
+ "gates_sealed_13_1": {
+  "baseline_ext": 0.5477,
+  "margin": 0.05,
+  "transfer_threshold": 0.5977,
+  "home_guard": 0.6494,
+  "pass_transfer": false,
+  "pass_home": true
+ },
+ "verdict": "SOUS LA GATE — résultat négatif publié, non promu",
+ "serving": "non servi — géométrie v10 inchangée (prospective-only, S13)"
+}

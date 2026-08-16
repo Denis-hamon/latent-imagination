@@ -1,0 +1,43 @@
+{
+ "story": "13.3-family-adversarial-probe",
+ "generated_at": "2026-08-16T11:43:19.080314Z",
+ "pool": "latent-pool-v10",
+ "pool_sha256_16": "88985eb171b4bb9f",
+ "device": "cpu",
+ "config_pinned": {
+  "hidden": 12,
+  "lambda_adv": 1.0,
+  "lr": 0.001,
+  "epochs": 300,
+  "seed": 20260805,
+  "params_approx": 9240,
+  "note": "épinglée pré-run, amendment-only (gates 13.1); un seul point de config — pas de grille"
+ },
+ "candidate": {
+  "ext_loao": {
+   "auc": 0.6719,
+   "acc": 0.5982,
+   "n_evaluated": 219,
+   "folds_skipped": {}
+  },
+  "in_family_loao": {
+   "auc": 0.6694,
+   "acc": 0.6027
+  }
+ },
+ "gates_sealed_13_1": {
+  "baseline_ext": 0.5477,
+  "margin": 0.05,
+  "transfer_threshold": 0.5977,
+  "home_guard": 0.6494,
+  "pass_transfer": true,
+  "pass_home": true
+ },
+ "verdict": "FRANCHIT les gates — enregistré pour validation prospective (promotion JAMAIS sur le pool qui l'a testée, leçon S13)",
+ "precedents": {
+  "E2_S9": "capacité non bornée détruit le home regime ; ici ≈9.2k params et home-guard mesurée",
+  "S13": "promotion prospective seulement",
+  "LOAO_strict": "seuils réappris par fold sur train seul"
+ },
+ "serving": "non servi — géométrie v10 inchangée"
+}
