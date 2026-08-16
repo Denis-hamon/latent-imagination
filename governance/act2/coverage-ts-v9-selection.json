@@ -1,0 +1,65 @@
+{
+ "arms": {
+  "flash": {
+   "campaign": "coverage-ts-9-flash",
+   "draws": 3,
+   "model": "DeepSeek-V4-Flash",
+   "subcap": 30
+  },
+  "pinned": {
+   "campaign": "coverage-ts-9-pinned",
+   "draws": 2,
+   "model": "MLX-Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled-bf16",
+   "subcap": 25
+  }
+ },
+ "envelope_calls_cap": 55,
+ "frozen_at": "2026-08-16T18:34:59.939669Z",
+ "probe_calls_consumed": 8,
+ "probe_note": "sonde initiale 4 appels (règle 1 tirage) + AMENDEMENT DISCLOSÉ 4 appels flash (équité stochastique, portes inchangées)",
+ "quota_manifest_sha256": "b989f1f4f407afbc9d94347d75e4781ef0959bc732a230a9dc7229f78815ad3d",
+ "shortfall": "2 triples combo ÉCARTÉS à la validation zéro-appel (aucun test nommé ne casse) => quota 3/5, disclosure scellée",
+ "sonde_resultat": {
+  "flash": "1/1 initial no-diff x2 => extension => 3/4 diffs applicables => VALIDÉ sur les 2 tâches (règle >=1)",
+  "pinned": "2/2 VALIDÉ"
+ },
+ "tasks": [
+  {
+   "buggy_sha256": "c85ad43d5b808b752e660a9ba7fb9e3ce4d680791bb575ea65bf7e88b2e9b7ff",
+   "campaigns": [
+    "coverage-ts-9-flash",
+    "coverage-ts-9-pinned"
+   ],
+   "instance_id": "omniroute__lite.triple_coordinated",
+   "n_f2p": 3,
+   "note": "lite triple: 1 P2P seulement (veto faible, disclosé)",
+   "tier": "ts9-triple"
+  },
+  {
+   "buggy_sha256": "9375a9620b22c114dd6e4b962f77eebf6ef74de866f70be5c46685fa5c3e24e0",
+   "campaigns": [
+    "coverage-ts-9-flash",
+    "coverage-ts-9-pinned"
+   ],
+   "instance_id": "omniroute__affinity.triple_coordinated",
+   "n_f2p": 2,
+   "note": null,
+   "tier": "ts9-triple"
+  },
+  {
+   "buggy_sha256": "a726b420d8e3d97049b83d97aea2fd6db3dce5b41c86752cf97d99a7b2144ddb",
+   "campaigns": [
+    "coverage-ts-9-flash",
+    "coverage-ts-9-pinned"
+   ],
+   "instance_id": "omniroute__usage.triple_coordinated",
+   "n_f2p": 2,
+   "note": null,
+   "tier": "ts9-triple"
+  }
+ ],
+ "tiers": {
+  "ts9-triple": 3
+ },
+ "window": "coverage-ts-v9"
+}
