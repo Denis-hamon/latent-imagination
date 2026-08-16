@@ -1,0 +1,78 @@
+{
+ "envelope_calls_cap": 120,
+ "frozen_at": "2026-08-16T13:51:09.162020Z",
+ "probe_calls_already_consumed": 9,
+ "quota_note": "cible 12 t\u00e2ches ; 8 valid\u00e9es (4 \u00e9cart\u00e9es sans signal, journalis\u00e9es : les tests 8376 breaker ne couvrent pas les branches mut\u00e9es, tiebreak affinity non couvert) ; modules 3/4 \u2014 double shortfall DISCLOS\u00c9",
+ "tasks": [
+  {
+   "buggy_sha256": "9c58e007bd9904734ac398ccb18c96ee482d8512a41f69217f67159bfc6cd32f",
+   "campaign": "coverage-ts-4",
+   "draws": 2,
+   "instance_id": "omniroute__lite.backward_polarity_inverted",
+   "n_f2p": 1,
+   "tier": "ts4-easy"
+  },
+  {
+   "buggy_sha256": "f4c99e39b0e29f62b23bdc9fdccdf3c5d768ff2a1dc54077ba98fb778c435fec",
+   "campaign": "coverage-ts-4",
+   "draws": 2,
+   "instance_id": "omniroute__lite.max_length_raised",
+   "n_f2p": 3,
+   "tier": "ts4-easy"
+  },
+  {
+   "buggy_sha256": "c85ad43d5b808b752e660a9ba7fb9e3ce4d680791bb575ea65bf7e88b2e9b7ff",
+   "campaign": "coverage-ts-4",
+   "draws": 2,
+   "instance_id": "omniroute__lite.triple_coordinated",
+   "n_f2p": 3,
+   "tier": "ts4-hard"
+  },
+  {
+   "buggy_sha256": "09370231a16cbcf581d2394db4e70ab1858e71ed9c701e4a7173914d6bbd93bf",
+   "campaign": "coverage-ts-4",
+   "draws": 2,
+   "instance_id": "omniroute__affinity.protect_strategy_typo",
+   "n_f2p": 1,
+   "tier": "ts4-easy"
+  },
+  {
+   "buggy_sha256": "9375a9620b22c114dd6e4b962f77eebf6ef74de866f70be5c46685fa5c3e24e0",
+   "campaign": "coverage-ts-4",
+   "draws": 2,
+   "instance_id": "omniroute__affinity.triple_coordinated",
+   "n_f2p": 2,
+   "tier": "ts4-hard"
+  },
+  {
+   "buggy_sha256": "2ab9c8360377134d5926c6df30e939ffbc79755317c9c292ec94688a3faaff16",
+   "campaign": "coverage-ts-4",
+   "draws": 2,
+   "instance_id": "omniroute__usage.buffer_leaks_into_metering",
+   "n_f2p": 3,
+   "tier": "ts4-easy"
+  },
+  {
+   "buggy_sha256": "a726b420d8e3d97049b83d97aea2fd6db3dce5b41c86752cf97d99a7b2144ddb",
+   "campaign": "coverage-ts-4",
+   "draws": 2,
+   "instance_id": "omniroute__usage.triple_coordinated",
+   "n_f2p": 2,
+   "tier": "ts4-hard"
+  },
+  {
+   "buggy_sha256": "5bdb69dbfb2a37e6a497dd0e9f46a48e750e3a73875c564a0c6571a6f64af672",
+   "campaign": "coverage-ts-4",
+   "draws": 2,
+   "instance_id": "omniroute__usage.total_leak_and_estimated",
+   "n_f2p": 2,
+   "tier": "ts4-hard"
+  }
+ ],
+ "tiers": {
+  "ts4-easy": 4,
+  "ts4-hard": 4
+ },
+ "window": "coverage-ts-v4",
+ "window_approval_anchor": "44cbca34fd5dcc87391704387d7b6529333a652c7e65b6f8537975a976b2795b"
+}
