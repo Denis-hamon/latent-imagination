@@ -74,3 +74,9 @@ Sources : public-omniroute-ts MIT @ e646fe84 (inchangée) + own-kimsufi-site-ts.
 Après mix éventuel : calibration conforme v11 avec strates TS (Mondrian ≥ 12
 lignes/strate) ; rapport de couverture par strate pour mesurer l'apport TS au
 20 % global. Rien n'est promis — mesuré, disclosé.
+
+## Seal record
+
+- frozen_sha256: `b19583e8d4c9517386046b8fdf660a36899d7c73ee45a1f251ac63b929b22d57` (couvre l'état approuvé pré-seal ; identité dans ledger)
+- ledger_row: prereg-ledger.jsonl ligne `window-approved` (preuve data/release-store/proofs/window-ts-v6-b19583e8d4c95173.ots)
+- approved_by / envelope: Denis (owner), 2026-08-16, option 2 — cap 110 appels.
