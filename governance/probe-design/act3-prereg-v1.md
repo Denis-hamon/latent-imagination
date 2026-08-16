@@ -23,16 +23,45 @@ régime strict FR-21). Sinon (iii) → parité null-result, publication signée.
 2. **Rien d'autre** : encodage, armes, métrique, bar, marge, split, templates
    et moteur de verdict sont cités par hash, inchangés.
 
+## AMENDEMENT 2026-08-16 (pré-entraînement, sur dossier — procédure scellée)
+
+Leçon Act II ré-appliquée AVANT toute mesure : la base « pool slice » porte le
+**watermark de provenance** démontré par le contrôle Act II (matrice fusionnée
+1.0 vs matched-control 0.6271 — le classifieur séparait style-gold vs
+style-agent, pas le résultat ; critique R2E-Gym attrapée par le contrôle
+pré-enregistré). Le paquet gelait à tort le slice v10 comme base d'évaluation.
+
+**Corrections (enregistrées avant résultats, conformément à la procédure
+d'amendement prouvée par les deux amendements 2026-08-05)** :
+
+1. **Population d'évaluation du verdict** = matched matrix Act II GELÉE :
+   `governance/probe-design/matched-matrix.json` (sha `c7b54d4c…`, 461 lignes,
+   258 nég / 203 pos, deux classes mêmes corpus/modèles/instances) avec son
+   split gelé `matched-split-manifest.json` (sha `8c4c920c…`). Population
+   sans watermark ; comparabilité inter-Actes maximale (c'est elle qui a
+   produit le 0.6271 d'Act II).
+2. **Le clean slice v10 (207 lignes) devient le SUBSTRAT D'ENTRAÎNEMENT de
+   l'arme JEPA** — c'est la variable testée (la géométrie grandie), jamais la
+   population d'évaluation.
+3. **Contrôle de reproductibilité Act III** : l'arme baseline (mêmes
+   embeddings gelés, même split, même enveloppe C) entraînée sur le split
+   train du matched matrix doit reproduire ≈ 0.6271 (l'écart Act II). Une
+   dérive ⇒ instrument faussé, verdict invalidé — l'équivalent Act III du
+   contrôle v6.
+4. Question Act III inchangée : l'arme JEPA entraînée sur la géométrie v10
+   transfère-t-elle sur la population watermark-free AU-DELÀ de 0.8889 ?
+
 ## Base de données gelée
 
 - Pool : `data/landing/act2-pilot/latent-pool-v10.json` (sha `88985eb171b4bb9f…`)
   + `.npz` (sha `80325267404a0761…`) — 219 lignes.
-- Base probe = lignes PORTEUSES DE GOLD uniquement : les 12 lignes flywheel
-  `goal_free:true` sont EXCLUES de la base Act III (pas de vérité d'exécution
-  runnable pour la précision ; R3 — jamais inventer un canal gold). Base =
-  207 lignes (positifs = flips gold ; négatifs = tentatives réelles résolues
-  faux / synthetic no-flip, classe négatives scellée par l'amendement
-  design.toml 2026-08-05).
+- Base probe (population d'évaluation du verdict — voir AMENDEMENT ci-dessus) :
+  matched matrix Act II `governance/probe-design/matched-matrix.json`
+  (sha `c7b54d4c…`), split gelé `matched-split-manifest.json` (sha
+  `8c4c920c…`). Les 12 lignes flywheel `goal_free:true` restent EXCLUES de
+  tout rôle dans le verdict (pas de vérité d'exécution runnable ; R3).
+- Substrat d'entraînement JEPA : clean slice du pool v10, 207 lignes porteuses
+  de gold (pool sha `88985eb1…` / npz `80325267…`), goal_free exclues.
 - Split d'évaluation : règle GELÉE par référence à `[eval_split]` de
   `governance/probe-design/design.toml` (sha `5924ef204cf18c7f…`) :
   repo-grouped + size-stratified, ~20 % des items, ≥2 repos mid-size,
@@ -102,11 +131,11 @@ pré-entraînement, sur dossier, jamais en silence.
 
 ## Seal record (fill at ledger-anchoring ceremony)
 
-- frozen_sha256: `9ba6401770c41d2c69b7cc6ac1998488a324daf32e13e9f2a23c9055006c6c75`
-  — couvre ce document en état gelé (Seal record non rempli) ; l'identité
-  canonique vit dans le ledger (prereg-ledger.jsonl, ligne
-  `type:"prereg-package"`, ancrée 2026-08-16T11:18:30Z, mode ots-live), pas
-  in-file (convention rct/ladder).
-- ledger_row: data/release-store/prereg-ledger.jsonl — `prereg-package` (chain_hash = frozen_sha256)
-- ots_proof_ref: data/release-store/proofs/act3-9ba6401770c41d2c.ots
+- frozen_sha256: `30a0b9c026cbe8e5da79fb42097a4d790dc3a5ed7243895a141c8199bc4a4d40`
+  — état AMENDÉ (watermark control intégré pré-entraînement) ; supersède
+  `9ba6401770c41d2c…` (premier scellement 2026-08-16T11:18:30Z). L'identité
+  canonique vit dans le ledger (lignes `prereg-package` puis
+  `prereg-package-amendment`, append-only), pas in-file (convention rct/ladder).
+- ledger_row: data/release-store/prereg-ledger.jsonl — `prereg-package-amendment` (chain_hash = frozen_sha256)
+- ots_proof_ref: data/release-store/proofs/act3-30a0b9c026cbe8e5.ots
 - code_commit: `0f76f5f2385332d2d46e1b6140500f61d081601e`

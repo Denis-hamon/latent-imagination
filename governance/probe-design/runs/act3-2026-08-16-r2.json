@@ -1,0 +1,90 @@
+{
+ "campaign": "act3-2026-08-16",
+ "prereg_package_digest": "30a0b9c026cbe8e5da79fb42097a4d790dc3a5ed7243895a141c8199bc4a4d40",
+ "generated_at": "2026-08-16T11:24:30.394566Z",
+ "sealed_inputs": {
+  "matched_matrix_sha256_16": "c7b54d4c73f8f5c4",
+  "matched_split_sha256_16": "8c4c920cbc1d9504",
+  "decision_toml_sha256_16": "6b63eeb0702ae45d",
+  "pool_v10_json_sha256_16": "88985eb171b4bb9f"
+ },
+ "eval_population": "matched matrix Act II (watermark-free) — amendement pré-entraînement du package; le slice v10 n'est JAMAIS la population d'évaluation",
+ "no_peeking": "eval calculé une seule fois après entraînement, split gelé, hyperparamètres = défauts scellés (aucune recherche contre l'eval)",
+ "baseline_control": {
+  "precision": 0.6271186440677966,
+  "expected": 0.6271,
+  "drift": 1.864406779661376e-05,
+  "tolerance": 0.01,
+  "ok": true,
+  "config": {
+   "c": 1.0,
+   "seed": 20260805,
+   "max_iter": 2000
+  }
+ },
+ "baseline_arm": {
+  "precision": 0.6271186440677966,
+  "recall": 0.6271186440677966,
+  "precision_wilson95": [
+   0.4995,
+   0.7392
+  ],
+  "wilson_note": "intervalle Act II scellé (mêmes tp/fp : le contrôle reproduit 0.6271 exact)",
+  "n_train_matched": 345,
+  "n_eval": 116
+ },
+ "jepa_arm": {
+  "best": "lr0.001",
+  "grid": {
+   "lr0.001": {
+    "precision": 0.7273,
+    "recall": 0.13559322033898305,
+    "steps": 4000,
+    "truncated": false,
+    "artifact_hash": "01d09930bcfe2a900273d21b53615777312e80531fbd80a8ee22f119b0d29858",
+    "tp": 8,
+    "fp": 3,
+    "fn": 51,
+    "n_pred_positive": 11,
+    "precision_wilson95": [
+     0.4344,
+     0.9025
+    ]
+   },
+   "lr0.0001": {
+    "precision": 0.5,
+    "recall": 0.05084745762711865,
+    "steps": 4000,
+    "truncated": false,
+    "artifact_hash": "d9255ebb25f9506f8bb47c894f39431d9b705918196839a672cef166cacd735f",
+    "tp": 3,
+    "fp": 3,
+    "fn": 56,
+    "n_pred_positive": 6,
+    "precision_wilson95": [
+     0.1876,
+     0.8124
+    ]
+   }
+  },
+  "precision": 0.7273,
+  "recall": 0.13559322033898305,
+  "n_train_v10_slice": 207,
+  "n_eval": 116,
+  "trained_on": "pool v10 clean slice",
+  "evaluated_on": "matched eval split",
+  "envelope": "lr ∈ {1e-4,1e-3} (2 runs), epochs=1000, batch 64, hidden 512, lam 0.05, seed 20260805, steps_cap 20k, wall 2h — design.toml gelé, instanciation Act II",
+  "r1_note": "run initial (epochs=10 par défaut) dégénéré never-predicts-positive (P=0.0) — act3-2026-08-16.json conservé comme occurrence; r2 = enveloppe scellée"
+ },
+ "verdict": {
+  "branch": "iii",
+  "shipped": "none",
+  "reason": "no arm >= bar → NO GATE PRODUCT this cycle; measurement artifacts stand alone",
+  "values": {
+   "bar": 0.8889,
+   "baseline_precision": 0.6271186440677966,
+   "jepa_precision": 0.7273,
+   "margin": 0.05
+  }
+ }
+}

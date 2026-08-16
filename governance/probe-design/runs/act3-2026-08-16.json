@@ -1,0 +1,56 @@
+{
+ "campaign": "act3-2026-08-16",
+ "prereg_package_digest": "30a0b9c026cbe8e5da79fb42097a4d790dc3a5ed7243895a141c8199bc4a4d40",
+ "generated_at": "2026-08-16T11:21:57.001865Z",
+ "sealed_inputs": {
+  "matched_matrix_sha256_16": "c7b54d4c73f8f5c4",
+  "matched_split_sha256_16": "8c4c920cbc1d9504",
+  "decision_toml_sha256_16": "6b63eeb0702ae45d",
+  "pool_v10_json_sha256_16": "88985eb171b4bb9f"
+ },
+ "eval_population": "matched matrix Act II (watermark-free) — amendement pré-entraînement du package; le slice v10 n'est JAMAIS la population d'évaluation",
+ "no_peeking": "eval calculé une seule fois après entraînement, split gelé, hyperparamètres = défauts scellés (aucune recherche contre l'eval)",
+ "baseline_control": {
+  "precision": 0.6271186440677966,
+  "expected": 0.6271,
+  "drift": 1.864406779661376e-05,
+  "tolerance": 0.01,
+  "ok": true,
+  "config": {
+   "c": 1.0,
+   "seed": 20260805,
+   "max_iter": 2000
+  }
+ },
+ "baseline_arm": {
+  "precision": 0.6271186440677966,
+  "recall": 0.6271186440677966,
+  "n_train_matched": 345,
+  "n_eval": 116
+ },
+ "jepa_arm": {
+  "precision": 0.0,
+  "recall": 0.0,
+  "n_train_v10_slice": 207,
+  "n_eval": 116,
+  "trained_on": "pool v10 clean slice",
+  "evaluated_on": "matched eval split",
+  "config": {
+   "seed": 20260805,
+   "lr": 0.001,
+   "epochs_cap": 10,
+   "steps_cap": 20000
+  }
+ },
+ "verdict": {
+  "branch": "iii",
+  "shipped": "none",
+  "reason": "no arm >= bar → NO GATE PRODUCT this cycle; measurement artifacts stand alone",
+  "values": {
+   "bar": 0.8889,
+   "baseline_precision": 0.6271186440677966,
+   "jepa_precision": 0.0,
+   "margin": 0.05
+  }
+ }
+}
