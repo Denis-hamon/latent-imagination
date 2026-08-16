@@ -1,0 +1,67 @@
+{
+ "window": "coverage-ts-v2",
+ "closed_at": "2026-08-16T12:47:41.953817Z",
+ "window_approval_anchor": "ebfe7acf9e7bf62e81c106b1dae1a1dc7b93c0840c04d80958ed361707a824b4",
+ "selection_frozen": "governance/act2/coverage-ts-v2-selection.json (a7972cb4…)",
+ "difficulty_probe": {
+  "resultat": "1/2 réparé (region_sort no-diff, price_strip fuzz-reexport)",
+  "decision": "CLASSE VALIDÉE — gel du quota sur les content-adapters kimsufi",
+  "appels": 2
+ },
+ "envelope": {
+  "call_cap": 90,
+  "calls_consumed": 20,
+  "calls_model_ok": 18,
+  "calls_probe": 2,
+  "calls_500": 0,
+  "underspend": "70 appels non consommés (plafond respecté)"
+ },
+ "quota": {
+  "target": 10,
+  "tasks_validated": 8,
+  "shortfall": "2 (9 candidates, 1 écartée sans signal — url_priority : le spec productlist ne teste pas la priorité d'URL; journalisée dans discarded.jsonl)"
+ },
+ "generation": {
+  "slots": 16,
+  "ok": 16,
+  "no_diff_rate": 0.0,
+  "note": "l'auteur épinglé flippe 15/16 (94%) — mieux que genfam (65%) mais le quota reste quasi mono-classe"
+ },
+ "incident_outillage_majeur": {
+  "what": "hallucination systématique du whitespace des lignes de CONTEXTE des diffs modèles (3 espaces vs 2)",
+  "effet": "git apply du serveur (v2.51) SKIP silencieusement (rc=0) → 16/16 slots étiquetés à tort y=0 lors du premier passage de labellisation",
+  "diagnostic": "reproduction pas à pas : le fix sémantique est correct, seul le contexte est décalé; git 2.33 local tolère, 2.51 distant non",
+  "fix": "chaîne de pose robuste : git strict → patch -p1 -l --fuzz=3 → vérification par sha du contenu (jamais par HEAD pré-sali) ; apply_mode tracé par slot",
+  "portee": "leçon transversale : toute labellisation distante doit vérifier la POSE RÉELLE par hash de contenu"
+ },
+ "labeling": {
+  "measured": 16,
+  "errors": 0,
+  "y1": 15,
+  "y0": 1,
+  "quarantine": 0,
+  "all_apply_modes": "patch-whitespace-fuzz (16/16)"
+ },
+ "mesures_avant_mix": [
+  {
+   "mesure": "poison-check ext-LOAO",
+   "auc_descriptif": 0.7,
+   "gate": 0.65,
+   "verdict": "DÉGÉNÉRÉE — classe min 1 < 5 (règle scellée): AUC non certificatoire, quota ARCHIVÉ, NON mixé"
+  },
+  {
+   "mesure": "validation prospective advprobe (13.5)",
+   "auc": 0.6,
+   "gate": 0.5977,
+   "verdict": "FRANCHIE au rasoir (+0.0023) sur 1 seul négatif — enregistrée comme ÉVIDENCE du candidat, NON certificatoire (même règle classe<5)"
+  }
+ ],
+ "decision_finale": "AUCUN mix au pool (quota archivé data/landing/act2-pilot/coverage-ts-2/, append-only). v10 reste servi, issue B nommée toujours active.",
+ "candidat_advprobe": "reste ENREGISTRÉ — la première validation prospective sur population à 2 classes donne 0.6000 (signal positif mais non certifiant); la promotion exige une population jamais-vue à ≥5 lignes par classe",
+ "lecons": [
+  "l'auteur épinglé est trop fort pour les mutants mono-fonction : 94% de flips. Il faut des mutants multi-fichiers/cross-module, ou des tâches réelles non mutées, pour obtenir ≥5 négatifs par quota",
+  "le whitespace de contexte des diffs modèles est une défaillance SYSTÉMATIQUE sur cette classe de tâches — la voie patch -l fuzz devient infrastructure permanente de labellisation distante",
+  "les git de versions différentes se comportent différemment sur les mêmes diffs (2.33 local tolère, 2.51 distant skip) : la vérification par contenu, pas par rc"
+ ],
+ "piste_owner": "repo GitHub koala73/worldmonitor (tests TS riches, licence à vérifier) — source candidate pour quota v3 plus dur/varié"
+}
