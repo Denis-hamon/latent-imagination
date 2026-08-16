@@ -1,0 +1,32 @@
+{
+ "demo": "ticket-reel-8331 (SWE-bench-style sur historique OmniRoute réel)",
+ "at": "2026-08-16T22:52:58.683018Z",
+ "setup": {
+  "buggy_state": "parent 9994e007638a du vrai fix commit e8719783e",
+  "tests": "suites du fix commit (9 F2P nommés + 6 P2P)",
+  "controle": "le vrai fix humain reverdit 15/15 sur le parent (sanity vérifiée)"
+ },
+ "candidats": {
+  "total": 8,
+  "auteurs": {
+   "DeepSeek-V4-Flash": 4,
+   "GLM-5.2-NVFP4": 4
+  },
+  "appliques": 3,
+  "no_diff": 5,
+  "labels": {
+   "positifs": 2,
+   "negatifs": 1
+  },
+  "detail": "r04 Flash et r06 GLM = fix complets (9/9 F2P + P2P intacts) ; r08 GLM = négatif réel (répare F2P mais casse 2 P2P)"
+ },
+ "compare_patches_live": {
+  "phase": "execution-plan",
+  "issues": "3/8",
+  "comportement": "AUCUNE recommandation émise sous n_min=8 — abstention honnête du produit sur session sous-mesurée",
+  "plan_renvoye": "les 5 candidats non encore testés"
+ },
+ "qualitatif": "le fix r04 (Flash, 32 lignes, 1 fichier usageTracking.ts) diffère du fix humain (135 lignes, 3 fichiers, incluant le scoping cc-compatible requis par d'autres tests hors F2P) — l'agent a trouvé une solution valide DISTINCTE, preuve que le ticket réel admet plusieurs correctifs",
+ "lecon_mineure": "les tickets réels multi-fichiers produisent des no-diffs par extraction sur gros contexte (5/8) — le miner devra privilégier les tickets à surface de fix bornée (<3 fichiers, <200 lignes)",
+ "appel": "8 appels auteurs audités (call-log session), prompt = ticket+tests+fichiers buggy SANS le diff solution (divulgation : prompt multi-fichiers = extension de la classe gelée)"
+}
