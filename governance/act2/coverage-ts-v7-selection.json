@@ -1,0 +1,105 @@
+{
+ "envelope_calls_cap": 95,
+ "frozen_at": "2026-08-16T17:16:47.701610Z",
+ "probe_calls_already_consumed": 0,
+ "quota_manifest_sha256": "de6ad37a0fe37ce404c311183cb41bb706de2a6bb7bf9068889cbe744cd3117c",
+ "quota_note": "10/10 candidates validées zéro-appel (0 écartée) ; règle terminaison DW-35 appliquée au design",
+ "sonde_plan": "zod__checks.double_string_minmax_length x2 + date_fns__bizdays.double_weekend_weeks x2 = <=4 appels",
+ "tasks": [
+  {
+   "buggy_sha256": "8bfa59e2c001535d87b114a64b629ef01896cb4ac7c3d784c3bd437be6709b25",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "zod__checks.double_inclusive_bounds",
+   "n_f2p": 7,
+   "repo": "zod",
+   "tier": "ts7-double"
+  },
+  {
+   "buggy_sha256": "8d0bb4a1c8baf810d66f169aa198999c4dd584a18f26279c0c239b2574a53b08",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "zod__checks.bound_and_tightening",
+   "n_f2p": 4,
+   "repo": "zod",
+   "tier": "ts7-double"
+  },
+  {
+   "buggy_sha256": "32a74283e14c5df5801ff77710efa06705722507c081212e58fc96943a39e0e7",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "zod__checks.double_min_max_bagpair",
+   "n_f2p": 5,
+   "repo": "zod",
+   "tier": "ts7-double"
+  },
+  {
+   "buggy_sha256": "fa408c4db5e8ffdbc218fcfd9ebf5265ef571418c4faf6b0e750316c9ee41396",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "zod__checks.double_string_minmax_length",
+   "n_f2p": 3,
+   "repo": "zod",
+   "tier": "ts7-double"
+  },
+  {
+   "buggy_sha256": "4425872319c546b9e209f99f697054b4728cd1d9f4c1bc5589efbb64a5e28cf1",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "zod__str.ulid_and_nanoid",
+   "n_f2p": 3,
+   "repo": "zod",
+   "tier": "ts7-double"
+  },
+  {
+   "buggy_sha256": "cb74f18ac0729bc139b0c97e01169037d0dde73e18ec9c79f9ce66eea5776f30",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "zod__checks.single_max_inclusive",
+   "n_f2p": 3,
+   "repo": "zod",
+   "tier": "ts7-easy"
+  },
+  {
+   "buggy_sha256": "9ba2dc52e5843be5fb3cb5b9e7a4924922fce3e7c7aebaa78116979e317077a6",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "date_fns__bizdays.double_weekend_weeks",
+   "n_f2p": 12,
+   "repo": "date-fns",
+   "tier": "ts7-double"
+  },
+  {
+   "buggy_sha256": "6dd6c9b03a3f801bf1c7385e0608df5b7b02cbae175eff623cb77293cd5a7e05",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "date_fns__bizdays.double_round_weekend",
+   "n_f2p": 9,
+   "repo": "date-fns",
+   "tier": "ts7-double"
+  },
+  {
+   "buggy_sha256": "8f0465def2a389cc96a9a031af561d6546430e112a2b8be93cffe326636df18a",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "date_fns__bizdays.weekend_counted",
+   "n_f2p": 9,
+   "repo": "date-fns",
+   "tier": "ts7-easy"
+  },
+  {
+   "buggy_sha256": "f3f3c446f4bb27c3cd7bb332da7b81afc2a10d52d4568e9cc04a71038e691904",
+   "campaign": "coverage-ts-7",
+   "draws": 2,
+   "instance_id": "date_fns__addDays.amount_subtracted",
+   "n_f2p": 3,
+   "repo": "date-fns",
+   "tier": "ts7-easy"
+  }
+ ],
+ "tiers": {
+  "ts7-double": 7,
+  "ts7-easy": 3
+ },
+ "window": "coverage-ts-v7"
+}
