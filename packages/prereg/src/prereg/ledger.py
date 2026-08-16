@@ -26,6 +26,33 @@ def anchor_entry(chain_hash: str, ruleset_hash: str, anchored_at: str, proof_ref
     }
 
 
+_ANCHOR_TYPES = ("anchor", "window-approved", "prereg-package",
+                 "prereg-package-amendment", "verdict")
+
+
+def already_anchored(ledger_path: Path, chain_hash: str) -> dict[str, Any] | None:
+    """Idempotence de cérémonie (rétro épic 9 item 2) : une ligne d'ancrage
+    existe-t-elle déjà pour ce digest ? Re-stamper un digest déjà ancré est
+    légales mais bruyant (doublons d'occurrence) ; le caller décide de skipper
+    (défaut) ou de forcer (ré-ancrage explicite). Malformé = ignoré/compté,
+    jamais crashé (loi poison 5.6)."""
+    p = Path(ledger_path)
+    if not p.is_file():
+        return None
+    for line in p.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(entry, dict):
+            continue
+        if entry.get("type") in _ANCHOR_TYPES and entry.get("chain_hash") == chain_hash:
+            return entry
+    return None
+
+
 def run_entry(run_id: str, started_at: str, ruleset_hash: str, store_version: str) -> dict[str, Any]:
     return {
         "type": "run",

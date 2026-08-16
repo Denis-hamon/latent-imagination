@@ -40,6 +40,9 @@ STAGING = JOBS / "genfam-q1" / "staging-extract.json"
 
 DEFAULT_CAP = 350
 NODIFF_ABORT = 0.60
+INFRA_STOP = 8  # erreurs endpoint CONSÉCUTIVES (tous workers) ⇒ pause fenêtre :
+# on ne brûle pas l'enveloppe sur un endpoint mort — le watchdog reprend
+# (rétro épic 10 item 1, incident 2026-08-16 : 124 appels perdus en 500)
 
 MODEL = os.environ.get(
     "GENFAM_MODEL",
@@ -181,6 +184,7 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
     state = {"attempts": 0,
              "nodiff": prior_nd, "done": prior_ok + prior_nd,      # vue QUOTA (abort)
              "run_nodiff": 0, "run_done": 0,                            # vue run (rapport)
+             "consec_errors": 0,
              "rows": []}
     stop = {"reason": None}
     lock = threading.Lock()
@@ -209,12 +213,24 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
         original = task["_buggy"]
         diff, diff_mode, feedback = None, None, ""
         local_calls = n_errors = 0  # local_calls = appels CONSOMMÉS par ce slot
+        with lock:
+            infra_paused = stop["reason"] == "infra"
+        if infra_paused:
+            # fenêtre en pause infra : rec cohérent, zéro appel consommé de plus
+            rec = {"task": iid, "campaign": task["campaign"], "window": "gen-families-v1",
+                   "author": MODEL, "slot": slot, "draw": k, "status": "budget-stopped",
+                   "diff_sha256": None, "diff_mode": None,
+                   "n_calls_used": window_start_calls + state["attempts"]}
+            (work / "rec.json").write_text(json.dumps(rec, indent=1))
+            return rec
         for attempt in (1, 2):
             if not reserve():
                 break
             local_calls += 1  # décompté dès la réservation (succès OU erreur endpoint)
             try:
                 g = pr.gen_patch(task, feedback)
+                with lock:
+                    state["consec_errors"] = 0  # un succès réinitialise la série
             except Exception as e:  # noqa: BLE001 — erreur endpoint : appel consommé = journalisé (précédent S12/S14), retry via feedback au tour suivant du slot
                 with lock, log.open("a") as fh:
                     fh.write(json.dumps({
@@ -226,6 +242,10 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
                     }) + "\n")
                 feedback = "endpoint error on previous call; retry"
                 n_errors += 1
+                with lock:
+                    state["consec_errors"] += 1
+                    if state["consec_errors"] >= INFRA_STOP and not stop["reason"]:
+                        stop["reason"] = "infra"  # PAUSE, pas abort : reprise watchdog
                 continue
             with lock, log.open("a") as fh:  # append-only log, un appel = une ligne
                 fh.write(json.dumps({
@@ -301,6 +321,16 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
             f.result()  # propage les erreurs (jamais de perte silencieuse)
     done, nodiff = state["done"], state["nodiff"]
     calls = window_start_calls + state["attempts"]
+    if stop["reason"] == "infra":
+        (results / "summary.json").write_text(json.dumps({
+            "window": "gen-families-v1", "quota": quota, "aborted": "infra-pause",
+            "consec_errors": state["consec_errors"], "calls_used": calls, "cap": cap,
+            "note": f"{INFRA_STOP}+ erreurs endpoint consécutives : l'endpoint auteur est "
+                    "instable/mort — fenêtre PAUSÉE pour protéger l'enveloppe (les appels "
+                    "d'erreur restent comptés et journalisés). Reprise par watchdog à "
+                    "2×HEALTHY (rétro épic 10 item 1)."}, indent=1))
+        raise SystemExit(f"PAUSE INFRA {quota}: {state['consec_errors']} erreurs endpoint "
+                         f"consécutives — fenêtre pausée, budget protégé ({calls}/{cap})")
     if stop["reason"] == "cap":
         _check_budget_midway(calls, cap, results)
     if stop["reason"] == "no-diff":

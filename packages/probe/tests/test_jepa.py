@@ -22,14 +22,28 @@ def _toy(seed=0):
 
 
 def test_smoke_deterministic():
-    from probe.arms.jepa import train_and_evaluate
+    from probe.arms.jepa import JepaConfig, train_and_evaluate
 
     X, y = _toy()
-    a = train_and_evaluate(X, y, X, y)
-    b = train_and_evaluate(X, y, X, y)
+    cfg = JepaConfig(epochs=10)  # instanciation explicite (garde-fou rétro 11)
+    a = train_and_evaluate(X, y, X, y, config=cfg)
+    b = train_and_evaluate(X, y, X, y, config=cfg)
     assert a["artifact_hash"] == b["artifact_hash"]
     assert a["loss_curve_last"] is not None
     assert 0.0 <= a["precision"] <= 1.0
+
+
+def test_default_config_binds_to_step_cap_not_epochs():
+    # Garde-fou rétro épic 11 : le défaut (epochs=None) doit entraîner
+    # JUSQU'AU step cap (envelope design.toml), jamais s'arrêter à un epochs
+    # arbitraire — le piège Act III r1 (default 10 epochs, sous-entraînement
+    # dégénéré never-predicts-positive) est clos.
+    from probe.arms.jepa import JepaConfig, train_and_evaluate
+
+    X, y = _toy()
+    art = train_and_evaluate(X, y, X, y, config=JepaConfig(steps_cap=5))
+    assert art["steps"] == 5  # le cap, pas des epochs, a borné l'entraînement
+    assert art["truncated"] is True
 
 
 def test_budget_caps_stop_and_disclose():

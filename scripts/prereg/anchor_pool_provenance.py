@@ -114,6 +114,9 @@ print("TSA OK imprint vérifié, token sauvé:", out.name)
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tsa-test", action="store_true", help="exécute aussi le test TSA live (repli RFC-3161)")
+    ap.add_argument("--force-reattach", action="store_true",
+                    help="ré-ancre même si le digest est déjà ancré (défaut = idempotent, "
+                         "rétro épic 9 item 2 : le re-run ne rajoute ni stamp ni ligne)")
     args = ap.parse_args()
 
     for p in PROVS:
@@ -122,6 +125,7 @@ def main() -> int:
             return 2
 
     from ots_anchor.anchor import AnchorUnavailableError, anchor
+    from prereg.ledger import already_anchored
 
     results = []
     proofs_dir = STORE / "proofs"
@@ -129,6 +133,16 @@ def main() -> int:
     for p in PROVS:
         digest = _sha(p)
         proof = proofs_dir / f"prov-{digest[:16]}.ots"
+        prior = None if args.force_reattach else already_anchored(LEDGER, digest)
+        if prior:
+            results.append({"provenance": p.name, "sha256": digest,
+                            "anchor_mode": "already-anchored (idempotent skip)",
+                            "proof": prior.get("ots_proof_ref", ""),
+                            "offline_verification": "skip — ancrage existant vérifié",
+                            "anchored_at": prior.get("anchored_at", "")})
+            print(f"{p.name}: DÉJÀ ANCRÉ ({prior.get('anchored_at','')}) — skip idempotent "
+                  f"(--force-reattach pour re-stamper)")
+            continue
         try:
             rec = anchor(digest, str(proof))
             mode = "ots-live"

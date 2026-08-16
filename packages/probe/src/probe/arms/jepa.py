@@ -24,9 +24,16 @@ class BudgetExceeded(Exception):
 
 @dataclass(frozen=True)
 class JepaConfig:
+    """Enveloppe scellée (design.toml [hyperparameter_envelopes].jepa) :
+    « epochs: train to the registered steps cap ». epochs=None (= défaut) est
+    CONFORME à l'enveloppe : le step cap est la contrainte liante. Un int
+    explicite = une instanciation enregistrée par le caller (précédent Act II
+    jepa-proper : epochs=1000). Le piège du défaut=10 silently undertrained est
+    clos (Act III r1, P=0.0 never-predicts-positive ; rétro épic 11 item 1)."""
+
     seed: int = 20260805
     hidden: int = 512
-    epochs: int = 10
+    epochs: int | None = None  # None ⇒ jusqu'au steps cap (enveloppe)
     batch: int = 64
     lr: float = 1e-3
     lam: float = 0.05  # SIGReg weight (the one learned-ish hyperparameter)
@@ -75,7 +82,15 @@ def train_and_evaluate(
     steps = 0
     logs: list[dict[str, float]] = []
     truncated = False
-    for _epoch in range(cfg.epochs):
+    epochs_run = 0
+
+    def _budget_left() -> bool:
+        return steps < cfg.steps_cap and (time.time() - t0) <= cfg.wall_cap_s
+
+    _epoch = 0
+    while cfg.epochs is None or _epoch < cfg.epochs:
+        if cfg.epochs is None and not _budget_left():
+            break  # enveloppe : le step/wall cap est la contrainte liante
         perm = torch.randperm(n, generator=torch.Generator().manual_seed(cfg.seed))
         for i in range(0, n, cfg.batch):
             if steps >= cfg.steps_cap or (time.time() - t0) > cfg.wall_cap_s:
@@ -88,6 +103,8 @@ def train_and_evaluate(
             opt.zero_grad(); loss.backward(); opt.step()
             steps += 1
         logs.append({"epoch": float(_epoch), "loss": float(loss.item())})
+        epochs_run += 1
+        _epoch += 1
         if truncated:
             break
 
@@ -116,5 +133,6 @@ def train_and_evaluate(
         json.dumps(art, sort_keys=True, default=str).encode()
     ).hexdigest()
     art["wall_s"] = round(wall, 2)  # recorded, NEVER hashed
+    art["epochs_run"] = epochs_run  # occurrence metadata, jamais hashée (AD-7)
     art["_pred"] = pred.tolist()  # caller strips before write
     return art

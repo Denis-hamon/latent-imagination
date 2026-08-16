@@ -157,3 +157,24 @@ def test_load_panel_never_fakes_missing_extraction(tmp_path, monkeypatch):
     (tmp_path / "genfam-q1" / "a__b.c.func_x__s1.buggy.py").write_text("x = 1\n")
     panel = gg.load_panel("q1", sel)
     assert len(panel) == 1 and panel[0]["_buggy"] == "x = 1\n"
+
+
+def test_infra_stop_pauses_window_and_protects_budget(tmp_path, monkeypatch):
+    # Rétro épic 10 item 1 : N erreurs endpoint consécutives ⇒ PAUSE (pas un
+    # brûlage de budget en retries) ; les appels déjà consommés restent audités.
+    monkeypatch.setattr(gg, "JOBS", tmp_path)
+    monkeypatch.setattr(gg, "INFRA_STOP", 4)
+    results = tmp_path / "gen-results"; log = tmp_path / "call-log.jsonl"
+
+    def always_500(task, feedback=""):
+        raise RuntimeError("galere payload: {'error': ..., 'code': '500'}")
+    monkeypatch.setattr(gg.pr, "gen_patch", always_500)
+    panel = [_task(f"acme__repo.deadbeef.func_{i}__s", True) for i in range(12)]
+    with pytest.raises(SystemExit, match="PAUSE INFRA"):
+        gg.gen_panel("q1", panel, draws=1, cap=100, results=results, log=log, parallel=1)
+    summary = json.loads((results / "summary.json").read_text())
+    assert summary["aborted"] == "infra-pause"
+    # pause après 4 erreurs consécutives × 2 tentatives max ≈ 8 appels, JAMAIS 12×2
+    calls = log.read_text().count("\n")
+    assert calls <= 2 * (gg.INFRA_STOP + 3)  # série + quelques slots en vol, pas tout le panel
+    assert calls < 24  # le panel complet aurait coûté 24 — la pause a protégé le budget

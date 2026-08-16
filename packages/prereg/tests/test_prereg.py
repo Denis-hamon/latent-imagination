@@ -103,3 +103,44 @@ class TestPrecedence:
         man["artifact_type"] = "canonical-snapshot"  # not a label-set
         v = verify_chain_precedence(ledger, [man])
         assert v.status == "ok"
+
+
+class TestAlreadyAnchored:
+    """Idempotence de cérémonie (rétro épic 9 item 2) : un re-run ne doit ni
+    re-stamper ni doubler les lignes — lookup exact du digest, types d'ancrage
+    reconnus, tolérance aux lignes malformées (loi poison, jamais crashé)."""
+
+    def _write(self, tmp_path, lines: list) -> Path:
+        p = tmp_path / "ledger.jsonl"
+        p.write_text("\n".join(json.dumps(l) if isinstance(l, dict) else l for l in lines) + "\n")
+        return p
+
+    def test_finds_anchor_row_by_digest(self, tmp_path):
+        from prereg.ledger import already_anchored
+        led = self._write(tmp_path, [
+            {"type": "run", "run_id": "r1", "chain_hash": "a" * 64},
+            {"type": "anchor", "chain_hash": "b" * 64, "anchored_at": "t1", "ots_proof_ref": "p1"},
+        ])
+        got = already_anchored(led, "b" * 64)
+        assert got and got["anchored_at"] == "t1"
+        assert already_anchored(led, "c" * 64) is None
+
+    def test_recognizes_all_anchor_types(self, tmp_path):
+        from prereg.ledger import already_anchored
+        for t in ("anchor", "window-approved", "prereg-package", "prereg-package-amendment", "verdict"):
+            led = self._write(tmp_path, [{"type": t, "chain_hash": "d" * 64}])
+            assert already_anchored(led, "d" * 64)["type"] == t
+
+    def test_non_anchor_type_not_matched(self, tmp_path):
+        from prereg.ledger import already_anchored
+        led = self._write(tmp_path, [{"type": "certificate", "chain_hash": "e" * 64}])
+        assert already_anchored(led, "e" * 64) is None  # certificate n'est pas un ancrage
+
+    def test_malformed_lines_never_crash(self, tmp_path):
+        from prereg.ledger import already_anchored
+        led = self._write(tmp_path, ["{pas-du-json", "", {"type": "anchor", "chain_hash": "f" * 64}])
+        assert already_anchored(led, "f" * 64)  # la ligne valide reste trouvable
+
+    def test_missing_ledger_returns_none(self, tmp_path):
+        from prereg.ledger import already_anchored
+        assert already_anchored(tmp_path / "absent.jsonl", "a" * 64) is None
