@@ -1,0 +1,48 @@
+{
+ "window": "coverage-ts-v9",
+ "closed_at": "2026-08-16T18:50:35.978599Z",
+ "anchor": "e93948f2",
+ "selection": "122efa64",
+ "hypothesis": "Flash (rapide) produit plus de négatifs que l'épinglé sur les cas les plus complexes (triples)",
+ "quota": "3/5 triples validés zéro-appel (2 combo écartés : aucun test nommé ne casse — journalisé)",
+ "sonde": "pinned 2/2 ; flash 0/1 initial x2 (arrêts prématurés completion ~500 tokens, diffs corrects mais coupés) => amendement disclosé +2 tirages => 3/4 applicables => VALIDÉ ; 8 appels sonde au total (4+4 amendés)",
+ "generation": {
+  "flash": "9 slots: 7 ok / 2 no-diff, 19 appels (parallèle 8)",
+  "pinned": "6 slots: 4 ok / 2 no-diff, 12 appels (parallèle 4)",
+  "total": "31 lignes auditées / cap 55"
+ },
+ "labels": {
+  "flash": "7 = 2 pos / 5 neg (71% négatifs)",
+  "pinned": "4 = 0 pos / 4 neg (100% négatifs)",
+  "combine": "11 = 2 pos / 9 neg (82%)",
+  "quarantaine": "0 % partout",
+  "erreurs": 0
+ },
+ "gates": [
+  {
+   "flash_poison": {
+    "auc": 0.9,
+    "verdict": "DÉGÉNÉRÉE (2 pos <5) — descriptif seulement"
+   }
+  },
+  {
+   "pinned_poison": {
+    "auc": null,
+    "verdict": "DÉGÉNÉRÉE (classe unique, AUC indéfinie)"
+   }
+  },
+  {
+   "combine_poison": {
+    "auc": 0.8333,
+    "verdict": "DÉGÉNÉRÉE (2 pos <5) — descriptif seulement"
+   }
+  },
+  {
+   "regle": "aucune population v9 mixable ; archivées (DW-37)"
+  }
+ ],
+ "verdict_hypothese": "PARTIELLEMENT INFIRMÉE / DÉPASSÉE : le contraste Flash-vs-épinglé est faible (71% vs 100% neg, petits n) car LES DEUX échouent massivement à réparer les triples. La vraie découverte : la classe TRIPLE + source-en-prompt est une USINE À NÉGATIFS indépendante de l'auteur (9 négatifs en 1 fenêtre = record de tout l'arc TS). Le facteur dominant est la classe de difficulté, pas l'auteur — synthèse finale des fenêtres v5-v9.",
+ "valeur_pivot": "les 11 diffs v9 (7 flash + 4 pinned) avec issues groundées par test nommé = set d'évaluation naturel pour la démo 15.4 de Ghost (compare_patches)",
+ "lacune_identifiee": "les triples produisent trop peu de POSITIFS (2/11) pour une population certifiable seule : une future fenêtre 'triples + doubles faciles' équilibrerait les classes",
+ "consequence": "pooled2 (0.6739 sur 80) reste la référence agrégée ; v10 servi inchangé ; PIVOT Ghost ratifié par l'owner — voir epic 15"
+}
