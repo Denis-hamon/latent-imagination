@@ -1,0 +1,33 @@
+{
+ "window": "coverage-ts-v8",
+ "closed_at": "2026-08-16T18:21:56.522471Z",
+ "anchor": "f3e7a2f2",
+ "hypothesis": "auteurs divers/faibles = usine à négatifs (difficulté = paire auteur×famille)",
+ "sonde": "3/3 auteurs VALIDÉS (flash 1/2, glm 1/2, qwen24t 2/2) — 6 appels",
+ "generation": {
+  "flash": "10 ok/0 nodiff (14 appels)",
+  "glm": "9 ok/1 nodiff (14 appels)",
+  "qwen24t": "8 ok/2 nodiff (14 appels)",
+  "total": "27 ok / 3 nodiff / 42+6=48 audités sur cap 70",
+  "throughput": "3 campagnes en ~15 min vs ~50 min pour v7 épinglé — l'infra x10 EST prouvée"
+ },
+ "labels": {
+  "flash": "10 = 9 pos/1 neg",
+  "glm": "9 = 8 pos/1 neg",
+  "qwen24t": "8 = 8 pos/0 neg",
+  "combined": "27 = 25 pos / 2 neg",
+  "quarantaine": "0 partout"
+ },
+ "gates": [
+  {
+   "per_author": "3x DÉGÉNÉRÉE (neg<5) — archivées, non mixables",
+   "combined": "DÉGÉNÉRÉE (2 neg<5)"
+  },
+  {
+   "critere_fenetre": ">=8 négatifs combinés — NON ATTEINT (2). HYPOTHÈSE V8 RÉFUTÉE comme le doc le prévoyait"
+  }
+ ],
+ "fait_marquant": "round_weekend (boucle infinie avec l'auteur épinglé, quarantainé 2x en v7) est réparé y=1 par Flash : la diversité d'auteur change les ISSUES, mais dans le sens de la réussite, pas de l'échec",
+ "lecon_strategique": "Les négatifs ne sont PAS une propriété de la faiblesse de l'auteur — 4 modèles compétents réparent 89-100% des doubles zod/date-fns. Les négatifs sont une propriété du DESIGN DE TÂCHE : doubles à régions éloignées/hétérogènes (OmniRoute compression 41-46%, zod ulid+nanoid 0/2). ET depuis v7 : le no-diff est mort (0% avec source dans prompt) => la classe HARD (triples+, multi-fichiers, gros fichiers) est redevenue viable — c'est elle l'usine à négatifs de v9",
+ "consequence": "v10 inchangé ; pooled2 (0.6739) reste référence ; DW-38 clos (hypothèse réfutée) ; DW-39 ouvert : v9 = classe triple avec source-en-prompt sur OmniRoute+date-fns (le no-diff ne la menace plus)"
+}
