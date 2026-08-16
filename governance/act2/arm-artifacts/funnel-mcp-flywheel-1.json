@@ -1,0 +1,118 @@
+{
+ "story": "12.4-conversion-funnel",
+ "generated_at": "2026-08-16T11:34:15.740694Z",
+ "kpi": "end_to_end_rows_per_scan — LE taux qui gouverne la masse critique",
+ "rederivable_from": [
+  "data/landing/act2-pilot/mcp-log.jsonl",
+  "data/landing/act2-pilot/mcp-flywheel/candidates.json",
+  "data/landing/act2-pilot/mcp-flywheel/flywheel-rows.json"
+ ],
+ "global": {
+  "scans_with_capture": 26,
+  "outcomes_total": 13,
+  "outcomes_grounded": 12,
+  "outcomes_non_groundés_rejetés": 1,
+  "outcomes_appariés": 12,
+  "pairs_promouvables": 12,
+  "rows_goal_free": 12,
+  "r_report": 0.4615,
+  "appariement": 1.0,
+  "label_gate_survival": 1.0,
+  "end_to_end_rows_per_scan": 0.4615,
+  "baseline_epics_reference": 0.22
+ },
+ "per_reporter_strata": {
+  "claude-opus-5-1m/acre-fidelite": {
+   "scans": 6,
+   "outcomes": 6,
+   "pairs": 6,
+   "rows": 6,
+   "r_report": 1.0,
+   "label_gate_survival": 1.0,
+   "end_to_end_rows_per_scan": 1.0
+  },
+  "claude-opus-5-1m/cloner-86bda934": {
+   "scans": 1,
+   "outcomes": 0,
+   "pairs": 0,
+   "rows": 0,
+   "r_report": 0.0,
+   "label_gate_survival": null,
+   "end_to_end_rows_per_scan": 0.0
+  },
+  "deploy-10-3": {
+   "scans": 1,
+   "outcomes": 0,
+   "pairs": 0,
+   "rows": 0,
+   "r_report": 0.0,
+   "label_gate_survival": null,
+   "end_to_end_rows_per_scan": 0.0
+  },
+  "deploy-9-1": {
+   "scans": 4,
+   "outcomes": 0,
+   "pairs": 0,
+   "rows": 0,
+   "r_report": 0.0,
+   "label_gate_survival": null,
+   "end_to_end_rows_per_scan": 0.0
+  },
+  "drill-10-3b": {
+   "scans": 1,
+   "outcomes": 0,
+   "pairs": 0,
+   "rows": 0,
+   "r_report": 0.0,
+   "label_gate_survival": null,
+   "end_to_end_rows_per_scan": 0.0
+  },
+  "http-test": {
+   "scans": 1,
+   "outcomes": 1,
+   "pairs": 1,
+   "rows": 1,
+   "r_report": 1.0,
+   "label_gate_survival": 1.0,
+   "end_to_end_rows_per_scan": 1.0
+  },
+  "none": {
+   "scans": 4,
+   "outcomes": 0,
+   "pairs": 0,
+   "rows": null,
+   "r_report": 0.0,
+   "label_gate_survival": null,
+   "end_to_end_rows_per_scan": 0.0
+  },
+  "opencode-final": {
+   "scans": 1,
+   "outcomes": 0,
+   "pairs": 0,
+   "rows": 0,
+   "r_report": 0.0,
+   "label_gate_survival": null,
+   "end_to_end_rows_per_scan": 0.0
+  },
+  "qwen3.8-bmad-epic7": {
+   "scans": 5,
+   "outcomes": 5,
+   "pairs": 5,
+   "rows": 5,
+   "r_report": 1.0,
+   "label_gate_survival": 1.0,
+   "end_to_end_rows_per_scan": 1.0
+  },
+  "smoke-node": {
+   "scans": 2,
+   "outcomes": 0,
+   "pairs": 0,
+   "rows": 0,
+   "r_report": 0.0,
+   "label_gate_survival": null,
+   "end_to_end_rows_per_scan": 0.0
+  }
+ },
+ "publish_with": "chaque promotion pool publie ce funnel mis à jour (AC 12.4)",
+ "note": "les outcomes non groundés sont rejetés du numérateur (pas de conversion par opinion) ; strates vides ⇒ None"
+}
