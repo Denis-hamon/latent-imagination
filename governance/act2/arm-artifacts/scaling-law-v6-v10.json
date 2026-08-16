@@ -1,0 +1,142 @@
+{
+ "story": "12.3-scaling-law",
+ "generated_at": "2026-08-16T11:33:45.903082Z",
+ "metric": "cov@acc≥0.95, préfixe par conf décroissante, thr médiane gelée ; bande acc≥0.97 / acc≥0.93",
+ "fit_model": "cov(d) = a·(1−exp(−b·d)), grille déterministe, pré-déclaré",
+ "points": [
+  {
+   "pool": "v6",
+   "n_rows": 145,
+   "n_pos": 52,
+   "n_families": 50,
+   "rows_per_family_median": 2.0,
+   "rows_per_family_mean": 2.9,
+   "rows_per_family_max": 14,
+   "share_families_ge5": 0.14,
+   "thr": -0.011131,
+   "cov_at_acc95": 0.1034,
+   "k": 15,
+   "ci_band": {
+    "acc97_k": 15,
+    "cov_lo": 0.1034,
+    "acc93_k": 19,
+    "cov_hi": 0.131
+   },
+   "pool_json_sha256_16": "df37da37d58f4271"
+  },
+  {
+   "pool": "v7",
+   "n_rows": 177,
+   "n_pos": 59,
+   "n_families": 50,
+   "rows_per_family_median": 2.0,
+   "rows_per_family_mean": 3.54,
+   "rows_per_family_max": 17,
+   "share_families_ge5": 0.28,
+   "thr": -0.007578,
+   "cov_at_acc95": 0.0847,
+   "k": 15,
+   "ci_band": {
+    "acc97_k": 15,
+    "cov_lo": 0.0847,
+    "acc93_k": 25,
+    "cov_hi": 0.1412
+   },
+   "pool_json_sha256_16": "3e9ee300ae33a736"
+  },
+  {
+   "pool": "v8",
+   "n_rows": 207,
+   "n_pos": 73,
+   "n_families": 54,
+   "rows_per_family_median": 2.0,
+   "rows_per_family_mean": 3.83,
+   "rows_per_family_max": 21,
+   "share_families_ge5": 0.315,
+   "thr": -0.006551,
+   "cov_at_acc95": 0.0821,
+   "k": 17,
+   "ci_band": {
+    "acc97_k": 17,
+    "cov_lo": 0.0821,
+    "acc93_k": 21,
+    "cov_hi": 0.1014
+   },
+   "pool_json_sha256_16": "5d410fd8fb652f73"
+  },
+  {
+   "pool": "v9",
+   "n_rows": 213,
+   "n_pos": 78,
+   "n_families": 55,
+   "rows_per_family_median": 2.0,
+   "rows_per_family_mean": 3.87,
+   "rows_per_family_max": 21,
+   "share_families_ge5": 0.327,
+   "thr": -0.00651,
+   "cov_at_acc95": 0.1268,
+   "k": 27,
+   "ci_band": {
+    "acc97_k": 23,
+    "cov_lo": 0.108,
+    "acc93_k": 27,
+    "cov_hi": 0.1268
+   },
+   "pool_json_sha256_16": "8d5c119adc5c4891"
+  },
+  {
+   "pool": "v10",
+   "n_rows": 219,
+   "n_pos": 84,
+   "n_families": 55,
+   "rows_per_family_median": 2.0,
+   "rows_per_family_mean": 3.98,
+   "rows_per_family_max": 21,
+   "share_families_ge5": 0.327,
+   "thr": -0.005751,
+   "cov_at_acc95": 0.1416,
+   "k": 31,
+   "ci_band": {
+    "acc97_k": 27,
+    "cov_lo": 0.1233,
+    "acc93_k": 36,
+    "cov_hi": 0.1644
+   },
+   "pool_json_sha256_16": "88985eb171b4bb9f"
+  }
+ ],
+ "fit": {
+  "sse": 0.0027168681737665696,
+  "a": 0.12000000000000001,
+  "b": 1.1400000000000001,
+  "saturation_scale_rows_per_family": 0.9,
+  "rmse": 0.0233
+ },
+ "working_assumption_verdict": {
+  "prior": "10–15 lignes/famille (hypothèse de travail)",
+  "status": "NON IDENTIFIABLE sur v6→v10 — ni remplacée ni confirmée : non mesurée",
+  "densities_median_observed": [
+   2.0,
+   2.0,
+   2.0,
+   2.0,
+   2.0
+  ],
+  "densities_max_observed": [
+   14,
+   17,
+   21,
+   21,
+   21
+  ],
+  "fitted_saturation_scale": null,
+  "raison": "la médiane de lignes/famille est CONSTANTE à 2.0 sur les 5 versions (la croissance a ajouté des familles nouvelles, pas de la densité dans les familles) ; avec x quasi constant, le paramètre b de saturation n'est pas identifiable — le fit est dégénéré et son échelle n'est PAS publiée comme une loi",
+  "ce_qui_rendrait_la_loi_identifiable": "une fenêtre de croissance PAR FAMILLE (renforcement intra-famille à plusieurs niveaux de densité, ex. Q3 thin-families poussé à 5/10/15 lignes) — la prochaine enveloppe qui vise la loi doit faire varier la densité, pas seulement le nombre de familles"
+ },
+ "extrapolation_limits": [
+  "5 points seulement ; le fit à 2 paramètres est sous-déterminé — RMSE et bande par point publiés, la loi est indicative, pas prédictive",
+  "les versions diffèrent en taille ET composition (ajouts ciblés, pas aléatoires) : densité et qualité des lignes croissent ensemble — confondu non séparable sur ces données",
+  "au-delà de la plage observée de densités [2.0, 2.0] lignes/famille : EXTRAPOLATION NON SUPPORTÉE (les fenêtres futures doivent rester dans la plage ou amender la loi sur nouvelles mesures)"
+ ],
+ "next_window_sizing": "les enveloppes de fenêtres citent ce fit pour le dimensionnement des quotas (exigence AC 12.3) ; citer la plage observée, jamais l'extrapolation"
+}
