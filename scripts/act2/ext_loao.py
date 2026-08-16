@@ -82,8 +82,13 @@ def ext_loao(cd: np.ndarray, y: np.ndarray, fams: np.ndarray) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pool", default="v10")
+    ap.add_argument("--npz-suffix", default="",
+                    help="variante npz du même pool (ex. '-astdiff') : json "
+                         "inchangé, seul l'espace diff change (candidat 13.2)")
+    ap.add_argument("--label", default="baseline_current_instrument")
     args = ap.parse_args()
     pool = args.pool
+    npz_name = f"latent-pool-{pool}{args.npz_suffix}.npz"
 
     # contrôle v6 GOLD (machinerie intacte — recette inchangée des promotions)
     rows6 = json.loads((PILOT / "latent-pool-v6.json").read_text())
@@ -99,7 +104,7 @@ def main() -> int:
           f"{'OK' if ctrl_ok else 'DÉRIVE'}")
 
     rows = json.loads((PILOT / f"latent-pool-{pool}.json").read_text())
-    d = np.load(PILOT / f"latent-pool-{pool}.npz")
+    d = np.load(PILOT / npz_name)
     y = np.array([int(r["y"]) for r in rows])
     tasks = [r["task"] for r in rows]
     fams = np.array([family_of(t) for t in tasks])
@@ -115,14 +120,15 @@ def main() -> int:
     report = {
         "story": "13.1-ext-loao-benchmark",
         "generated_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        "pool": f"latent-pool-{pool}.json",
-        "pool_sha256_16": sha256(
+        "measurement": args.label,
+        "pool": npz_name,
+        "pool_json_sha256_16": sha256(
             (PILOT / f"latent-pool-{pool}.json").read_bytes()).hexdigest()[:16],
         "n_rows": len(rows), "positives": int(y.sum()),
         "v6_gold_control": {"auc": round(ctrl["auc"], 3),
                             "acc100": round(ctrl["acc100"], 3),
                             "expected": [0.822, 0.779], "ok": bool(ctrl_ok)},
-        "baseline_current_instrument": {
+        args.label: {
             "ext_loao": bench,
             "in_family_loao": {"auc": round(auc_in, 4), "acc": round(acc_in, 4),
                                "note": "propre famille exclue des voisins mais pas "
@@ -131,7 +137,9 @@ def main() -> int:
         },
     }
     OUT.mkdir(parents=True, exist_ok=True)
-    path = OUT / f"ext-loao-benchmark-{pool}.json"
+    tag = f"benchmark-{pool}" if args.label == "baseline_current_instrument" \
+        else f"candidate-{args.label}-{pool}"
+    path = OUT / f"ext-loao-{tag}.json"
     path.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
     print(f"ext-LOAO {pool}: AUC {bench['auc_ext_loao']} acc {bench['acc_ext_loao']} "
           f"({bench['n_evaluated']} lignes évaluées, {bench['n_families']} familles) — "

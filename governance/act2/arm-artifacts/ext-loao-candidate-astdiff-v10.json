@@ -1,0 +1,365 @@
+{
+ "story": "13.1-ext-loao-benchmark",
+ "generated_at": "2026-08-16T11:39:59.686730Z",
+ "measurement": "astdiff",
+ "pool": "latent-pool-v10-astdiff.npz",
+ "pool_json_sha256_16": "88985eb171b4bb9f",
+ "n_rows": 219,
+ "positives": 84,
+ "v6_gold_control": {
+  "auc": 0.822,
+  "acc100": 0.779,
+  "expected": [
+   0.822,
+   0.779
+  ],
+  "ok": true
+ },
+ "astdiff": {
+  "ext_loao": {
+   "auc_ext_loao": 0.5276,
+   "acc_ext_loao": 0.3927,
+   "n_evaluated": 219,
+   "n_families": 55,
+   "per_family": {
+    "Cog-Creators__Red-DiscordBot": {
+     "n": 5,
+     "n_pos": 2,
+     "acc": 0.4,
+     "held_out_thr": -0.145721
+    },
+    "Mimino666__langdetect": {
+     "n": 2,
+     "n_pos": 1,
+     "acc": 0.5,
+     "held_out_thr": -0.145721
+    },
+    "RoaringBitmap__roaring": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "Workiva__go-datastructures": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "agronholm__exceptiongroup": {
+     "n": 7,
+     "n_pos": 4,
+     "acc": 0.5714,
+     "held_out_thr": -0.151214
+    },
+    "agronholm__typeguard": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "alanjds__drf-nested-routers": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "andialbrecht__sqlparse": {
+     "n": 3,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.137269
+    },
+    "blevesearch__bleve": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "bottlepy__bottle": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "cantools__cantools": {
+     "n": 5,
+     "n_pos": 2,
+     "acc": 0.4,
+     "held_out_thr": -0.148468
+    },
+    "cknd__stackprinter": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "cloudpipe__cloudpickle": {
+     "n": 2,
+     "n_pos": 2,
+     "acc": 1.0,
+     "held_out_thr": -0.145721
+    },
+    "cweill__gotests": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "dask__dask": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "davidhalter__parso": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "flywheel": {
+     "n": 12,
+     "n_pos": 11,
+     "acc": 1.0,
+     "held_out_thr": -0.153451
+    },
+    "gawel__pyquery": {
+     "n": 6,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.128817
+    },
+    "getmoto__moto": {
+     "n": 1,
+     "n_pos": 1,
+     "acc": 1.0,
+     "held_out_thr": -0.145721
+    },
+    "go-gorm__gorm": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "godror__godror": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "graphql-python__graphene": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "gruns__icecream": {
+     "n": 2,
+     "n_pos": 1,
+     "acc": 0.5,
+     "held_out_thr": -0.145721
+    },
+    "hypermodeinc__ristretto": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "jawah__charset_normalizer": {
+     "n": 7,
+     "n_pos": 1,
+     "acc": 0.1429,
+     "held_out_thr": -0.151214
+    },
+    "john-kurkowski__tldextract": {
+     "n": 2,
+     "n_pos": 2,
+     "acc": 1.0,
+     "held_out_thr": -0.145721
+    },
+    "kurtmckee__feedparser": {
+     "n": 5,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.128817
+    },
+    "ledisdb__ledisdb": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "lincolnloop__python-qrcode": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "marshmallow-code__marshmallow": {
+     "n": 6,
+     "n_pos": 2,
+     "acc": 0.3333,
+     "held_out_thr": -0.145721
+    },
+    "marshmallow-code__webargs": {
+     "n": 4,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.128817
+    },
+    "mido__mido": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "oauthlib__oauthlib": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "pallets__jinja": {
+     "n": 6,
+     "n_pos": 3,
+     "acc": 0.5,
+     "held_out_thr": -0.145721
+    },
+    "pandas-dev__pandas": {
+     "n": 21,
+     "n_pos": 13,
+     "acc": 0.619,
+     "held_out_thr": -0.161983
+    },
+    "paramiko__paramiko": {
+     "n": 6,
+     "n_pos": 5,
+     "acc": 0.8333,
+     "held_out_thr": -0.151214
+    },
+    "pdfminer__pdfminer": {
+     "n": 3,
+     "n_pos": 1,
+     "acc": 0.3333,
+     "held_out_thr": -0.148468
+    },
+    "pyasn1__pyasn1": {
+     "n": 15,
+     "n_pos": 10,
+     "acc": 0.6667,
+     "held_out_thr": -0.157717
+    },
+    "pyca__pyopenssl": {
+     "n": 4,
+     "n_pos": 0,
+     "acc": 0.25,
+     "held_out_thr": -0.128817
+    },
+    "pydantic__pydantic": {
+     "n": 3,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.137269
+    },
+    "pydata__patsy": {
+     "n": 1,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "pygments__pygments": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "pylint-dev__astroid": {
+     "n": 8,
+     "n_pos": 2,
+     "acc": 0.25,
+     "held_out_thr": -0.128817
+    },
+    "python-jsonschema__jsonschema": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "python-openxml__python-docx": {
+     "n": 10,
+     "n_pos": 9,
+     "acc": 0.9,
+     "held_out_thr": -0.153451
+    },
+    "python-trio__trio": {
+     "n": 4,
+     "n_pos": 4,
+     "acc": 1.0,
+     "held_out_thr": -0.151214
+    },
+    "pyutils__line_profiler": {
+     "n": 6,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.128817
+    },
+    "rubik__radon": {
+     "n": 3,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.137269
+    },
+    "scanny__python-pptx": {
+     "n": 5,
+     "n_pos": 2,
+     "acc": 0.4,
+     "held_out_thr": -0.145721
+    },
+    "seperman__deepdiff": {
+     "n": 5,
+     "n_pos": 2,
+     "acc": 0.4,
+     "held_out_thr": -0.145721
+    },
+    "sqlfluff__sqlfluff": {
+     "n": 8,
+     "n_pos": 2,
+     "acc": 0.25,
+     "held_out_thr": -0.128817
+    },
+    "sunpy__sunpy": {
+     "n": 3,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.137269
+    },
+    "tkrajina__gpxpy": {
+     "n": 2,
+     "n_pos": 0,
+     "acc": 0.0,
+     "held_out_thr": -0.145721
+    },
+    "tobymao__sqlglot": {
+     "n": 4,
+     "n_pos": 1,
+     "acc": 0.25,
+     "held_out_thr": -0.145721
+    },
+    "tweepy__tweepy": {
+     "n": 1,
+     "n_pos": 1,
+     "acc": 1.0,
+     "held_out_thr": -0.145721
+    }
+   },
+   "discipline": "famille entièrement held-out ; seuil = médiane des scores du TRAIN de chaque fold (jamais le pool complet)"
+  },
+  "in_family_loao": {
+   "auc": 0.6566,
+   "acc": 0.5845,
+   "note": "propre famille exclue des voisins mais pas held-out (régime de référence servi)"
+  },
+  "reference_s14_ext_unseen": 0.75
+ }
+}
