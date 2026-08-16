@@ -168,7 +168,20 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
     if parallel is None:
         parallel = int(os.environ.get("GENFAM_PARALLEL", "4"))
     window_start_calls = window_calls_used()
-    state = {"attempts": 0, "nodiff": 0, "done": 0, "rows": []}
+    # Le taux no-diff est celui de la QUOTA entière (tous runs confondus) :
+    # les reprises sautent les slots ok → un compteur local seul serait biaisé
+    # vers l'échec et déclencherait un abort faux (bug réel du 2026-08-16).
+    prior_ok = prior_nd = 0
+    for rf in results.glob("*/rec.json"):
+        st = json.loads(rf.read_text()).get("status")
+        if st == "ok":
+            prior_ok += 1
+        elif st == "no-diff":
+            prior_nd += 1
+    state = {"attempts": 0,
+             "nodiff": prior_nd, "done": prior_ok + prior_nd,      # vue QUOTA (abort)
+             "run_nodiff": 0, "run_done": 0,                            # vue run (rapport)
+             "rows": []}
     stop = {"reason": None}
     lock = threading.Lock()
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -272,9 +285,9 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
             state["rows"].append(rec)
             if status == "endpoint-error":
                 return rec  # hors décompte done/nodiff : taux no-diff = échecs du modèle seulement
-            state["done"] += 1
+            state["done"] += 1; state["run_done"] += 1
             if not diff:
-                state["nodiff"] += 1
+                state["nodiff"] += 1; state["run_nodiff"] += 1
             rate = nodiff_abort_rate(state["done"], state["nodiff"])
             if rate is not None and rate > NODIFF_ABORT and not stop["reason"]:
                 stop["reason"] = "no-diff"
@@ -302,12 +315,16 @@ def gen_panel(quota: str, panel: list[dict], draws: int, cap: int, results: Path
         key = r.get("diff_mode") or r["status"]
         modes[key] = modes.get(key, 0) + 1
     (results / "summary.json").write_text(json.dumps({
-        "quota": quota, "slots_done": done, "no_diff": nodiff, "calls_used": calls,
-        "cap": cap, "window": "gen-families-v1", "diff_modes": modes,
+        "quota": quota, "slots_done": state["run_done"], "no_diff": state["run_nodiff"],
+        "window_slots_done": done, "window_no_diff": nodiff,
+        "window_no_diff_rate": round(nodiff / done, 4) if done else None,
+        "calls_used": calls, "cap": cap, "window": "gen-families-v1", "diff_modes": modes,
         "note": "diff_mode fuzz-reexport = diff récupéré par patch --fuzz + ré-export git "
                 "(lignage sanitize 3516b5e) ; les slots no-diff restants sont exhaustés "
                 "offline par genfam_recover.py, jamais par de nouveaux appels"}, indent=1))
-    return {"quota": quota, "slots_done": done, "no_diff": nodiff,
+    return {"quota": quota, "slots_done": state["run_done"],
+            "no_diff": state["run_nodiff"],
+            "window_slots_done": done, "window_no_diff": nodiff,
             "calls_used": calls, "cap": cap, "rows": state["rows"]}
 
 

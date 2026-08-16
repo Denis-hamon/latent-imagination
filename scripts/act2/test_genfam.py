@@ -123,6 +123,28 @@ def test_endpoint_errors_are_infra_not_model_failure(tmp_path, monkeypatch):
     assert sum(1 for r in logged if "error" in r) == 2
 
 
+def test_abort_rate_is_window_wide_not_per_resume(tmp_path, monkeypatch):
+    # Régression 2026-08-16 : une reprise ne doit pas recalculer le taux no-diff
+    # sur les seuls slots du run courant (biaisé vers l'échec → abort faux).
+    # Le taux est celui de la QUOTA entière, amorcé depuis les rec.json au disk.
+    monkeypatch.setattr(gg, "JOBS", tmp_path)
+    results = tmp_path / "gen-results"; log = tmp_path / "call-log.jsonl"
+    # 10 ok déjà mesurés lors d'un run précédent (présents au disk, pas dans le panel)
+    for i in range(10):
+        d = results / f"old__r.aa.func_{i}__s-d1"; d.mkdir(parents=True)
+        (d / "rec.json").write_text(json.dumps({"status": "ok", "slot": d.name}))
+    # ce run : 4 nouveaux slots, tous no-diff → taux run-seul = 100 %, taux quota = 4/14
+    monkeypatch.setattr(gg.pr, "gen_patch", _fake_gen_patch("no diff here"))
+    monkeypatch.setattr(gg.pr, "extract_full_file", lambda t: None)
+    monkeypatch.setattr(gg.pr, "extract_diff_sanitized", lambda t: None)
+    panel = [_task(f"new__r.bb.func_{i}__s", False) for i in range(4)]
+    out = gg.gen_panel("q1", panel, draws=1, cap=50, results=results, log=log, parallel=1)
+    assert out["no_diff"] == 4                       # les 4 ont échoué…
+    assert out["slots_done"] == 4                    # …et la fenêtre n'a PAS aborté
+    summary = json.loads((results / "summary.json").read_text())
+    assert "aborted" not in summary
+
+
 def test_load_panel_never_fakes_missing_extraction(tmp_path, monkeypatch):
     monkeypatch.setattr(gg, "JOBS", tmp_path)
     (tmp_path / "genfam-q1").mkdir(parents=True)
