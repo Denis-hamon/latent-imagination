@@ -59,3 +59,20 @@ sources:
     source_version: 1
     registered_at: "2026-08-16T14:00:00Z"
     notes: "vitest 4.1.10 ; repo = Acre worktree wt-20-13 (packages/blocks) ; mutant protocole = swe-smith répliqué TS ; FR-3 labels re-derivables des traces vitest"
+
+  # REAL entry (story 14/E14-v2, 2026-08-16) : monorepo Astro/TS own-infra
+  # (serveur Kimsufi-standard), 53 specs vitest / 1663 tests verts, pilote
+  # F2P/P2P prouvé remote zéro-appel. Mesure LOCALE seulement — aucune
+  # republication de contenu (marque tierce), les labels ne citent que les
+  # traces vitest.
+  - source_id: own-kimsufi-site-ts
+    origin_class: own_repo_mutant_tasks
+    license: "ours"
+    usage_rights: "full (measurement local; no republication of branded content)"
+    covered_families: ["kimsufi__site"]
+    covered_generations: ["2026"]
+    snapshot_content_hash: "e1df27a5dc274c1cc297ada9e2b4d823f0e35123e5408d785d266845dd7bb069"
+    coverage_gaps: ["1 fichier spec exclu (translations-setup-fee : data drift i18n)", "mutants restants à générer (fenêtre v2)"]
+    source_version: 1
+    registered_at: "2026-08-16T14:30:00Z"
+    notes: "vitest 4.1.8 remote (serveur Kimsufi-standard) ; le labeling de la fenêtre v2 s'exécutera sur ce serveur (chaîne distante sérialisée) ; modules cibles prioritaires : content-adapters (DrupalComponentRenderer 43 tests, transformers.slider 28, buildComponentsFromContent 15, normalize-content 14)"
