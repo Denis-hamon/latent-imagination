@@ -25,7 +25,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 PILOT = ROOT / "data" / "landing" / "act2-pilot"
-OUT = ROOT / "governance" / "act2" / "arm-artifacts" / "advprobe-prospective-ts-2026-08-16.json"
+OUT_BASE = ROOT / "governance" / "act2" / "arm-artifacts"
 
 for name, path in (("s11", ROOT / "scripts" / "act2" / "s11_ext_pool.py"),
                    ("advp", ROOT / "scripts" / "act3" / "probe_adversarial.py")):
@@ -37,6 +37,11 @@ s11, advp = sys.modules["s11"], sys.modules["advp"]
 
 
 def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dir", default="coverage-ts-1",
+                    help="répertoire campagne sous act2-pilot")
+    args = ap.parse_args()
     import torch
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -48,8 +53,8 @@ def main() -> int:
     y10 = np.array([int(r["y"]) for r in slice10])
     fam10 = np.array([advp.family_of(r["task"]) for r in slice10])
 
-    ts_rows = json.loads((PILOT / "coverage-ts-1" / "coverage-ts-1-rows.json").read_text())
-    dts = np.load(PILOT / "coverage-ts-1" / "coverage-ts-1-embed.npz")
+    ts_rows = json.loads((PILOT / args.dir / f"{args.dir}-rows.json").read_text())
+    dts = np.load(PILOT / args.dir / f"{args.dir}-embed.npz")
     cd_ts = s11.norm(s11.norm(dts["E_state"]) + s11.norm(dts["E_diff"]))
     y_ts = np.array([int(r["y"]) for r in ts_rows])
 
@@ -78,7 +83,7 @@ def main() -> int:
         "device": device,
         "candidate": "advprobe (combinator gelé 13.3 : h=12, λ=1, lr=1e-3, "
                      "300 epochs, seed 20260805, entraîné sur clean slice v10)",
-        "prospective_population": {"source": "coverage-ts-1 (fenêtre 14, créée "
+        "prospective_population": {"source": f"{args.dir} (fenêtre TS, créée "
                                              "APRÈS le scellement des gates 13.1)",
                                    "n": len(y_ts),
                                    "positives": n_pos, "negatives": n_neg},
@@ -100,12 +105,13 @@ def main() -> int:
                    "deviendra statuable dès qu'un quota TS contient des échecs "
                    "groundés (mutants plus durs, ou collectes réelles)",
     }
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
+    out = OUT_BASE / f"advprobe-prospective-{args.dir}-2026-08-16.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
     print(f"advprobe sur TS prospective : {pred.sum()}/{len(y_ts)} prédits positifs "
           f"(scores {s_ts.min():.3f}..{s_ts.max():.3f}, seuil {thr:.3f})")
     print(f"gate 13.5 : {gate}")
-    print(f"→ {OUT.relative_to(ROOT)}")
+    print(f"→ {out.relative_to(ROOT)}")
     return 0
 
 

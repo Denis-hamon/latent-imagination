@@ -1,0 +1,73 @@
+{
+ "envelope_calls_cap": 90,
+ "frozen_at": "2026-08-16T12:28:13.300258Z",
+ "quota_note": "quota cible 10 ; 8 valid\u00e9es par cha\u00eene z\u00e9ro-appel (1 candidate \u00e9cart\u00e9e sans signal, journalis\u00e9e) \u21d2 shortfall de 2 DISCLOS\u00c9 ; classe de difficult\u00e9 valid\u00e9e par le difficulty-probe (1/2 r\u00e9par\u00e9)",
+ "tasks": [
+  {
+   "buggy_sha256": "8fc9bb9a80c31eb1f7dccd07ea7585ed894ce7030be7f5dd11e9c797a6abf7aa",
+   "campaign": "coverage-ts-2",
+   "draws": 2,
+   "family": "kimsufi__site",
+   "instance_id": "kimsufi__slider.region_sort_inverted",
+   "n_f2p": 4
+  },
+  {
+   "buggy_sha256": "89d8a4a0ae2d99d12c895550c36e49c70682e437d8b1c4dc5c625224205f0355",
+   "campaign": "coverage-ts-2",
+   "draws": 2,
+   "family": "kimsufi__site",
+   "instance_id": "kimsufi__slider.price_html_not_stripped",
+   "n_f2p": 3
+  },
+  {
+   "buggy_sha256": "190e18ec6fbe334e225de7c20c47b6cb00e5907aec31e30f6220ef771f96d7ba",
+   "campaign": "coverage-ts-2",
+   "draws": 2,
+   "family": "kimsufi__site",
+   "instance_id": "kimsufi__slider.highlight_case_sensitive",
+   "n_f2p": 4
+  },
+  {
+   "buggy_sha256": "99dbdb441cad82b7910074e8065fc9e408975afb3764e51cf9c3056df2c95582",
+   "campaign": "coverage-ts-2",
+   "draws": 2,
+   "family": "kimsufi__site",
+   "instance_id": "kimsufi__aiwf.component_id_is_type",
+   "n_f2p": 2
+  },
+  {
+   "buggy_sha256": "6ebf857c2b67181f4acccfea2f9a4e1267985b1167de74cb03f00f3873488663",
+   "campaign": "coverage-ts-2",
+   "draws": 2,
+   "family": "kimsufi__site",
+   "instance_id": "kimsufi__aiwf.variant_default_lost",
+   "n_f2p": 1
+  },
+  {
+   "buggy_sha256": "b7b4734f8a43b6b464d6c8dd612736f3058500b4ab960bc61bfb01d6a227b11f",
+   "campaign": "coverage-ts-2",
+   "draws": 2,
+   "family": "kimsufi__site",
+   "instance_id": "kimsufi__catalog.universe_filter_drops_generic",
+   "n_f2p": 4
+  },
+  {
+   "buggy_sha256": "7a1d4ce3a7ba7343d806582ec76ae4d44151f2f01cfedc6c9af6177f9d763fe0",
+   "campaign": "coverage-ts-2",
+   "draws": 2,
+   "family": "kimsufi__site",
+   "instance_id": "kimsufi__aiwf.normalize_early_return_or",
+   "n_f2p": 9
+  },
+  {
+   "buggy_sha256": "3c6087bbfaf116a9cca9dab3ac5cf92e3a4f9f31e060390ed17a4c9bc87412ba",
+   "campaign": "coverage-ts-2",
+   "draws": 2,
+   "family": "kimsufi__site",
+   "instance_id": "kimsufi__seo.hreflangs_key_value_swapped",
+   "n_f2p": 8
+  }
+ ],
+ "window": "coverage-ts-v2",
+ "window_approval_anchor": "ebfe7acf9e7bf62e81c106b1dae1a1dc7b93c0840c04d80958ed361707a824b4"
+}

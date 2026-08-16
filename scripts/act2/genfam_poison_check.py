@@ -36,6 +36,9 @@ sys.modules["s11_ext_pool"] = s11
 _spec.loader.exec_module(s11)
 
 POISON_AUC = 0.65
+POISON_CLASS_MIN = 5  # règle scellée fenêtres croissance : une classe < 5 lignes
+# ⇒ gate DÉGÉNÉRÉE (indéfini ≠ conforme, précédents flywheel-v10 / coverage-ts) ;
+# l'AUC reste calculée si définie à titre descriptif, jamais certificatoire.
 
 def _loao_auc(npz_path: Path, rows: list[dict]) -> tuple[float, int, int]:
     # Dégénérescence pré-déclarée (fenêtres gen-families & coverage-ts) : une
@@ -80,8 +83,11 @@ def main() -> int:
 
     import math
     if math.isnan(auc_ext):
-        gate = ("DÉGÉNÉRÉ (classe manquante — AUC indéfinie : quota archivé, "
+        gate = ("DÉGÉNÉRÉE (classe manquante — AUC indéfinie : quota archivé, "
                 "NON mixé, règle scellée « indéfini ≠ conforme »)")
+    elif min(n_pos, n_neg) < POISON_CLASS_MIN:
+        gate = (f"DÉGÉNÉRÉE (classe min {min(n_pos, n_neg)} < {POISON_CLASS_MIN} — "
+                "AUC non certificatoire, quota archivé, NON mixé, règle scellée)")
     else:
         gate = "PASS" if auc_ext >= POISON_AUC else "POISON (quota HORS pool, archivé)"
     report = {
