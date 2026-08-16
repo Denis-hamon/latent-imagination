@@ -1,0 +1,118 @@
+{
+ "window": "gen-families-v1",
+ "quota": "q1",
+ "closed_at": "2026-08-16T11:05:31.413858Z",
+ "envelope": {
+  "call_cap": 350,
+  "calls_consumed": 290,
+  "breakdown": {
+   "model_calls_ok": 154,
+   "model_calls_500": 124,
+   "probes_auditées": 12
+  }
+ },
+ "selection": {
+  "frozen_digest": "727081b7d2edc6c1",
+  "slots_planned": 120,
+  "tasks": 60,
+  "families": 12
+ },
+ "outcome": {
+  "slots_attempted": 120,
+  "slots_measured": 104,
+  "ok": 68,
+  "no_diff": 36,
+  "no_diff_rate": 0.3462,
+  "abort_line": 0.6,
+  "abort_fired": false,
+  "blocked_endpoint_error": 8,
+  "blocked_budget_stopped": 8,
+  "blocked_note": "16 slots jamais mesurés = incident endpoint auteur (500/empty), consommés au budget pour certains, journalisés; shortfall DISCLOSÉ, jamais caché",
+  "diff_modes": {
+   "fuzz-reexport": 25,
+   "whole-file": 24,
+   "strict-git": 9,
+   "recovered-from-disk": 5,
+   "recovered-fuzz": 2,
+   "None": 3
+  },
+  "families_with_rows": 12,
+  "per_family_ok": {
+   "Suor__funcy": 9,
+   "pytest-dev__iniconfig": 8,
+   "jd__tenacity": 7,
+   "seatgeek__thefuzz": 6,
+   "pudo__dataset": 6,
+   "mahmoud__boltons": 6,
+   "PyCQA__flake8": 6,
+   "ariga__atlas": 5,
+   "luozhouyang__python-string-similarity": 5,
+   "hjson__hjson-go": 4,
+   "madzak__python-json-logger": 4,
+   "joke2k__faker": 2
+  },
+  "per_family_blocked": {
+   "joke2k__faker": 4,
+   "jd__tenacity": 3,
+   "hjson__hjson-go": 4,
+   "luozhouyang__python-string-similarity": 4,
+   "ariga__atlas": 1
+  }
+ },
+ "incidents_disclosed": [
+  {
+   "id": "I1",
+   "what": "HALT no-diff 80 % après 8 slots (avant le 5e slot sain)",
+   "cause": "git apply --recount refuse les hunks off-by-one EOF alors que patch --fuzz=3 applique (diffs sémantiquement corrects)",
+   "fix": "lane de récupération fuzz + ré-export git (lignage sanitize 3516b5e), diff_mode tracé"
+  },
+  {
+   "id": "I2",
+   "what": "reprise post-recover : abort no-diff faux (run-seul 71 % vs quota 34 %)",
+   "cause": "compteurs du taux initialisés au run courant, biaisés par le skip des slots ok à la reprise",
+   "fix": "compteurs amorcés depuis les rec.json au disk (vue quota entière) + test de régression"
+  },
+  {
+   "id": "I3",
+   "what": "tempête 500 prolongée de l'endpoint auteur (flapping DOWN/HEALTHY)",
+   "cause": "instabilité serveur galere (hors de notre contrôle)",
+   "fix": "pause protégée + watchdog budget-safe (sondes auditées comme appels, floor 290), reprises idempotentes"
+  },
+  {
+   "id": "I4",
+   "what": "rollback rsync opérateur : 7 rec.json revenus à un état ancien, reprise a re-consommé ~5 appels",
+   "cause": "rsync node->Mac sans filtre a écrasé des recs plus récents",
+   "fix": "recs reconstruits depuis l'évidence diff.patch au disk (statut disclosé 'recovered-from-disk'); transferts ultérieurs sous include filter strict"
+  },
+  {
+   "id": "I5",
+   "what": "fermeture anticipée de la fenêtre à 104/120 mesurés",
+   "cause": "les 16 slots restants concentrent l'instabilité endpoint ET les familles à zéro positif; continuer eût brûlé le reste du budget sans signal attendu",
+   "fix": "fermeture propriétaire disclosée best-effort (un plafond est un plafond; shortfall = amendement, pas silence)"
+  }
+ ],
+ "labeling": {
+  "measured_labeled": 68,
+  "labels_y1": 15,
+  "labels_y0": 53,
+  "quarantine": 0,
+  "quarantine_cap": 0.1,
+  "ruleset": "rules-v1",
+  "chain": "image→bug→patch(strict git apply)→py_compile→F2P→P2P, juge-free, raw conservé"
+ },
+ "poison_check": {
+  "metric": "LOAO-F1 ext-only, AUC Mann-Whitney (géométrie de serving v9)",
+  "auc_ext_only": 0.4918,
+  "gate": 0.65,
+  "verdict": "POISON — quota q1 HORS du mix v10, archivé pour étude (règle S11 gelée)",
+  "positive_control_same_metric": {
+   "pool_v9": 0.6777
+  },
+  "diagnosis": "positifs sur 4/12 familles seulement (flake8/tenacity/iniconfig/string-similarity); 5 familles à zéro positif; la géométrie du quota est structurée par famille/difficulté, pas par le signal succès — l'auteur épinglé produit des diffs plausibles mais faux hors de sa zone"
+ },
+ "q2": {
+  "status": "NON EXÉCUTÉ — shortfall disclosé",
+  "reason": "aucune tâche github-actions-public-ci récoltée localement; la récolte n'était pas ouverte"
+ },
+ "consequence_v10": "AUCUNE ligne genfam-q1 n'entre dans le pool v10. v10 = v9 (+ lignes flywheel si elles passent leur propre gate). Le quota q1 reste archivé sous data/landing/act2-pilot/genfam-q1/ (append-only, jamais supprimé) comme matériel d'étude."
+}

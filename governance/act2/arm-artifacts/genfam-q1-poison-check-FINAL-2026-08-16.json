@@ -1,0 +1,24 @@
+{
+ "quota": "q1",
+ "generated_at": "2026-08-16T11:05:44.503910Z",
+ "metric": "LOAO-F1 ext-only, AUC Mann-Whitney, propre tâche exclue",
+ "n_rows": 68,
+ "n_pos": 15,
+ "n_neg": 53,
+ "pos_rate_wilson95": [
+  0.1384889157967965,
+  0.3325696352377016
+ ],
+ "auc_ext_only": 0.4918,
+ "gate": 0.65,
+ "verdict": "POISON (quota HORS pool, archivé)",
+ "positive_control": {
+  "pool": "v9",
+  "auc_loao_f1": 0.6777,
+  "n_pos": 78,
+  "n_neg": 135,
+  "note": "même métrique (LOAO-F1 goal-free) sur le pool servi — ancrage d'échelle"
+ },
+ "rule": "règle S11 gelée : AUC ext-only < 0.65 ⇒ quota exclu du mix, archivé pour étude",
+ "status_note": "VERDICT FINAL sur fenêtre Q1 close best-effort (104/120 générés, 68 labellisés+embeddés — la totalité du quota mesurable; 16 slots bloqués par l'incident endpoint auteur, shortfall DISCLOSÉ au bilan). AUC 0.4918 < gate 0.65 ⇒ quota q1 POISON : exclu du mix v10, archivé pour étude (règle S11). Contrôle positif v9 (même métrique) = 0.6777 : la machinerie mesure, c'est le quota qui ne sépare pas."
+}
