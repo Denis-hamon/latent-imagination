@@ -1,8 +1,9 @@
 {
  "story": "13.1-ext-loao-benchmark",
- "generated_at": "2026-08-16T11:38:01.247184Z",
- "pool": "latent-pool-v10.json",
- "pool_sha256_16": "88985eb171b4bb9f",
+ "generated_at": "2026-08-16T11:39:53.992544Z",
+ "measurement": "baseline_current_instrument",
+ "pool": "latent-pool-v10.npz",
+ "pool_json_sha256_16": "88985eb171b4bb9f",
  "n_rows": 219,
  "positives": 84,
  "v6_gold_control": {
