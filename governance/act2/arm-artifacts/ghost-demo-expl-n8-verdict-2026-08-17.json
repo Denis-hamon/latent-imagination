@@ -1,0 +1,144 @@
+{
+ "demo": "ghost-demo-expl-n8 (EXPLORATOIRE post-verdict)",
+ "prereg_anchor": "1babd393",
+ "generated_at": "2026-08-16T19:14:48.219502Z",
+ "G1_top1_positifs": "4/4 (gate >= 3/4)",
+ "G1_verdict": "PASS",
+ "G2_integrite_calibration": "PASS",
+ "G3_accuracy_hors_bootstrap": {
+  "acc": 0.5833,
+  "n": 12,
+  "wilson95": [
+   0.3195,
+   0.8067
+  ],
+  "statut": "descriptif (pas de seuil de go)"
+ },
+ "scenarios": [
+  {
+   "seed": 5,
+   "bootstrap_ids": [
+    "v9-f01-triple_coordinated-d2",
+    "v9-f03-triple_coordinated-d2",
+    "v9-p08-triple_coordinated-d1",
+    "v9-f07-triple_coordinated-d3",
+    "v9-f05-triple_coordinated-d1",
+    "v9-f04-triple_coordinated-d3",
+    "v9-f06-triple_coordinated-d2",
+    "v9-f02-triple_coordinated-d1"
+   ],
+   "bootstrap_y": {
+    "v9-f01-triple_coordinated-d2": 0,
+    "v9-f06-triple_coordinated-d2": 0,
+    "v9-f02-triple_coordinated-d1": 0,
+    "v9-f07-triple_coordinated-d3": 1,
+    "v9-f05-triple_coordinated-d1": 1,
+    "v9-p08-triple_coordinated-d1": 0,
+    "v9-f03-triple_coordinated-d2": 0,
+    "v9-f04-triple_coordinated-d3": 0
+   },
+   "regime": "local",
+   "n_bootstrap": 8,
+   "top1_id": "v9-f07-triple_coordinated-d3",
+   "top1_vrai": 1,
+   "top1_hit": true,
+   "hors_bootstrap": 3,
+   "hors_correct": 2,
+   "grounded_by": "tests-run"
+  },
+  {
+   "seed": 6,
+   "bootstrap_ids": [
+    "v9-f03-triple_coordinated-d2",
+    "v9-f01-triple_coordinated-d2",
+    "v9-p08-triple_coordinated-d1",
+    "v9-f07-triple_coordinated-d3",
+    "v9-f05-triple_coordinated-d1",
+    "v9-f04-triple_coordinated-d3",
+    "v9-f06-triple_coordinated-d2",
+    "v9-f02-triple_coordinated-d1"
+   ],
+   "bootstrap_y": {
+    "v9-f01-triple_coordinated-d2": 0,
+    "v9-f06-triple_coordinated-d2": 0,
+    "v9-f02-triple_coordinated-d1": 0,
+    "v9-f07-triple_coordinated-d3": 1,
+    "v9-f05-triple_coordinated-d1": 1,
+    "v9-p08-triple_coordinated-d1": 0,
+    "v9-f03-triple_coordinated-d2": 0,
+    "v9-f04-triple_coordinated-d3": 0
+   },
+   "regime": "local",
+   "n_bootstrap": 8,
+   "top1_id": "v9-f07-triple_coordinated-d3",
+   "top1_vrai": 1,
+   "top1_hit": true,
+   "hors_bootstrap": 3,
+   "hors_correct": 2,
+   "grounded_by": "tests-run"
+  },
+  {
+   "seed": 7,
+   "bootstrap_ids": [
+    "v9-p09-triple_coordinated-d2",
+    "v9-f01-triple_coordinated-d2",
+    "v9-p08-triple_coordinated-d1",
+    "v9-f07-triple_coordinated-d3",
+    "v9-p10-triple_coordinated-d1",
+    "v9-f04-triple_coordinated-d3",
+    "v9-f06-triple_coordinated-d2",
+    "v9-f02-triple_coordinated-d1"
+   ],
+   "bootstrap_y": {
+    "v9-f01-triple_coordinated-d2": 0,
+    "v9-p09-triple_coordinated-d2": 0,
+    "v9-f06-triple_coordinated-d2": 0,
+    "v9-f02-triple_coordinated-d1": 0,
+    "v9-f07-triple_coordinated-d3": 1,
+    "v9-p10-triple_coordinated-d1": 0,
+    "v9-p08-triple_coordinated-d1": 0,
+    "v9-f04-triple_coordinated-d3": 0
+   },
+   "regime": "local",
+   "n_bootstrap": 8,
+   "top1_id": "v9-f07-triple_coordinated-d3",
+   "top1_vrai": 1,
+   "top1_hit": true,
+   "hors_bootstrap": 3,
+   "hors_correct": 1,
+   "grounded_by": "tests-run"
+  },
+  {
+   "seed": 8,
+   "bootstrap_ids": [
+    "v9-f06-triple_coordinated-d2",
+    "v9-f01-triple_coordinated-d2",
+    "v9-p08-triple_coordinated-d1",
+    "v9-f07-triple_coordinated-d3",
+    "v9-f05-triple_coordinated-d1",
+    "v9-f03-triple_coordinated-d2",
+    "v9-f04-triple_coordinated-d3",
+    "v9-f02-triple_coordinated-d1"
+   ],
+   "bootstrap_y": {
+    "v9-f01-triple_coordinated-d2": 0,
+    "v9-f06-triple_coordinated-d2": 0,
+    "v9-f02-triple_coordinated-d1": 0,
+    "v9-f07-triple_coordinated-d3": 1,
+    "v9-f05-triple_coordinated-d1": 1,
+    "v9-p08-triple_coordinated-d1": 0,
+    "v9-f03-triple_coordinated-d2": 0,
+    "v9-f04-triple_coordinated-d3": 0
+   },
+   "regime": "local",
+   "n_bootstrap": 8,
+   "top1_id": "v9-f07-triple_coordinated-d3",
+   "top1_vrai": 1,
+   "top1_hit": true,
+   "hors_bootstrap": 3,
+   "hors_correct": 2,
+   "grounded_by": "tests-run"
+  }
+ ],
+ "disclosure": "n=3 < N_MIN=8 => régime fallback-prior sur tous les scénarios (divulgué); vérité terrain P0 jamais utilisée pour la sélection"
+}

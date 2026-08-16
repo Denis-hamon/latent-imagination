@@ -1,0 +1,104 @@
+{
+ "demo": "ghost-demo-15-4",
+ "prereg_anchor": "1babd393",
+ "generated_at": "2026-08-16T19:09:44.042474Z",
+ "G1_top1_positifs": "0/4 (gate >= 3/4)",
+ "G1_verdict": "ÉCHEC",
+ "G2_integrite_calibration": "PASS",
+ "G3_accuracy_hors_bootstrap": {
+  "acc": 0.5,
+  "n": 32,
+  "wilson95": [
+   0.3363,
+   0.6637
+  ],
+  "statut": "descriptif (pas de seuil de go)"
+ },
+ "scenarios": [
+  {
+   "seed": 1,
+   "bootstrap_ids": [
+    "v9-f05-triple_coordinated-d1",
+    "v9-f01-triple_coordinated-d2",
+    "v9-p09-triple_coordinated-d2"
+   ],
+   "bootstrap_y": {
+    "v9-f01-triple_coordinated-d2": 0,
+    "v9-p09-triple_coordinated-d2": 0,
+    "v9-f05-triple_coordinated-d1": 1
+   },
+   "regime": "fallback-prior",
+   "n_bootstrap": 3,
+   "top1_id": "v9-f05-triple_coordinated-d1",
+   "top1_vrai": null,
+   "top1_hit": false,
+   "hors_bootstrap": 8,
+   "hors_correct": 3,
+   "grounded_by": "tests-run"
+  },
+  {
+   "seed": 2,
+   "bootstrap_ids": [
+    "v9-p10-triple_coordinated-d1",
+    "v9-f01-triple_coordinated-d2",
+    "v9-f03-triple_coordinated-d2"
+   ],
+   "bootstrap_y": {
+    "v9-f01-triple_coordinated-d2": 0,
+    "v9-p10-triple_coordinated-d1": 0,
+    "v9-f03-triple_coordinated-d2": 0
+   },
+   "regime": "fallback-prior",
+   "n_bootstrap": 3,
+   "top1_id": "v9-p08-triple_coordinated-d1",
+   "top1_vrai": 0,
+   "top1_hit": false,
+   "hors_bootstrap": 8,
+   "hors_correct": 4,
+   "grounded_by": "tests-run"
+  },
+  {
+   "seed": 3,
+   "bootstrap_ids": [
+    "v9-f02-triple_coordinated-d1",
+    "v9-f01-triple_coordinated-d2",
+    "v9-f03-triple_coordinated-d2"
+   ],
+   "bootstrap_y": {
+    "v9-f01-triple_coordinated-d2": 0,
+    "v9-f02-triple_coordinated-d1": 0,
+    "v9-f03-triple_coordinated-d2": 0
+   },
+   "regime": "fallback-prior",
+   "n_bootstrap": 3,
+   "top1_id": "v9-p08-triple_coordinated-d1",
+   "top1_vrai": 0,
+   "top1_hit": false,
+   "hors_bootstrap": 8,
+   "hors_correct": 5,
+   "grounded_by": "tests-run"
+  },
+  {
+   "seed": 4,
+   "bootstrap_ids": [
+    "v9-p08-triple_coordinated-d1",
+    "v9-f01-triple_coordinated-d2",
+    "v9-f03-triple_coordinated-d2"
+   ],
+   "bootstrap_y": {
+    "v9-f01-triple_coordinated-d2": 0,
+    "v9-p08-triple_coordinated-d1": 0,
+    "v9-f03-triple_coordinated-d2": 0
+   },
+   "regime": "fallback-prior",
+   "n_bootstrap": 3,
+   "top1_id": "v9-p08-triple_coordinated-d1",
+   "top1_vrai": 0,
+   "top1_hit": false,
+   "hors_bootstrap": 8,
+   "hors_correct": 4,
+   "grounded_by": "tests-run"
+  }
+ ],
+ "disclosure": "n=3 < N_MIN=8 => régime fallback-prior sur tous les scénarios (divulgué); vérité terrain P0 jamais utilisée pour la sélection"
+}
