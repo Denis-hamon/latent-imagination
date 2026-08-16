@@ -1,0 +1,68 @@
+{
+ "window": "coverage-ts-v3",
+ "source": "public-worldmonitor-ts (AGPL, analyse interne)",
+ "closed_at": "2026-08-16T13:24:35.243369Z",
+ "window_anchor": "e19a227278f8e64c7cf093e4c4cf81a255b461b9bc5b42c5ab9133c065895025",
+ "difficulty_probes": [
+  {
+   "classe": "mono-point 511",
+   "auteur": "2/2 réparés"
+  },
+  {
+   "classe": "escalade 1 (priorité ?? / double-point)",
+   "auteur": "2/2 réparés"
+  },
+  {
+   "classe": "escalade 2 TRIPLE coordonné",
+   "auteur": "0/1 réparé → CLASSE VALIDÉE"
+  }
+ ],
+ "quota": {
+  "target": 12,
+  "validated": 7,
+  "shortfall": 5,
+  "tiers": {
+   "wm-easy": 4,
+   "wm-hard": 3
+  },
+  "note": "shortfall disclosé au gel ; amendement possible pré-mix sur tâches non mesurées (bc-fire-points identifié, 30 tests node natifs)"
+ },
+ "generation": {
+  "slots": 14,
+  "ok": 12,
+  "no-diff": 2,
+  "calls": 24,
+  "probe_calls": 5,
+  "cap": 110
+ },
+ "labeling": {
+  "mesurés": 12,
+  "erreurs": 0,
+  "y1": 10,
+  "y0": 2,
+  "quarantaine": 0,
+  "premiere_fenetre_TS_avec_negatifs_reels": true,
+  "chain": "node --test TAP distant sérialisé, bug→F2P rouges→diff→contrôle, restauration git",
+  "apply_tolerant_lecon_v2": "réutilisé (patch -l --fuzz, pose vérifiée par sha)"
+ },
+ "mesures": [
+  {
+   "mesure": "poison-check ext-LOAO",
+   "auc_descriptif": 0.0,
+   "verdict": "DÉGÉNÉRÉE (classe min 2 < 5, règle scellée) + AUC descriptive 0.0 : la géométrie LOAO du pool ne sépare PAS ces lignes worldmonitor (famille jamais vue) — c'est précisément l'absence d'invariance que le candidat advprobe attaque",
+   "consequence": "quota archivé, v10 inchangé"
+  },
+  {
+   "mesure": "validation prospective advprobe (13.5)",
+   "auc": 0.85,
+   "gate": 0.5977,
+   "verdict": "FRANCHIE (0.85) sur population à 2 classes jamais vue — meilleure évidence prospective du candidat (v2: 0.60 razor-thin sur classe dégénérée)",
+   "limite": "2 négatifs < 5 : non certificatoire pour une promotion (règle classe-min) ; le candidat reste REGISTERED, jamais promu"
+  }
+ ],
+ "lecture": "la projection adversariale keluarga (9.2k params) transfère sur une famille 100% nouvelle (0.85) alors que la géométrie servie n'y transfère pas (0.0) : l'hypothèse d'invariance E13 reçoit sa meilleure confirmation à ce jour, sur petit n. La certification exige une population ≥5 par classe — le levier est le remplissage du shortfall hard",
+ "suite_enregistree": [
+  "remplir le shortfall de 5 tâches par des triples hard (bc-fire-points : géométrie KML/WFS, dédup buckets, merge enrichment — 30 tests natifs)",
+  "puis re-mesure complète du quota étendu ; si ≥5 négatifs et poison ≥0.65 : mix possible sous portes 9.1 (contrôle v6 + régime)"
+ ]
+}
