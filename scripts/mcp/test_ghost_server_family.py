@@ -307,6 +307,16 @@ class TestRiskScanConformalServing:
             assert "named_non_coverage" in out
             assert "TS/monorepo" in out["named_non_coverage"]
 
+    def test_response_discloses_encoder(self, offline_server, monkeypatch):
+        # v0.6.0 : la réponse nomme l'encodeur de l'espace géométrique servi
+        monkeypatch.setattr(gs, "ENCODER", "jinaai/jina-embeddings-v2-base-code")
+        out = gs.do_risk_scan(dict(self.ARGS, reporter="pytest-fixture"))
+        assert out["encoder"] == "jinaai/jina-embeddings-v2-base-code"
+
+    def test_embedder_family_dispatch(self):
+        assert gs._embedder_family("jinaai/jina-embeddings-v2-base-code") == "jina"
+        assert gs._embedder_family("microsoft/unixcoder-base") == "unixcoder"
+
     def test_no_conformal_env_means_legacy_tau_regime(self, offline_server, monkeypatch):
         monkeypatch.setattr(gs, "CONFORMAL_CALIB", Path(""))
         monkeypatch.setattr(gs, "_conformal_cache", None)

@@ -34,6 +34,11 @@ une requête au signal TS qui s'abstient porte `named_non_coverage` explicite
 (« hors couverture connue »), pas une abstention générique silencieuse.
 
 v0.5.0 (2026-08-16) : abstention CONFORME Mondrian par famille (story 12.2) —
+v0.6.0 (2026-08-17) : MIGRATION ENCODEUR — le pool servi peut tourner sous
+jina-v2-base-code (bras 3b345cdd : pooled4 PROMOUVABLE 0.7428 [0.640,0.840]).
+Chaque réponse porte désormais `encoder` (env LI_ENCODER) — la géométrie des
+espaces unixcoder et jina est INCOMPATIBLE : pool/calibration/encoder forment
+un triplet indivisible (drop-in pool-v11.conf embarque les trois).
 LI_CONFORMAL_CALIB posée ⇒ seuil par strate avec garantie « erreur ≤ 10 % parmi
 les réponses retenues » (repli pooled disclosé si strate insuffisante) ;
 variable absente ⇒ régime tau-fixe legacy (rollback = 1 config). Chaque réponse
@@ -87,21 +92,66 @@ _model = None
 _tok = None
 
 
+def _embedder_family(encoder: str) -> str:
+    """v0.6.0 : la requête DOIT être encodée dans le même espace que le pool
+    servi (espaces incompatibles — prereg migration 3b345cdd)."""
+    return "jina" if "jina" in encoder.lower() else "unixcoder"
+
+
 def _ensure_model():
     global _model, _tok
     if _model is None:
         os.environ.setdefault("HF_HUB_OFFLINE", "1")
         from transformers import AutoModel, AutoTokenizer
-        _tok = AutoTokenizer.from_pretrained("microsoft/unixcoder-base")
-        _model = AutoModel.from_pretrained("microsoft/unixcoder-base").eval()
+        if _embedder_family(ENCODER) == "jina":
+            import torch
+            import transformers as _tf
+
+            def _fphi(heads, n_heads, head_size, already_pruned_heads):
+                mask = torch.ones(n_heads, head_size)
+                heads = set(heads) - already_pruned_heads
+                for h in heads:
+                    h -= sum(1 if oh < h else 0 for oh in already_pruned_heads)
+                    mask[h] = 0
+                mask = mask.view(-1).contiguous().eq(1)
+                return heads, torch.arange(mask.size(0))[mask].long()
+
+            _tf.pytorch_utils.find_pruneable_heads_and_indices = _fphi
+            if not hasattr(_tf.PreTrainedModel, "get_head_mask"):
+                _tf.PreTrainedModel.get_head_mask = (
+                    lambda self, head_mask, num_hidden_layers, is_attention_chunked=False:
+                    [None] * num_hidden_layers)
+            from transformers import AutoConfig
+            cid = "jinaai/jina-embeddings-v2-base-code"
+            cfg = AutoConfig.from_pretrained(cid, trust_remote_code=True)
+            for a, v in (("is_decoder", False), ("use_cache", False),
+                         ("is_encoder_decoder", False), ("tie_word_embeddings", False),
+                         ("add_cross_attention", False), ("chunk_size_feed_forward", 0),
+                         ("cross_attention_hidden_size", None)):
+                if not hasattr(cfg, a):
+                    setattr(cfg, a, v)
+            _tok = AutoTokenizer.from_pretrained(cid, trust_remote_code=True)
+            _model = AutoModel.from_pretrained(cid, config=cfg, trust_remote_code=True).eval()
+        else:
+            _tok = AutoTokenizer.from_pretrained("microsoft/unixcoder-base")
+            _model = AutoModel.from_pretrained("microsoft/unixcoder-base").eval()
 
 
 def embed(text: str):
     _ensure_model()
     import numpy as np
-    tb = _tok([text], padding=True, truncation=True, max_length=512, return_tensors="pt")
-    with __import__("torch").no_grad():
-        h = _model(**tb).last_hidden_state[0, 0]
+    fam = _embedder_family(ENCODER)
+    torch = __import__("torch")
+    tb = _tok([text], padding=True, truncation=True,
+              max_length=8192 if fam == "jina" else 512, return_tensors="pt")
+    kw = {"token_type_ids": torch.zeros_like(tb["input_ids"])} if fam == "jina" else {}
+    with torch.no_grad():
+        lh = _model(**tb, **kw).last_hidden_state
+        if fam == "jina":  # pooling last-token natif jina-v2
+            idx = tb["attention_mask"].sum(1) - 1
+            h = lh[0, int(idx[0])]
+        else:
+            h = lh[0, 0]
     v = h.numpy()
     return v / (np.linalg.norm(v) + 1e-9)
 
@@ -160,6 +210,7 @@ _conformal_cache = None
 # Story 12.2 : calibration conforme servie à côté du pool pour audit client.
 CONFORMAL_CALIB = Path(os.environ.get(
     "LI_CONFORMAL_CALIB", ""))  # vide ⇒ régime tau-fixe legacy (rollback 1 config)
+ENCODER = os.environ.get("LI_ENCODER", "microsoft/unixcoder-base")  # v0.6.0
 
 
 def family_of(task: str) -> str:
@@ -425,7 +476,7 @@ def handle(msg: dict) -> dict | None:
         return _resp(mid, {
             "protocolVersion": "2025-06-18",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "ghost", "version": "0.5.1"},
+            "serverInfo": {"name": "ghost", "version": "0.6.0"},
         })
     if method == "notifications/initialized":
         return None
@@ -660,7 +711,7 @@ def do_risk_scan(args: dict) -> dict:
                                 "stratifié par auteur dans le flywheel (contrat multi-LLM)")
     out.update({"d_nearest_fail": round(d_fail, 4),
                 "d_nearest_pass": round(d_pass, 4),
-                "pool": POOL_JSON.name, "pool_n": pc["n"],
+                "pool": POOL_JSON.name, "pool_n": pc["n"], "encoder": ENCODER,
                 "served_regime": serv_regime,
                 "calibration_served": (Path(CONFORMAL_CALIB).name if conf_cal
                                        else RISK_CALIB.name),

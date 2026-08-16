@@ -1,0 +1,16 @@
+{
+ "arm": "embedder-migration-jina-v11",
+ "prereg": "3b345cdd",
+ "ancre_v6_gold_espace_jina": {
+  "metric": "loao_energy (recette contrôle identique)",
+  "auc": 0.8315,
+  "acc100": 0.7793,
+  "note": "nouvelle ancre d'échelle de l'espace jina ; l'ancienne ancre unixcoder ne s'applique plus"
+ },
+ "gate_b_reproductibilite_pooled4": {
+  "auc": 0.7428,
+  "attendu": 0.7428,
+  "ok": true
+ },
+ "note": "l'ancienne ancre unixcoder 0.822/0.779 n'est PAS comparable (espaces distincts) — divulgation prereg étape 3"
+}

@@ -1,0 +1,12 @@
+{
+ "pool": "v11",
+ "encoder": "jina-v2-base-code",
+ "n": 219,
+ "positifs": 84,
+ "recipe": "LOAO-F1 goal-free sur E_state+E_diff (identique v9/v10)",
+ "thr_pool": -0.004084,
+ "tau_10pct": 0.246796,
+ "coverage": 0.1,
+ "acc_regime_10pct": 0.9091,
+ "generated_at": "2026-08-16T21:52:24.467969Z"
+}

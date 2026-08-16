@@ -1,0 +1,28 @@
+{
+ "gate": "migration-jina-v11",
+ "prereg": "3b345cdd",
+ "ancre_v6_gold_jina": {
+  "auc": 0.8315,
+  "acc100": 0.7793,
+  "ok": true
+ },
+ "conforme_realise_alpha_0_10": {
+  "erreur": 0.093,
+  "garantie": 0.1,
+  "ok": true
+ },
+ "reproductibilite_pooled4": {
+  "auc": 0.7428,
+  "attendu": 0.7428,
+  "ok": true
+ },
+ "regime_10pct": {
+  "thr_pool": -0.004084,
+  "tau_10pct": 0.246796,
+  "coverage": 0.1,
+  "acc_regime_10pct": 0.9091
+ },
+ "verdict": "PROMOUVABLE",
+ "generated_at": "2026-08-16T21:52:24.468471Z",
+ "disclosure": "espaces unixcoder/jina incompatibles : aucun seuil v10 réutilisé ; l'ancre 0.822/0.779 unixcoder est remplacée par 0.8315/0.7793 jina"
+}
