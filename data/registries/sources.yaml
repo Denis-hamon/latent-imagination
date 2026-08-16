@@ -76,3 +76,24 @@ sources:
     source_version: 1
     registered_at: "2026-08-16T14:30:00Z"
     notes: "vitest 4.1.8 remote (serveur Kimsufi-standard) ; le labeling de la fenêtre v2 s'exécutera sur ce serveur (chaîne distante sérialisée) ; modules cibles prioritaires : content-adapters (DrupalComponentRenderer 43 tests, transformers.slider 28, buildComponentsFromContent 15, normalize-content 14)"
+
+  # CANDIDATE source (2026-08-16, découverte owner) : worldmonitor (GitHub
+  # koala73/worldmonitor @ ef9c8e652ef3) — 1378 fichiers de tests
+  # (node:test/tsx + vitest convex/dom + playwright e2e) validant la logique
+  # applicative réelle (rate-limiters à état, contrats feeds, import-graphs
+  # cross-modules). AGPL-3.0-only : analyse + labels dérivés AUTORISÉS
+  # (précédent ci-logs), republication des patches INTERDITE → les diffs ne
+  # vivent qu'en mesure interne, jamais dans un artefact public. Non utilisée
+  # tant qu'une fenêtre dédiée n'est pas pré-enregistrée (v3).
+  - source_id: public-worldmonitor-ts
+    origin_class: public_trajectory_collection
+    license: "AGPL-3.0-only"
+    usage_rights: "analysis + derivative labels internal only; no patch republication"
+    covered_families: ["worldmonitor__app"]
+    covered_generations: ["2026"]
+    snapshot_content_hash: "070a92871ac9ac61d6bbf16f790bb6516b493acfa104a4cc3af41cdaaac21736"  # pré-ingestion : sha256("worldmonitor@ef9c8e652ef3…") ;
+    # remplacé par le sha256 du contenu ingéré à la première fenêtre (précédent ci-seed)
+    coverage_gaps: ["jamais utilisée en fenêtre ; installation node + sélection des suites exécutables à valider"]
+    source_version: 1
+    registered_at: "2026-08-16T15:00:00Z"
+    notes: "commit figé à l'enregistrement ; classe de tests plus dure que mutants mono-fonction (état, multi-fichiers) — candidat naturel pour obtenir des négatifs groundés"
