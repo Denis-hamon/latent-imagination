@@ -31,6 +31,12 @@ class TestFamilyOf:
     def test_no_dot_falls_back_to_task(self):
         assert gs.family_of("bare-task-name") == "bare-task-name"
 
+    def test_flywheel_colon_rows_share_one_family(self):
+        # cohérence Mondrian 12.2 : la calibration stratifie flywheel:* sous
+        # la famille « flywheel » ; family_of doit produire le même préfixe
+        assert gs.family_of("flywheel:17cd6931f51276d9") == "flywheel"
+        assert gs.family_of("flywheel:a69afccacf0e7a33") == "flywheel"
+
     def test_non_string_safe(self):
         assert gs.family_of(None) == "None"
 
@@ -193,3 +199,87 @@ class TestNearMisFamily:
         assert len(out["nearest"]) == 3
         for row in out["nearest"]:
             assert row["family"] == gs.family_of(row["task"])
+
+
+class TestConformalTau:
+    """Story 12.2 : choix de seuil conforme servi (fonction pure — ni pool,
+    ni embed, ni réseau). Mondrian si la strate a une garantie, repli pooled
+    HONNÊTE sinon (jamais de garantie par famille fabriquée, FR-27)."""
+
+    CAL = {
+        "strata_mondrian": {
+            "acme__big": {"alpha_0.10": {"tau": 0.2, "n": 40, "guarantee": "≤0.1 stratum",
+                                          "realized_err_rate": 0.05}},
+            "thin__fam": {"alpha_0.10": {"tau": None, "n": 4,
+                                          "reason": "insufficient data (n=4 < 12)"}},
+        },
+        "global_conformal": {"alpha_0.10": {"tau": 0.12, "guarantee": "≤0.1 pool",
+                                             "realized_err_rate": 0.079}},
+    }
+
+    def test_family_stratum_with_guarantee_uses_mondrian(self):
+        r = gs.conformal_tau(self.CAL, "acme__big")
+        assert r["tau"] == 0.2 and r["source"] == "mondrian-family"
+        assert r["guarantee"] == "≤0.1 stratum"
+
+    def test_insufficient_stratum_falls_back_to_pooled_with_disclosure(self):
+        r = gs.conformal_tau(self.CAL, "thin__fam")
+        assert r["tau"] == 0.12 and r["source"].startswith("global-pooled")
+        assert "insuffisant" in r["source"]  # la disclosure porte l'honnêteté
+
+    def test_unknown_family_falls_back_to_pooled(self):
+        r = gs.conformal_tau(self.CAL, "jamais__vue")
+        assert r["tau"] == 0.12 and r["source"].startswith("global-pooled")
+
+    def test_no_guarantee_anywhere_means_no_tau(self):
+        assert gs.conformal_tau({}, "x") == {}  # abstention reste le défaut
+
+    def test_inf_tau_stratum_not_served(self):
+        cal = {"strata_mondrian": {"bad__fam": {"alpha_0.10":
+                 {"tau": float("inf"), "n": 30, "guarantee": "abstention totale"}}},
+               "global_conformal": {"alpha_0.10": {"tau": 0.12}}}
+        r = gs.conformal_tau(cal, "bad__fam")
+        assert r["tau"] == 0.12  # inf = strate abstention totale ⇒ repli pooled
+
+
+CONFORMAL_FILE = (Path(__file__).resolve().parents[2] / "governance" / "act2"
+                  / "arm-artifacts" / "risk-scan-v10-conformal.json")
+
+
+@NEEDS_POOL
+class TestRiskScanConformalServing:
+    """12.2 integration : risk_scan sert l'abstention conforme + disclosures
+    (régime nommé, calibration auditée, truncation) quand LI_CONFORMAL_CALIB
+    est posée ; rollback trivial = variable absente → régime tau-fixe."""
+
+    ARGS = {"state_text": "fixture state", "diff_text": "diff --git a/x b/x\n+1\n"}
+
+    @pytest.fixture()
+    def conformal_server(self, offline_server, monkeypatch):
+        if not CONFORMAL_FILE.is_file():
+            pytest.skip("artefact conforme 12.1 absent")
+        monkeypatch.setattr(gs, "CONFORMAL_CALIB", CONFORMAL_FILE)
+        monkeypatch.setattr(gs, "_conformal_cache", None)
+        return offline_server
+
+    def test_response_names_regime_and_disclosures(self, conformal_server):
+        out = gs.do_risk_scan(dict(self.ARGS, reporter="pytest-fixture"))
+        assert out["served_regime"] in ("conformal-mondrian", "fixed-tau")
+        assert "calibration_served" in out
+        assert any("advisory only" in d for d in out["disclosures"])
+        if out["served_regime"] == "conformal-mondrian":
+            assert "conformal" in out  # strate + garantie publiées au client
+            assert "guarantee" in out["conformal"]
+
+    def test_long_diff_truncation_is_disclosed(self, conformal_server):
+        big = dict(self.ARGS, diff_text="diff --git a/x b/x\n" + ("+line\n" * 900),
+                   reporter="pytest-fixture")
+        out = gs.do_risk_scan(big)
+        assert any("3000" in d for d in out["disclosures"])
+
+    def test_no_conformal_env_means_legacy_tau_regime(self, offline_server, monkeypatch):
+        monkeypatch.setattr(gs, "CONFORMAL_CALIB", Path(""))
+        monkeypatch.setattr(gs, "_conformal_cache", None)
+        out = gs.do_risk_scan(dict(self.ARGS, reporter="pytest-fixture"))
+        assert out["served_regime"] == "fixed-tau"
+        assert "conformal" not in out

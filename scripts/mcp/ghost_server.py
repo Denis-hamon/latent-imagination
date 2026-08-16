@@ -29,6 +29,12 @@ governance/act2/arm-artifacts/risk-scan-v8-calibration.json), sinon "abstain"
 
 N'écrit jamais JSON ailleurs que sur stdout. Pas de dépendance au net.
 
+v0.5.0 (2026-08-16) : abstention CONFORME Mondrian par famille (story 12.2) —
+LI_CONFORMAL_CALIB posée ⇒ seuil par strate avec garantie « erreur ≤ 10 % parmi
+les réponses retenues » (repli pooled disclosé si strate insuffisante) ;
+variable absente ⇒ régime tau-fixe legacy (rollback = 1 config). Chaque réponse
+nomme served_regime + calibration_served + disclosures (truncation 3000 chars).
+
 v0.4.0 (2026-08-15) : diagnostic de famille ADDITIF — `family_of(task)` dérive
 mécaniquement la famille (préfixe repo, zéro modèle), `_family_diagnosis` nome
 la famille la plus proche + sa couverture dans chaque réponse risk_scan ; les
@@ -145,6 +151,11 @@ def _log(entry: dict):
 # ---------------- pool servi + abstention calibrée ----------------
 _pool_cache = None
 _risk_calib_cache = None
+_conformal_cache = None
+
+# Story 12.2 : calibration conforme servie à côté du pool pour audit client.
+CONFORMAL_CALIB = Path(os.environ.get(
+    "LI_CONFORMAL_CALIB", ""))  # vide ⇒ régime tau-fixe legacy (rollback 1 config)
 
 
 def family_of(task: str) -> str:
@@ -153,7 +164,11 @@ def family_of(task: str) -> str:
     dérivation déterministe, pas une classification (leçon S11 : la famille
     et l'auteur sont des facteurs de première classe; on les expose, on ne
     les invente pas)."""
-    return task.split(".", 1)[0] if isinstance(task, str) and "." in task else str(task)
+    t = str(task)
+    for sep in (".", ":"):  # flywheel:<hash> => famille « flywheel » (cohérence
+        if sep in t:        # Mondrian : la calibration stratifie sur ce préfixe)
+            return t.split(sep, 1)[0]
+    return t
 
 
 def _load_pool():
@@ -213,6 +228,51 @@ def _family_diagnosis(q_s, pc) -> dict:
         "families_in_pool": len(set(fams.tolist())),
         "pool_n": pc["n"],
     }
+
+
+def _load_conformal():
+    global _conformal_cache
+    if _conformal_cache is None:
+        if CONFORMAL_CALIB and Path(CONFORMAL_CALIB).is_file():
+            _conformal_cache = json.loads(Path(CONFORMAL_CALIB).read_text())
+        else:
+            _conformal_cache = {}
+    return _conformal_cache
+
+
+def conformal_tau(cal: dict, nearest_family: str, alpha: str = "alpha_0.10") -> dict:
+    """Choix du seuil conforme servi (pur, testable sans pool ni embed).
+
+    Mondrian : si la strate famille a une garantie (n ≥ N_MIN) ⇒ τ_g ; sinon le
+    seuil GLOBAL avec disclosure « données insuffisantes pour une garantie par
+    famille » (honest emptiness — jamais de garantie fabriquée, FR-27)."""
+    strata = cal.get("strata_mondrian", {})
+    st = strata.get(nearest_family, {}).get(alpha)
+    if st and st.get("tau") is not None and st["tau"] != float("inf"):
+        return {"tau": st["tau"], "stratum": nearest_family,
+                "guarantee": st["guarantee"],
+                "n_stratum": st["n"],
+                "realized_err_rate": st.get("realized_err_rate"),
+                "source": "mondrian-family"}
+    gl = cal.get("global_conformal", {}).get(alpha) or {}
+    if gl.get("tau") is not None:
+        return {"tau": gl["tau"], "stratum": nearest_family,
+                "guarantee": gl.get("guarantee"),
+                "n_stratum": (strata.get(nearest_family, {}).get(alpha) or {}).get("n"),
+                "realized_err_rate": gl.get("realized_err_rate"),
+                "source": "global-pooled (stratum familial n≥N_MIN insuffisant : "
+                          "la garantie publiée est celle du pool entier, pas de la famille)"}
+    return {}
+
+
+def _family_of_query(q_s, pc) -> str:
+    """Famille de la requête = famille pool la plus proche en espace E_state
+    (même dérivation que le diagnostic additif — déterministe, numpy pur)."""
+    import numpy as _np
+    E_s, fams = pc["E_s"], pc["families"]
+    q = q_s / (_np.linalg.norm(q_s) + 1e-9)
+    sims = E_s @ q
+    return str(fams[int(_np.argmax(sims))])
 
 
 def _load_risk_calib():
@@ -307,13 +367,18 @@ TOOLS = [
         "description": "Le fantôme de chaque run passé note votre brouillon de diff. Compare le "
                        "patch à la géométrie des issues antérieures : distance au plus proche "
                        "ÉCHEC passé moins distance au plus proche SUCCÈS passé (failure-attractor, "
-                       "goal-free — pas de gold requis). Pool v8 (n=207). ABSTENTION calibrée : "
-                       "verdict (low_risk/high_risk) seulement si la confiance atteint le régime "
-                       "mesuré LOAO acc 0.952 [0.773,0.992] (10 % de couverture), sinon "
-                       "'abstain' — le fantôme se tait quand il ne sait pas, et explique : le "
-                       "bloc 'family' + 'abstention_diagnosis' nomme la famille de tâches la plus "
-                       "proche et sa couverture dans le pool (diagnostic additif, la décision ne "
-                       "change pas). exclude_task retire une tâche du pool (anti-fuite) ; "
+                       "goal-free — pas de gold requis). ABSTENTION CONFORME (GHOST v0.5.0) : "
+                       "verdict (low_risk/high_risk) seulement si la confiance atteint le seuil "
+                       "conforme de la strate — garantie distribution-free « taux d'erreur ≤ 10 % "
+                       "parmi les réponses retenues », Mondrian par famille quand la strate a "
+                       "assez de lignes, repli pooled disclosé sinon ; chaque réponse nomme son "
+                       "régime (served_regime) et la calibration servie (calibration_served) "
+                       "auditable par le client. DISCLOSURE : diff_text est tronqué à 3000 "
+                       "caractères avant embedding (signalé dans 'disclosures' quand ça arrive). "
+                       "Sinon 'abstain' — le fantôme se tait quand il ne sait pas, et explique : "
+                       "le bloc 'family' + 'abstention_diagnosis' nomme la famille de tâches la "
+                       "plus proche et sa couverture dans le pool (diagnostic additif, la décision "
+                       "ne change pas). exclude_task retire une tâche du pool (anti-fuite) ; "
                        "reporter = identité du LLM/agent — REQUIS pour stratifier le flywheel "
                        "par auteur (un appel sans reporter est accepté mais signalé "
                        "'reporter_note' et marqué dans le log). Advisory only — renvoyer l'issue "
@@ -341,7 +406,7 @@ def handle(msg: dict) -> dict | None:
         return _resp(mid, {
             "protocolVersion": "2025-06-18",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "ghost", "version": "0.4.0"},
+            "serverInfo": {"name": "ghost", "version": "0.5.0"},
         })
     if method == "notifications/initialized":
         return None
@@ -503,13 +568,17 @@ def do_risk_scan(args: dict) -> dict:
         raise ToolInputError("calibration risk_scan absente "
                              "(risk-scan-v8-calibration.json) — refus de prédire")
     pc = _load_pool()
+    conf_cal = _load_conformal()
+    serv_regime = "conformal-mondrian" if conf_cal else "fixed-tau"
     import numpy as _np
     cd, y, tasks = pc["cd"], pc["y"], pc["tasks"]
     exc = args.get("exclude_task") or ""
     keep = _np.array([tt != exc for tt in tasks]) if exc \
         else _np.ones(len(y), bool)
     q_s = _np.array(embed(args["state_text"]))
-    q_d = _np.array(embed(args["diff_text"][:3000]))
+    diff_in = args["diff_text"]
+    diff_truncated = len(diff_in) > 3000
+    q_d = _np.array(embed(diff_in[:3000]))
     c_q = q_s + q_d
     c_q = c_q / (_np.linalg.norm(c_q) + 1e-9)
     sims = cd[keep] @ c_q
@@ -518,18 +587,35 @@ def do_risk_scan(args: dict) -> dict:
     d_pass = float((1 - sims[yk == 1]).min()) if (yk == 1).any() else float("nan")
     f1 = d_fail - d_pass
     conf = abs(f1 - thr)
-    if conf >= tau:
+    conformal = conformal_tau(conf_cal, _family_of_query(q_s, pc)) if conf_cal else {}
+    eff_tau = conformal.get("tau", tau)
+    if conf >= eff_tau:
         zone = "low_risk" if f1 > thr else "high_risk"
         out = {"decision": zone, "abstain": False,
-               "attractor_score": round(f1, 4), "confidence": round(conf, 4),
-               "expected_acc_regime": cal["predict_regime"]["acc_measured_LOAO"],
-               "wilson95": cal["predict_regime"]["wilson95"]}
+               "attractor_score": round(f1, 4), "confidence": round(conf, 4)}
+        if conformal:
+            out["conformal"] = {
+                "tau_stratum": round(conformal["tau"], 4),
+                "stratum": conformal["stratum"],
+                "guarantee": conformal["guarantee"],
+                "realized_err_rate_replay": conformal.get("realized_err_rate"),
+                "source": conformal["source"]}
+        else:
+            out.update({"expected_acc_regime": cal["predict_regime"]["acc_measured_LOAO"],
+                        "wilson95": cal["predict_regime"]["wilson95"]})
     else:
         out = {"decision": "abstain", "abstain": True,
                "attractor_score": round(f1, 4), "confidence": round(conf, 4),
-               "tau": round(tau, 4),
-               "reason": "confiance sous le régime calibré (10 %, acc ≥0.95) — "
-                         "le modèle sait qu'il ne sait pas"}
+               "tau": round(eff_tau, 4),
+               "reason": ("confiance sous le seuil conforme (garantie ≤10 % d'erreur "
+                          "si retenue)" if conformal else
+                          "confiance sous le régime calibré (10 %, acc ≥0.95)") +
+                         " — le modèle sait qu'il ne sait pas"}
+        if conformal:
+            out["conformal"] = {"tau_stratum": round(conformal["tau"], 4),
+                                "stratum": conformal["stratum"],
+                                "guarantee": conformal["guarantee"],
+                                "source": conformal["source"]}
     # Diagnostic de famille (additif — la décision ci-dessus ne change pas).
     out["family"] = _family_diagnosis(q_s, pc)
     if out.get("abstain"):
@@ -545,6 +631,12 @@ def do_risk_scan(args: dict) -> dict:
     out.update({"d_nearest_fail": round(d_fail, 4),
                 "d_nearest_pass": round(d_pass, 4),
                 "pool": POOL_JSON.name, "pool_n": pc["n"],
+                "served_regime": serv_regime,
+                "calibration_served": (Path(CONFORMAL_CALIB).name if conf_cal
+                                       else RISK_CALIB.name),
+                "disclosures": ["advisory only — issue groundée requise via report_outcome"]
+                + ([f"diff_text tronqué à 3000 caractères avant embedding (reçu {len(diff_in)} chars)"]
+                   if diff_truncated else []),
                 "note": "advisory only ; issue groundée requise via report_outcome"})
     call_id = sha256(f"{time.time()}:{args['state_text'][:80]}".encode()).hexdigest()[:12]
     out["call_id"] = call_id

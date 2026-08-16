@@ -157,7 +157,7 @@ def main() -> int:
                                 "got": [round(ctrl["auc"], 3), round(ctrl["acc100"], 3)]
                                 if ctrl else None,
                                 "ok": bool(ctrl_ok)},
-        "global_conformal": {f"alpha_{a}": conformal_tau(conf, errors, a, N_MIN)
+        "global_conformal": {f"alpha_{a:.2f}": conformal_tau(conf, errors, a, N_MIN)
                              for a in ALPHAS},
         "fixed_tau_served_regime": fixed,
         "strata_mondrian": strata,

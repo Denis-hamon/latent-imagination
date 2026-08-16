@@ -1,6 +1,6 @@
 {
  "story": "12.1-conformal-mondrian",
- "generated_at": "2026-08-16T11:32:22.831204Z",
+ "generated_at": "2026-08-16T11:36:00.964359Z",
  "pool": "latent-pool-v10",
  "pool_sha256_16": "88985eb171b4bb9f",
  "n_rows": 219,
@@ -37,7 +37,7 @@
    "coverage_share": 0.1416,
    "guarantee": "≤0.05 sous échangeabilité intra-strate"
   },
-  "alpha_0.1": {
+  "alpha_0.10": {
    "n": 219,
    "tau": 0.123832,
    "kept": 38,
