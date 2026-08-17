@@ -1,0 +1,14 @@
+{
+ "R1": {
+  "n_paires_intra_ticket": 131,
+  "n_tickets_avec_paires_mixtes": 18,
+  "acc_paire": 0.4198,
+  "ic95_bootstrap2500": [
+   0.309,
+   0.4733
+  ],
+  "grille": "acc>=0.60 ET paires>=150 ET IC bas>=0.55",
+  "ok": false
+ },
+ "generated_at": "2026-08-17T21:18:06.616915Z"
+}
