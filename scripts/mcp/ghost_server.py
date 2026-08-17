@@ -190,26 +190,64 @@ def _load_pertest():
     import numpy as np
 
     d = np.load(PERTEST_PATH)
-    _PERTEST = {"w": d["w"].astype("float64"), "b": float(d["b"]),
-                "threshold": float(d["threshold"]), "lam": float(d.get("lam", 0.01))}
+    pt = {"w": d["w"].astype("float64"), "b": float(d["b"]),
+          "threshold": float(d["threshold"]), "lam": float(d.get("lam", 0.01))}
+    if "cal_x" in d.files:  # DW-48(a) : recalibration isotonique arm 47273883
+        pt["cal_x"] = d["cal_x"].astype("float64")
+        pt["cal_p"] = d["cal_p"].astype("float64")
+    _PERTEST = pt
     return _PERTEST
 
 
-def _test_emb(name: str):
-    """Cache inter-processus des embeddings de noms de tests (stables)."""
-    if name in _TEST_EMB_CACHE:
-        import numpy as np
+def embed_batch(texts: list[str]):
+    """DW-48(b) latence : un seul forward pour N textes (protocole identique
+    à embed() : même troncation, même pooling, token_type_ids=0 pour jina)."""
+    import numpy as np
+    import torch
 
-        return np.array(_TEST_EMB_CACHE[name])
-    e = embed(name)
-    if len(_TEST_EMB_CACHE) < 4096:
-        _TEST_EMB_CACHE[name] = e.tolist()
-    return e
+    _ensure_model()
+    fam = _embedder_family(ENCODER)
+    tb = _tok(texts, padding=True, truncation=True,
+              max_length=8192 if fam == "jina" else 512, return_tensors="pt")
+    kw = {"token_type_ids": torch.zeros_like(tb["input_ids"])} if fam == "jina" else {}
+    with torch.no_grad():
+        lh = _model(**tb, **kw).last_hidden_state
+    if fam == "jina":
+        idx = (tb["attention_mask"].sum(1) - 1).long()
+        h = lh[torch.arange(len(texts)), idx]
+    else:
+        h = lh[:, 0, :]
+    A = h.numpy().astype(np.float64)
+    return A / (np.linalg.norm(A, axis=1, keepdims=True) + 1e-9)
+
+
+def _test_embeddings(names: list[str]):
+    """Cache inter-processus des embeddings de noms de tests (stables) ;
+    les absents sont embeddés EN BATCH (un forward, pas un par nom)."""
+    import numpy as np
+
+    missing = [n for n in names if n not in _TEST_EMB_CACHE]
+    if missing:
+        vecs = embed_batch(missing)
+        room = 4096 - len(_TEST_EMB_CACHE)
+        for n, v in zip(missing[:max(0, room)], vecs[:max(0, room)]):
+            _TEST_EMB_CACHE[n] = v.tolist()
+    return {n: np.array(_TEST_EMB_CACHE[n]) for n in names}
+
+
+def _calibrate(p: float, pt: dict) -> float:
+    if "cal_x" not in pt:
+        return p
+    import numpy as np
+
+    return float(np.interp(p, pt["cal_x"], pt["cal_p"],
+                           left=float(pt["cal_p"][0]), right=float(pt["cal_p"][-1])))
 
 
 def predict_failing_tests(diff_text: str, declared_tests: list) -> dict:
     """Colonne v2 : pour chaque test déclaré, P(reste rouge | patch).
-    Modèle logistique L2 sur [E_diff||E_test||cos] arm 3896a3e7 (VALIDÉ).
+    Modèle logistique L2 sur [E_diff||E_test||cos] arm 3896a3e7 (VALIDÉ),
+    probas recalibrées isotoniquement (arm 47273883, DW-48a).
     ABSTENTION si pas de tests déclarés ou pas de modèle (jamais de devinette)."""
     import math
 
@@ -221,20 +259,25 @@ def predict_failing_tests(diff_text: str, declared_tests: list) -> dict:
     if not declared_tests:
         return {"status": "abstained", "reason": "no declared tests", "tests": []}
     Ed = embed(diff_text[:8000])  # troncature identique au dataset d'entraînement
+    names = [t.strip() for t in declared_tests if isinstance(t, str) and t.strip()]
+    if not names:
+        return {"status": "abstained", "reason": "no declared tests", "tests": []}
+    embs = _test_embeddings(names)
     rows = []
-    for t in declared_tests:
-        if not isinstance(t, str) or not t.strip():
-            continue
-        Et = _test_emb(t.strip())
+    for t in names:
+        Et = embs[t]
         x = np.concatenate([Ed, Et, [float(Ed @ Et)]])
-        p = 1.0 / (1.0 + math.exp(-max(-30.0, min(30.0, float(pt["w"] @ x + pt["b"])))))
+        p_raw = 1.0 / (1.0 + math.exp(-max(-30.0, min(30.0, float(pt["w"] @ x + pt["b"])))))
+        p = _calibrate(p_raw, pt)
         rows.append({"test": t.strip(), "p_failing": round(p, 4),
                      "predicted_red": bool(p >= pt["threshold"])})
     return {"status": "measured",
             "model": {"kind": "logistic-L2-pair", "prereg": "3896a3e750a37f1d",
+                      "calibration": "isotonic-PAV-LOO" if "cal_x" in pt else "raw-sigmoid",
+                      "calibration_prereg": "4727388318599f06" if "cal_x" in pt else None,
                       "lambda": pt["lam"], "threshold": pt["threshold"],
-                      "loo_auc_pair": None, "disclosure": "seuil Youden sur scores LOO ; "
-                      "probabilités NON recalibrées isotoniquement (voir verdict arm)"},
+                      "disclosure": "seuil Youden sur probas recalibrées LOO ; "
+                      "une proba par test, signal additif — jamais un verdict"},
             "tests": rows}
 
 

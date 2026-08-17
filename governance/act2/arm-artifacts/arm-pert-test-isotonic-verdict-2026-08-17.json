@@ -1,0 +1,41 @@
+{
+ "arm": "per-test-isotonic",
+ "prereg_chain": "4727388318599f06",
+ "date": "2026-08-17T20:02:12.723931Z",
+ "I1_brier": {
+  "raw": 0.1071,
+  "isotonic": 0.1035,
+  "ok": true
+ },
+ "I2_ece_10bins": {
+  "raw": 0.0596,
+  "isotonic": 0.0205,
+  "ok": true
+ },
+ "I3_chemin_binaire": {
+  "status": "intouché",
+  "preuve": "seuls predict_failing_tests/_load_pertest/embed_batch modifiés ; seuil Youden 0.2808->0.2873 sur probas recalibrées LOO"
+ },
+ "I4_blackbox": {
+  "statut": "mesuré, calibration isotonic-PAV-LOO visible dans la réponse",
+  "abstention_v2": "intacte (no declared tests)"
+ },
+ "seuil_final": 0.2873,
+ "n_blocs_pav": 23,
+ "verdict": "4/4 — table isotonic SERVIE dans pert-test-model.npz v2",
+ "cas_reel_zed_hosted_v2": {
+  "jaccard_moyen": 0.544,
+  "brut_v16": 0.634,
+  "note": "la recalibration améliore Brier/ECE mais le Jaccard live sur ce cas baisse (seuil déplacé, probas poolées) — cohérent avec l'effet distributionnel ; la grille I1/I2 ne porte pas sur le Jaccard"
+ },
+ "p2p": {
+  "tests_ajoutés": 3,
+  "bien_classés_verts": 2,
+  "fausse_alarme": 1,
+  "cause": "nom fragmentaire (stripping leaf-prefix du runner) — les appelants doivent passer des noms EXACTS ; tracé DW-48(c-bis)"
+ },
+ "latence": {
+  "appel_complet_5cand_13tests": "19.5 s (batch embed actif pour les noms)",
+  "cout_dominant": "1 embed diff 8000c par candidat (parité entraînement, non réductible sans re-fit)"
+ }
+}
