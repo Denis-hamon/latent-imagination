@@ -73,6 +73,28 @@ class TestMachineriePure:
         for c in out["candidates"]:
             assert 0.0 <= c["p_success"] <= 1.0
 
+    def test_fully_measured_K3_recommande_sans_n8(self):
+        # leçon démo #9436 : K=3 tous mesurés => recommandation par mesure
+        E, y, _ = _separable_space()
+        ids = ["k0", "k1", "k2"]
+        Ex = np.vstack([E[0], E[13], E[2]])
+        issues = {"k0": 0, "k1": 1, "k2": 0}
+        out = gc.calibrate_local(E, y, {i: Ex[ids.index(i)] for i in ids}, issues,
+                                 Ex, ids, s11, n_min=8)
+        assert out["regime"] == "fully-measured"
+        assert out["recommendation"]["id"] == "k1"
+        assert "mesurée" in out["recommendation"]["basis"]
+
+    def test_fully_measured_tous_negatifs_abstention(self):
+        E, y, _ = _separable_space()
+        ids = ["k0", "k1"]
+        Ex = np.vstack([E[13], E[14]])
+        issues = {"k0": 0, "k1": 0}
+        out = gc.calibrate_local(E, y, {i: Ex[ids.index(i)] for i in ids}, issues,
+                                 Ex, ids, s11, n_min=8)
+        assert out["regime"] == "fully-measured"
+        assert out["recommendation"] is None
+
     def test_classe_unique_locale_abstention(self):
         E, y, _ = _separable_space()
         issues = {f"k{i}": 1 for i in range(9)}

@@ -58,6 +58,24 @@ def calibrate_local(E_pool, y_pool, E_issues: dict,
     """Calibration locale (Phase 2). Retourne le contrat produit complet."""
     import numpy as np
     n_local = len(y_issues)
+    k_total = len(ids)
+    if n_local == k_total and n_local > 0:
+        # régime fully-measured : tous les candidats ont une issue RÉELLE =>
+        # la recommandation est une mesure, pas une prédiction (leçon démo
+        # agent-réel #9436 : n_min=8 était structurellement inatteignable
+        # pour K<8 alors que RIEN n'avait besoin d'être prédit).
+        pos = [cid for cid in ids if y_issues.get(cid) == 1]
+        return {"regime": "fully-measured", "n_local": n_local, "n_min": n_min,
+                "candidates": [{"id": cid, "p_success": None, "measured": True,
+                                "measured_y": y_issues.get(cid), "abstained": False}
+                               for cid in ids],
+                "recommendation": ({"id": pos[0], "p_success": 1.0,
+                                    "basis": "issue mesurée y=1 (tous candidats mesurés)"}
+                                   if pos else None),
+                "disclosure": ("tous les candidats sont mesurés : aucune prédiction "
+                               "n'est nécessaire ; la recommandation est la mesure elle-même."
+                               if pos else "aucun candidat mesuré positif — tous échouent "
+                               "réellement ; pas de recommandation possible.")}
     if n_local < n_min:
         return {"regime": "fallback-prior", "n_local": n_local, "n_min": n_min,
                 "disclosure": (f"n={n_local} < {n_min} : calibration locale impossible — "

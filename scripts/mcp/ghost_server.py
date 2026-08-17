@@ -508,7 +508,7 @@ def handle(msg: dict) -> dict | None:
         return _resp(mid, {
             "protocolVersion": "2025-06-18",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "ghost", "version": "0.7.0"},
+            "serverInfo": {"name": "ghost", "version": "0.7.1"},
         })
     if method == "notifications/initialized":
         return None
@@ -806,7 +806,9 @@ def do_compare_patches(args: dict) -> dict:
            "n_issues_mesurees": len(issues),
            "grounded_by": {cid: (issues_in[cid].get("grounded_by") if isinstance(issues_in.get(cid), dict) else None)
                            for cid in issues}}
-    if len(issues) < n_min:
+    if len(issues) < n_min and len(issues) < len(ids):
+        # plan d'exécution seulement s'il RESTE des candidats non mesurés ;
+        # sinon (tous mesurés) la calibration répond en régime fully-measured
         plan = informative_selection(ids, scores, max(budget, n_min) - len(issues))
         out.update({"phase": "execution-plan",
                     "execution_plan": plan,
@@ -819,9 +821,10 @@ def do_compare_patches(args: dict) -> dict:
     E_issues = {cid: E_cand[ids.index(cid)] for cid in issues}
     cal = calibrate_local(pc["cd"], pc["y"], E_issues, issues, E_cand, ids, s11c,
                           alpha=0.10, n_min=n_min)
-    out.update({"phase": "recommendation" if cal.get("regime") == "local" else "abstention",
+    rec = cal.get("recommendation")
+    out.update({"phase": "recommendation" if rec else "abstention",
                 "calibration": cal})
-    if cal.get("regime") == "local":
+    if cal.get("regime") in ("local", "fully-measured"):
         for c in out["calibration"]["candidates"]:
             c["prior_score"] = round(scores[ids.index(c["id"])], 4)
     out["warning"] = ("advisory only — la recommandation est une comparaison calibrée, "
