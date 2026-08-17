@@ -1,0 +1,77 @@
+{
+ "gate": "window-v16 pert-test-prod (DW-48)",
+ "anchor": "677a10b3b127f787",
+ "generated_at": "2026-08-17T19:47:11.834557Z",
+ "G1_loo_auc_paire": {
+  "mesure": 0.842,
+  "seuil": 0.62,
+  "ok": true,
+  "disclosure": "lambda fixe 1e-2 (médiane des sélections v15), pas de re-tuning par fold"
+ },
+ "G2_brier_loo": {
+  "mesure": 0.1071,
+  "baseline_constante": 0.1788,
+  "ok": true
+ },
+ "G3_acc10_regime_servi": {
+  "rerun": 0.907,
+  "ref_promotion_v12": 0.907,
+  "ok": true,
+  "correction_referentiel": "prereg écrivait 0.897 par erreur ; scellé corrigé au ledger"
+ },
+ "G4_abstention_blackbox": {
+  "statut_sans_declared": "abstained (tous candidats)",
+  "version_serveur": "0.8.0",
+  "ok": true
+ },
+ "verdict": "4/4 — PROMOTION v0.8.0 EXÉCUTÉE (serveur servi, drop-in v12 + LI_PERTEST_MODEL)",
+ "cas_reel_zed_hosted": {
+  "candidats": 5,
+  "tests_declares": 10,
+  "jaccard_par_candidat": [
+   {
+    "candidate": "d6",
+    "jaccard": 0.5,
+    "n_pred": 8,
+    "n_truth": 4
+   },
+   {
+    "candidate": "d7",
+    "jaccard": 0.5714,
+    "n_pred": 7,
+    "n_truth": 4
+   },
+   {
+    "candidate": "d8",
+    "jaccard": 0.8,
+    "n_pred": 5,
+    "n_truth": 4
+   },
+   {
+    "candidate": "d9",
+    "jaccard": 0.8,
+    "n_pred": 5,
+    "n_truth": 4
+   },
+   {
+    "candidate": "d10",
+    "jaccard": 0.5,
+    "n_pred": 8,
+    "n_truth": 4
+   }
+  ],
+  "jaccard_moyen_live": 0.6343,
+  "note": "0.634 live vs 0.8333 médiane LOO : cohérent avec l'effet distributionnel disclosé (frac lignes battues 34%) — la colonne porte sa proba par test pour que le caller tranche"
+ },
+ "regime_binaire": {
+  "phase": "abstention",
+  "regime": "fully-measured",
+  "note": "5 candidats tous y=0 => abstention produit inchangée (comportement v0.7.1)"
+ },
+ "disclosures": [
+  "69->63 lignes (6 diffs harvest introuvables), 497->446 paires (104 rouges)",
+  "seuil Youden 0.2808, J=0.6104 ; probas non recalibrées isotoniquement",
+  "latence : +1 embed diff 8000c et +1 embed par nom de test par candidat (GPU)",
+  "serveur HTTP sert le paramètre declared_tests ; clients MCP (opencode/Claude Code) voient la colonne dès reconnect"
+ ]
+}

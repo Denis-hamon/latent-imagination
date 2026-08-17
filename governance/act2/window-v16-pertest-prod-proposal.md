@@ -35,3 +35,25 @@ acquis (DW-47).
 - frac lignes battues 34 % → la valeur produit est ligne par ligne, la
   colonne porte sa proba pour que le caller tranche ;
 - 6 diffs harvest manquants (dataset 63/69) — non reconstruits, figé.
+
+---
+
+## FERMETURE — 2026-08-17 (4/4 gates, promotion exécutée)
+
+Ghost **v0.8.0 servi** : `compare_patches` accepte `declared_tests` et retourne
+pour chaque candidat la colonne « tests prédits échoués » — une ligne par test
+avec `p_failing` et `predicted_red` (seuil Youden LOO 0.2808). Absence de
+tests déclarés ⇒ colonne `abstained` (jamais de devinette). La colonne est
+additive : le chemin binaire énergie/calibration est inchangé (G3 rerun 0.907
+identique au volet_2 promotion v12).
+
+- G1 LOO AUC paire = 0.842 (≥ 0.62) — λ 1e-2 fixe, disclosure
+- G2 Brier LOO = 0.1071 ≤ 0.1788 (constante)
+- G3 acc@10 régime servi = 0.907 rerun exact (référentiel corrigé au ledger)
+- G4 abstention vérifiée en noir sur le serveur vivant
+
+Cas réel (ticket zed-hosted, 5 candidats partiels, 10 tests déclarés) :
+Jaccard live moyen 0.634 — sous la médiane LOO 0.833, cohérent avec l'effet
+distributionnel disclosé à la validation (34 % des lignes battent la baseline).
+La valeur produit est la proba par test, pas un verdict par candidat.
+Détails : `arm-artifacts/promotion-gate-v080-pertest.json`.
