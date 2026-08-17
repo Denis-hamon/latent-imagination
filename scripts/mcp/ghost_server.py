@@ -79,6 +79,7 @@ LOG_PATH = Path(os.environ.get(
     "LI_LOG_PATH",
     ROOT / "data" / "landing" / "act2-pilot" / "mcp-log.jsonl"))
 # pool servi : v8 (n=207) par défaut — surchargable par env pour tests/reculs
+PERTEST_PATH = Path(os.environ.get("LI_PERTEST_MODEL", ""))  # v0.8.0 : vide = colonne per-test désactivée
 POOL_JSON = Path(os.environ.get(
     "LI_POOL_JSON",
     ROOT / "data/landing/act2-pilot/latent-pool-v8.json"))
@@ -171,6 +172,70 @@ def energy_of(state: str, diff: str, goal: str) -> float:
     cg = E_s + E_g
     cg /= (np.linalg.norm(cg) + 1e-9)
     return float(1 - (cd * cg).sum())
+
+
+# ---------------- per-test (DW-48, arm 3896a3e7 VALIDÉ) ----------------
+
+_PERTEST = None
+_TEST_EMB_CACHE: dict[str, list[float]] = {}
+
+
+def _load_pertest():
+    global _PERTEST
+    if _PERTEST is not None:
+        return _PERTEST
+    if not PERTEST_PATH or not Path(PERTEST_PATH).is_file():
+        _PERTEST = False
+        return _PERTEST
+    import numpy as np
+
+    d = np.load(PERTEST_PATH)
+    _PERTEST = {"w": d["w"].astype("float64"), "b": float(d["b"]),
+                "threshold": float(d["threshold"]), "lam": float(d.get("lam", 0.01))}
+    return _PERTEST
+
+
+def _test_emb(name: str):
+    """Cache inter-processus des embeddings de noms de tests (stables)."""
+    if name in _TEST_EMB_CACHE:
+        import numpy as np
+
+        return np.array(_TEST_EMB_CACHE[name])
+    e = embed(name)
+    if len(_TEST_EMB_CACHE) < 4096:
+        _TEST_EMB_CACHE[name] = e.tolist()
+    return e
+
+
+def predict_failing_tests(diff_text: str, declared_tests: list) -> dict:
+    """Colonne v2 : pour chaque test déclaré, P(reste rouge | patch).
+    Modèle logistique L2 sur [E_diff||E_test||cos] arm 3896a3e7 (VALIDÉ).
+    ABSTENTION si pas de tests déclarés ou pas de modèle (jamais de devinette)."""
+    import math
+
+    import numpy as np
+    pt = _load_pertest()
+    if not pt:
+        return {"status": "unavailable", "reason": "LI_PERTEST_MODEL absent",
+                "tests": []}
+    if not declared_tests:
+        return {"status": "abstained", "reason": "no declared tests", "tests": []}
+    Ed = embed(diff_text[:8000])  # troncature identique au dataset d'entraînement
+    rows = []
+    for t in declared_tests:
+        if not isinstance(t, str) or not t.strip():
+            continue
+        Et = _test_emb(t.strip())
+        x = np.concatenate([Ed, Et, [float(Ed @ Et)]])
+        p = 1.0 / (1.0 + math.exp(-max(-30.0, min(30.0, float(pt["w"] @ x + pt["b"])))))
+        rows.append({"test": t.strip(), "p_failing": round(p, 4),
+                     "predicted_red": bool(p >= pt["threshold"])})
+    return {"status": "measured",
+            "model": {"kind": "logistic-L2-pair", "prereg": "3896a3e750a37f1d",
+                      "lambda": pt["lam"], "threshold": pt["threshold"],
+                      "loo_auc_pair": None, "disclosure": "seuil Youden sur scores LOO ; "
+                      "probabilités NON recalibrées isotoniquement (voir verdict arm)"},
+            "tests": rows}
 
 
 # ---------------- calibration online ----------------
@@ -459,6 +524,10 @@ TOOLS = [
                                    "required": ["id", "state_text", "diff_text"]}},
                 "budget_n": {"type": "integer", "description": "nombre d'exécutions réelles ciblées (défaut 8, minimum produit)", "default": 8},
                 "issues": {"type": "object", "description": "{id: {y: 0|1, grounded_by: str}} — issues mesurées RÉELLEMENT (tests exécutés par l'appelant)", "default": {}},
+                "declared_tests": {"type": "array", "items": {"type": "string"},
+                    "description": "v2 (DW-48) : noms des tests déclarés à l'avance — Ghost "
+                                   "retourne pour chaque candidat P(test reste rouge). "
+                                   "Absent/vide => abstention de la colonne.", "default": []},
                 "reporter": {"type": "string"},
             },
             "required": ["candidates"],
@@ -508,7 +577,7 @@ def handle(msg: dict) -> dict | None:
         return _resp(mid, {
             "protocolVersion": "2025-06-18",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "ghost", "version": "0.7.1"},
+            "serverInfo": {"name": "ghost", "version": "0.8.0"},
         })
     if method == "notifications/initialized":
         return None
@@ -772,12 +841,14 @@ def do_risk_scan(args: dict) -> dict:
 
 @tool
 def do_compare_patches(args: dict) -> dict:
-    """Ghost PR-Simulator (v0.7.0) : plan d'exécution (n<8) ou recommandation
-    calibrée conforme (n>=8 issues réelles fournies par l'appelant)."""
+    """Ghost PR-Simulator (v0.8.0) : plan d'exécution (n<8) ou recommandation
+    calibrée conforme (n>=8 issues réelles fournies par l'appelant) + colonne
+    per-test « tests prédits échoués » (DW-48, arm 3896a3e7 VALIDÉ)."""
     import importlib.util
 
     import numpy as _np
     cands = args.get("candidates") or []
+    declared = args.get("declared_tests") or []
     if not cands or any(not c.get("id") or not c.get("diff_text") for c in cands):
         raise ToolInputError("candidates requis : [{id, state_text, diff_text}] non vides")
     n_min = 8
@@ -806,6 +877,8 @@ def do_compare_patches(args: dict) -> dict:
            "n_issues_mesurees": len(issues),
            "grounded_by": {cid: (issues_in[cid].get("grounded_by") if isinstance(issues_in.get(cid), dict) else None)
                            for cid in issues}}
+    out["predicted_failing_tests"] = {
+        c["id"]: predict_failing_tests(c["diff_text"], declared) for c in cands}
     if len(issues) < n_min and len(issues) < len(ids):
         # plan d'exécution seulement s'il RESTE des candidats non mesurés ;
         # sinon (tous mesurés) la calibration répond en régime fully-measured
@@ -828,7 +901,8 @@ def do_compare_patches(args: dict) -> dict:
         for c in out["calibration"]["candidates"]:
             c["prior_score"] = round(scores[ids.index(c["id"])], 4)
     out["warning"] = ("advisory only — la recommandation est une comparaison calibrée, "
-                      "jamais une garantie ; issue réelle requise via report_outcome")
+                      "jamais une garantie ; issue réelle requise via report_outcome ; "
+                      "colonne per-test = signal additif, proba par test, DW-48")
     return out
 
 
