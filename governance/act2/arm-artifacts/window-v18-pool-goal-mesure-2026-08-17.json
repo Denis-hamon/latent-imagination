@@ -1,0 +1,58 @@
+{
+ "window": "v18-ts-pool-goal",
+ "anchor": "dd454c567217d716",
+ "population_sha16": "cd0000452c37aef5",
+ "generated_at": "2026-08-17T20:40:26.685109Z",
+ "population": {
+  "n": 430,
+  "pos": 214,
+  "neg": 216,
+  "tickets": 139
+ },
+ "A1_reproduction_v17": {
+  "n": 312,
+  "auc_goal": 0.7408,
+  "attendu": [
+   0.7308,
+   0.7508
+  ],
+  "ok": true
+ },
+ "A2_auc_goal_full": {
+  "auc": 0.7495,
+  "ic95_bootstrap2500": [
+   0.7019,
+   0.7969
+  ],
+  "grille": ">=0.70 ET IC bas >=0.65",
+  "ok": true
+ },
+ "A3_poison_recette_pooled6": {
+  "gate_0_65": true,
+  "min_classe": 214,
+  "auc_descriptif_cd_only": 0.6008
+ },
+ "A4_conformal_descriptif": {
+  "omniroute": {
+   "n": 384,
+   "tau": 0.086892,
+   "kept": 37,
+   "coverage": 0.0964,
+   "realized_err_rate": 0.1892
+  },
+  "zod": {
+   "n": 46,
+   "tau": 0.112836,
+   "kept": 6,
+   "coverage": 0.1304,
+   "realized_err_rate": 0.6667
+  }
+ },
+ "pool": {
+  "json": "latent-pool-v18.json",
+  "npz": "latent-pool-v18.npz",
+  "goal_free": false
+ },
+ "verdict": "PROMOUVABLE",
+ "question_serving_owner": "qui consomme l'axe goal ? candidate : assess_patch (accepte déjà goal_text) ; risk_scan reste goal-free par construction. Aucune modification serving dans v18."
+}

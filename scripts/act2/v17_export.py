@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 NH = ROOT / "data" / "landing" / "act2-pilot" / "night-harvest"
-OUT = ROOT / "data" / "landing" / "act2-pilot" / "ts-gold-v17"
+OUT = ROOT / "data" / "landing" / "act2-pilot" / "ts-gold-v18"
 
 REPOS = {"omniroute": "~/OmniRoute", "zod": "~/zod-source", "date-fns": "~/date-fns-source"}
 
@@ -40,7 +40,7 @@ def main() -> int:
         if pt.is_file():
             prompts[sha256(pt.read_text().encode()).hexdigest()[:16]] = d
     rows = []
-    for jf in [NH / "harvest-results-v13.jsonl"]:
+    for jf in sorted(NH.glob("harvest-results*.jsonl")):
         for l in jf.read_text().splitlines():
             if '"issue"' not in l:
                 continue
@@ -82,9 +82,9 @@ def main() -> int:
         r["gold"] = golds.get(gk, "")
         ok += bool(r["gold"])
     rows = [r for r in rows if r["gold"]]
-    (OUT / "v17-rows.json").write_text(json.dumps(rows, indent=1, ensure_ascii=False) + "\n")
+    (OUT / "v18-rows.json").write_text(json.dumps(rows, indent=1, ensure_ascii=False) + "\n")
     y1 = sum(r["y"] for r in rows)
-    print(f"-> v17-rows.json : {len(rows)} lignes ({y1}+ / {len(rows) - y1}-), golds présents {ok}")
+    print(f"-> v18-rows.json : {len(rows)} lignes ({y1}+ / {len(rows) - y1}-), golds présents {ok}, repos {set(x[chr(39)+"repo"+chr(39)] if False else x["repo"] for x in rows)}")
     return 0
 
 
