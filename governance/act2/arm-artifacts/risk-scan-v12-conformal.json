@@ -1,0 +1,1764 @@
+{
+ "story": "12.1-conformal-mondrian",
+ "generated_at": "2026-08-17T07:22:50.998904Z",
+ "pool": "latent-pool-v12",
+ "pool_sha256_16": "271c651bc053aa45",
+ "n_rows": 430,
+ "positives": 205,
+ "method": "τ_g = min{t : err_rate(conf≥t, replay LOAO, strate g) ≤ α}, quantile conforme sur lignes retenues ; garantie sous échangeabilité intra-strate ; Wilson 95 % finite-sample divulgué ; n<N_MIN ⇒ None",
+ "alphas_registered": [
+  0.05,
+  0.1
+ ],
+ "n_min": 12,
+ "thr_pool": -0.003279358148574829,
+ "v6_positive_control": {
+  "expected": [
+   0.822,
+   0.779
+  ],
+  "got": [
+   0.822,
+   0.779
+  ],
+  "ok": true
+ },
+ "global_conformal": {
+  "alpha_0.05": {
+   "n": 430,
+   "tau": 0.273575,
+   "kept": 27,
+   "err_kept": 1,
+   "realized_err_rate": 0.037,
+   "wilson95": [
+    0.0066,
+    0.1828
+   ],
+   "coverage_share": 0.0628,
+   "guarantee": "≤0.05 sous échangeabilité intra-strate"
+  },
+  "alpha_0.10": {
+   "n": 430,
+   "tau": 0.217081,
+   "kept": 44,
+   "err_kept": 4,
+   "realized_err_rate": 0.0909,
+   "wilson95": [
+    0.0359,
+    0.2116
+   ],
+   "coverage_share": 0.1023,
+   "guarantee": "≤0.1 sous échangeabilité intra-strate"
+  }
+ },
+ "fixed_tau_served_regime": {
+  "coverage": 0.1,
+  "kept": 43,
+  "realized_err_rate": 0.093,
+  "acc_regime": 0.907,
+  "tau_10pct": 0.221285
+ },
+ "strata_mondrian": {
+  "Cog-Creators__Red-DiscordBot": {
+   "0.05": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   }
+  },
+  "Mimino666__langdetect": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "RoaringBitmap__roaring": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "Workiva__go-datastructures": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "acre__blocks": {
+   "0.05": {
+    "n": 14,
+    "tau": 0.188694,
+    "kept": 14,
+    "err_kept": 0,
+    "realized_err_rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.2153
+    ],
+    "coverage_share": 1.0,
+    "guarantee": "≤0.05 sous échangeabilité intra-strate"
+   },
+   "0.1": {
+    "n": 14,
+    "tau": 0.188694,
+    "kept": 14,
+    "err_kept": 0,
+    "realized_err_rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.2153
+    ],
+    "coverage_share": 1.0,
+    "guarantee": "≤0.1 sous échangeabilité intra-strate"
+   }
+  },
+  "agronholm__exceptiongroup": {
+   "0.05": {
+    "n": 7,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=7 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 7,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=7 < 12) — honest emptiness"
+   }
+  },
+  "agronholm__typeguard": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "alanjds__drf-nested-routers": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "andialbrecht__sqlparse": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "blevesearch__bleve": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "bottlepy__bottle": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "cantools__cantools": {
+   "0.05": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   }
+  },
+  "cknd__stackprinter": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "cloudpipe__cloudpickle": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "cweill__gotests": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "dask__dask": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "date_fns__addDays": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "date_fns__bizdays": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "davidhalter__parso": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "flywheel": {
+   "0.05": {
+    "n": 12,
+    "tau": 0.034205,
+    "kept": 12,
+    "err_kept": 0,
+    "realized_err_rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.2425
+    ],
+    "coverage_share": 1.0,
+    "guarantee": "≤0.05 sous échangeabilité intra-strate"
+   },
+   "0.1": {
+    "n": 12,
+    "tau": 0.034205,
+    "kept": 12,
+    "err_kept": 0,
+    "realized_err_rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.2425
+    ],
+    "coverage_share": 1.0,
+    "guarantee": "≤0.1 sous échangeabilité intra-strate"
+   }
+  },
+  "gawel__pyquery": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "getmoto__moto": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "go-gorm__gorm": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "godror__godror": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "graphql-python__graphene": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "gruns__icecream": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "hypermodeinc__ristretto": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "jawah__charset_normalizer": {
+   "0.05": {
+    "n": 7,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=7 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 7,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=7 < 12) — honest emptiness"
+   }
+  },
+  "john-kurkowski__tldextract": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "kimsufi__aiwf": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "kimsufi__catalog": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "kimsufi__seo": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "kimsufi__slider": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "kurtmckee__feedparser": {
+   "0.05": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   }
+  },
+  "ledisdb__ledisdb": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "lincolnloop__python-qrcode": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "marshmallow-code__marshmallow": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "marshmallow-code__webargs": {
+   "0.05": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   }
+  },
+  "mido__mido": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "oauthlib__oauthlib": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "omniroute__affinity": {
+   "0.05": {
+    "n": 14,
+    "tau": 0.156402,
+    "kept": 13,
+    "err_kept": 0,
+    "realized_err_rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.2281
+    ],
+    "coverage_share": 0.9286,
+    "guarantee": "≤0.05 sous échangeabilité intra-strate"
+   },
+   "0.1": {
+    "n": 14,
+    "tau": 0.072813,
+    "kept": 14,
+    "err_kept": 1,
+    "realized_err_rate": 0.0714,
+    "wilson95": [
+     0.0127,
+     0.3147
+    ],
+    "coverage_share": 1.0,
+    "guarantee": "≤0.1 sous échangeabilité intra-strate"
+   }
+  },
+  "omniroute__hb": {
+   "0.05": {
+    "n": 7,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=7 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 7,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=7 < 12) — honest emptiness"
+   }
+  },
+  "omniroute__lite": {
+   "0.05": {
+    "n": 15,
+    "tau": Infinity,
+    "kept": 0,
+    "err_kept": 0,
+    "realized_err_rate": null,
+    "wilson95": null,
+    "guarantee": "≤0.05 si retenues, mais aucune ligne ne satisfait le contrôle sur le replay ⇒ strate en abstention totale"
+   },
+   "0.1": {
+    "n": 15,
+    "tau": 0.02092,
+    "kept": 11,
+    "err_kept": 1,
+    "realized_err_rate": 0.0909,
+    "wilson95": [
+     0.0162,
+     0.3774
+    ],
+    "coverage_share": 0.7333,
+    "guarantee": "≤0.1 sous échangeabilité intra-strate"
+   }
+  },
+  "omniroute__seam": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "omniroute__trc": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "omniroute__usage": {
+   "0.05": {
+    "n": 18,
+    "tau": Infinity,
+    "kept": 0,
+    "err_kept": 0,
+    "realized_err_rate": null,
+    "wilson95": null,
+    "guarantee": "≤0.05 si retenues, mais aucune ligne ne satisfait le contrôle sur le replay ⇒ strate en abstention totale"
+   },
+   "0.1": {
+    "n": 18,
+    "tau": Infinity,
+    "kept": 0,
+    "err_kept": 0,
+    "realized_err_rate": null,
+    "wilson95": null,
+    "guarantee": "≤0.1 si retenues, mais aucune ligne ne satisfait le contrôle sur le replay ⇒ strate en abstention totale"
+   }
+  },
+  "pallets__jinja": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "pandas-dev__pandas": {
+   "0.05": {
+    "n": 21,
+    "tau": 0.078807,
+    "kept": 1,
+    "err_kept": 0,
+    "realized_err_rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.7935
+    ],
+    "coverage_share": 0.0476,
+    "guarantee": "≤0.05 sous échangeabilité intra-strate"
+   },
+   "0.1": {
+    "n": 21,
+    "tau": 0.078807,
+    "kept": 1,
+    "err_kept": 0,
+    "realized_err_rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.7935
+    ],
+    "coverage_share": 0.0476,
+    "guarantee": "≤0.1 sous échangeabilité intra-strate"
+   }
+  },
+  "paramiko__paramiko": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "pdfminer__pdfminer": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "pyasn1__pyasn1": {
+   "0.05": {
+    "n": 15,
+    "tau": 0.013143,
+    "kept": 14,
+    "err_kept": 0,
+    "realized_err_rate": 0.0,
+    "wilson95": [
+     0.0,
+     0.2153
+    ],
+    "coverage_share": 0.9333,
+    "guarantee": "≤0.05 sous échangeabilité intra-strate"
+   },
+   "0.1": {
+    "n": 15,
+    "tau": 0.012813,
+    "kept": 15,
+    "err_kept": 1,
+    "realized_err_rate": 0.0667,
+    "wilson95": [
+     0.0119,
+     0.2982
+    ],
+    "coverage_share": 1.0,
+    "guarantee": "≤0.1 sous échangeabilité intra-strate"
+   }
+  },
+  "pyca__pyopenssl": {
+   "0.05": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   }
+  },
+  "pydantic__pydantic": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "pydata__patsy": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "pygments__pygments": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "pylint-dev__astroid": {
+   "0.05": {
+    "n": 8,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=8 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 8,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=8 < 12) — honest emptiness"
+   }
+  },
+  "python-jsonschema__jsonschema": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "python-openxml__python-docx": {
+   "0.05": {
+    "n": 10,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=10 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 10,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=10 < 12) — honest emptiness"
+   }
+  },
+  "python-trio__trio": {
+   "0.05": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   }
+  },
+  "pyutils__line_profiler": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "real__8134": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__8169": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__8350": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__8368": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "real__9536": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__9545": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__antigravity-or": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__bug-8029-promp": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__ccr-eviction-s": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__ccr-non-mcp-fu": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__ccr-skip-tool-": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__chatgpt-web-en": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__claude-atu-eff": {
+   "0.05": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   }
+  },
+  "real__claude-code-ob": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__claude-to-open": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__codex-response": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__executor-agy": {
+   "0.05": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   }
+  },
+  "real__fix-bare-model": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__fix-bare-routi": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__gemini-cli-dep": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__gemini-to-clau": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__issue-9971-emp": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__lmstudio-embed": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__mixedbread-emb": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__nvidia-nim-cat": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__nvidia-strip-p": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__openai-to-clau": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__openai-tool-op": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__opencode-zen-r": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "real__reasoning-fiel": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__reasoningConte": {
+   "0.05": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   }
+  },
+  "real__repro-10139-cl": {
+   "0.05": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   }
+  },
+  "real__repro-8136-ant": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__rerank-voyage-": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__responses-inpu": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__responses-to-c": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__translator-cla": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "real__verbosity-prom": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "real__web-tools-tran": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "real__zai-web-chat-e": {
+   "0.05": {
+    "n": 7,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=7 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 7,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=7 < 12) — honest emptiness"
+   }
+  },
+  "rubik__radon": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "scanny__python-pptx": {
+   "0.05": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   }
+  },
+  "seperman__deepdiff": {
+   "0.05": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   }
+  },
+  "sqlfluff__sqlfluff": {
+   "0.05": {
+    "n": 8,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=8 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 8,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=8 < 12) — honest emptiness"
+   }
+  },
+  "sunpy__sunpy": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "tkrajina__gpxpy": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  },
+  "tobymao__sqlglot": {
+   "0.05": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 4,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=4 < 12) — honest emptiness"
+   }
+  },
+  "tweepy__tweepy": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "worldmonitor__511": {
+   "0.05": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 6,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=6 < 12) — honest emptiness"
+   }
+  },
+  "worldmonitor__baserate": {
+   "0.05": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 5,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=5 < 12) — honest emptiness"
+   }
+  },
+  "worldmonitor__templates": {
+   "0.05": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 1,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=1 < 12) — honest emptiness"
+   }
+  },
+  "zod__checks": {
+   "0.05": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 3,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=3 < 12) — honest emptiness"
+   }
+  },
+  "zod__str": {
+   "0.05": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   },
+   "0.1": {
+    "n": 2,
+    "tau": null,
+    "guarantee": null,
+    "reason": "insufficient data (n=2 < 12) — honest emptiness"
+   }
+  }
+ },
+ "strata_with_guarantee": 7,
+ "strata_insufficient": 106,
+ "per_family_validity_alpha10": {
+  "acre__blocks": {
+   "0.05": true,
+   "0.1": true
+  },
+  "flywheel": {
+   "0.05": true,
+   "0.1": true
+  },
+  "omniroute__affinity": {
+   "0.05": true,
+   "0.1": true
+  },
+  "omniroute__lite": {
+   "0.05": false,
+   "0.1": true
+  },
+  "omniroute__usage": {
+   "0.05": false,
+   "0.1": false
+  },
+  "pandas-dev__pandas": {
+   "0.05": true,
+   "0.1": true
+  },
+  "pyasn1__pyasn1": {
+   "0.05": true,
+   "0.1": true
+  }
+ },
+ "note": "mesure 0-appel sur pool gelé ; τ_g et garantis calculés sur le replay LOAO (propre tâche exclue) — l'échangeabilité intra-strate est l'hypothèse publiée ; aucune sélection de paramètre contre un eval tenu de côté (pas de split supplémentaire : le replay LOAO EST la validation croisée honnête)"
+}

@@ -1,0 +1,39 @@
+{
+ "gate": "promotion-v12 (v11 backbone SWE + pooled5 TS)",
+ "anchor": "76e890a9",
+ "preref": "9092a931",
+ "generated_at": "2026-08-17T07:23:04.901999Z",
+ "pool_v12": {
+  "n": 430,
+  "positifs": 205,
+  "negatifs": 225,
+  "encoder": "jina-v2-base-code"
+ },
+ "volet_1_ancre_v6_gold_jina": {
+  "auc": 0.8315,
+  "acc100": 0.7793,
+  "attendu": "0.8315/0.7793 ±0.01/0.005",
+  "ok": true
+ },
+ "volet_2_regime_servi": {
+  "acc10_v12": 0.907,
+  "acc10_v11": 0.9091,
+  "critere": ">= v11 - 0.01",
+  "ok": true
+ },
+ "volet_3_conforme": {
+  "erreur_realisee_alpha_0_10": 0.0909,
+  "garantie": 0.1,
+  "ok": true,
+  "strates_avec_garantie": 7
+ },
+ "volet_4_poison_pooled5": {
+  "auc": 0.7079,
+  "ic95": [
+   0.6348,
+   0.775
+  ],
+  "ok": true
+ },
+ "verdict": "PROMOUVABLE v12"
+}

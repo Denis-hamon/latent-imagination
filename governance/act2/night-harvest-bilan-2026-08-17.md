@@ -5,9 +5,11 @@
 **pooled5 FINAL : 207 lignes TS (119+/88−), AUC jina 0.7227, IC95 [0.652, 0.791],
 p(<0.60) ≈ 0 — les TROIS critères mix-ready pré-enregistrés (9092a931) sont
 atteints** : poison ✓, IC ✓, 3 familles à ≥5 négatifs (lite 10, usage 8, trc 6).
-Proposition v12 ancrée `76e890a9` : pool servi = v11 (219 SWE) + pooled5 (207 TS)
-= 426 lignes, premières strates Mondrian TS à garantie propre (lite 15, usage 18),
-**non servie — décision owner**. L'objectif historique « couverture TS » est
+Proposition v12 ancrée `76e890a9` — **SIGNÉE PAR L'OWNER ET EXÉCUTÉE** :
+pool v12 = v11 (219 SWE) + pooled5 définitif (211 TS, récolte figée à 98
+lignes harvest 41+/57−) = **430 lignes servies (205+/225−)**, gate 4 volets
+PROMOUVABLE, conformal v12 = 7 strates garanties dont omniroute__lite/usage/
+affinity (PREMIÈRES strates TS), drill rollback v12→v11→v12 validé HTTP MCP. L'objectif historique « couverture TS » est
 désormais à portée de cérémonie.
 
 ## La nuit en chiffres
@@ -48,8 +50,9 @@ désormais à portée de cérémonie.
 
 ## Reste actif au réveil
 
-- 3 process harvest GLM/Flash sur les derniers tickets du backlog (dans
-  l'enveloppe, cap 500) ; à arrêter ou laisser finir au choix.
+- Collecte FIGÉE proprement avant mix (322/500 appels consommés au gel) ;
+  239 tickets découverts non vérifiés restent disponibles pour une suite
+  (nouvelle fenêtre à ratifier si continuation).
 - Flywheel 03:09 UTC : à vérifier (le timer était programmé 2h avant la fin
   de cette collecte ; run d'hier exit 0).
 - Verify terminé (60 validés) ; 239 candidats découverts non vérifiés restent
