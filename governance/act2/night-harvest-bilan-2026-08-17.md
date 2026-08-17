@@ -10,9 +10,10 @@
 | Batch 2 GLM (mêmes 7 tickets) | en cours / terminé — voir journal |
 | **pooled5 (139 lignes, 104+/35−)** | **PASS poison ext-LOAO jina : AUC 0.7069 IC95 [0.608,0.804], p(<0.60)=1.7 %** |
 | Batch 2 GLM (mêmes 7 tickets faciles) | 21 appels, 10 appliqués, 9+/1− : les petits bugs réels restent faciles pour tous les auteurs (confirmation v8 sur du réel) |
-| Batch 3 mixte hard-first (GLM 12 tickets + Flash 20 en parallèle) | ~143 appels ; les tickets difficiles produisent enfin des réparations partielles : harvest cumulé 59 appliqués = **37+/22−** (Flash hard : 18 neg — l'usine tourne) |
-| **pooled5 intermédiaire (172 lignes, 117+/55−)** | **PASS : AUC 0.7209, IC95 [0.638,0.797], p(<0.60)=0.002 — IC resserré (largeur 0.16 vs 0.20)** |
-| Budget | 171 / 500 appels |
+| Batch 3 mixte hard-first (GLM 12 tickets + Flash 20 en parallèle) | ~143 appels ; les tickets difficiles produisent enfin des réparations partielles : harvest cumulé 59 appliqués = **37+/22−** (Flash hard est l'usine à négatifs : 23+/49− ; GLM répare mieux : 16+/5−) |
+| **pooled5 v2 (172 lignes, 117+/55−)** | PASS : AUC 0.7209, IC95 [0.638,0.797], p(<0.60)=0.002 |
+| **pooled5 v3 (206 lignes, 119+/87−)** | **PASS : AUC 0.7223, IC95 [0.649,0.787], p(<0.60)=0.001 — borne basse en hausse continue (0.608→0.638→0.649), négatifs désormais majoritaires** |
+| Budget | 294 / 500 appels |
 
 ## Trajectoire populations TS (jina space)
 
