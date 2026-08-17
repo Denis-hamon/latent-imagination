@@ -9,8 +9,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import numpy as np
-
 ROOT = Path(__file__).resolve().parents[2]
 PILOT = ROOT / "data" / "landing" / "act2-pilot"
 NH = PILOT / "night-harvest"
@@ -18,7 +16,6 @@ NH = PILOT / "night-harvest"
 
 def main() -> int:
     rows4 = json.loads((PILOT / "coverage-ts-pooled4" / "coverage-ts-pooled4-rows.json").read_text())
-    d4 = np.load(PILOT / "coverage-ts-pooled4" / "coverage-ts-pooled4-embed.npz")
     verified = {t["issue"]: t for t in json.loads((NH / "verified.json").read_text())}
     states, diffs, new_rows, seen = [], [], [], set()
     excl = set(json.loads((NH / "exclude.json").read_text())) if (NH / "exclude.json").is_file() else set()

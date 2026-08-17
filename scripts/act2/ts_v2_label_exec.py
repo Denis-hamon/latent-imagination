@@ -99,7 +99,7 @@ def run_slot(slot_dir: Path, task: dict) -> dict:
         apply_mode = "strict-git" if ap.returncode == 0 else None
         sha_post = sh_remote(f"sha256sum {REMOTE}/{task['target']} | cut -c1-64").stdout.strip()
         if apply_mode is None or sha_pre == sha_post:
-            ap2 = sh_remote(f"cd {REMOTE} && patch -p1 -l --fuzz=3 -s < /tmp/genfam-cand.diff 2>&1")
+            sh_remote(f"cd {REMOTE} && patch -p1 -l --fuzz=3 -s < /tmp/genfam-cand.diff 2>&1")
             sha_post = sh_remote(f"sha256sum {REMOTE}/{task['target']} | cut -c1-64").stdout.strip()
             if sha_pre != sha_post:
                 apply_mode = "patch-whitespace-fuzz"

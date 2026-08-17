@@ -72,10 +72,10 @@ done
     out = run(script, t=1800)
     cands = []
     for line in out.splitlines():
-        parts = line.split("\t") if "\t" in line else line.split("	")
+        parts = line.split("\t")
         if len(parts) != 6:
             continue
-        tf, add, nsrc, dl, srcstr, subj = parts
+        tf, add, _nsrc, dl, srcstr, subj = parts
         src = srcstr.split(",")
         issue = tf.rsplit("/", 1)[-1].split("-", 1)[0]
         issue = issue if issue.isdigit() else tf.rsplit("/", 1)[-1][:12]
@@ -128,7 +128,7 @@ def verify_one(c: dict) -> dict:
     if len(failed) < 1 or passed < 2:  # amendement 1 (9092a931) : >=1 F2P ET >=2 P2P
         run(f"cd {REPO} && git worktree remove --force {wt} 2>&1 | head -1")
         return {**c, "rejected": f"RED/P2P insuffisant : {len(failed)} F2P, {passed} P2P"}
-    fixdiff = run(f"cd {wt} && git diff {c['parent']} {c['fix_commit']} -- {' '.join(c['src_files'])} > /tmp/fix-{c['issue']}.diff && git apply --recount /tmp/fix-{c['issue']}.diff 2>&1; echo APPLIED_RC=$?")
+    run(f"cd {wt} && git diff {c['parent']} {c['fix_commit']} -- {' '.join(c['src_files'])} > /tmp/fix-{c['issue']}.diff && git apply --recount /tmp/fix-{c['issue']}.diff 2>&1; echo APPLIED_RC=$?")
     try:
         green_raw = run(f"cd {wt} && timeout 240 node --import tsx/esm --test --test-reporter=tap {tests} 2>&1", t=320)
     except subprocess.TimeoutExpired:

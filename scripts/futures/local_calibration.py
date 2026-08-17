@@ -69,7 +69,7 @@ def conformalize(scores_cal: np.ndarray, errs: np.ndarray, alpha: float) -> dict
     import math as _m
     if len(scores_cal) < 4:
         return {"regime": "insufficient", "n": len(scores_cal)}
-    quant = int(_m.ceil((1 - alpha) * (len(scores_cal) + 1))) - 1
+    quant = _m.ceil((1 - alpha) * (len(scores_cal) + 1)) - 1
     quant = max(0, min(len(errs) - 1, quant))
     return {"regime": "local", "n": len(scores_cal),
             "tau": float(np.sort(errs)[quant]), "alpha": alpha}
@@ -89,7 +89,7 @@ def main() -> int:
             issues[r["id"]] = r
     cand_by_id = {c["id"]: c for c in mani["candidates"]}
     boot_ids = [cid for cid in issues if cid in cand_by_id]
-    E_pool, y_pool, tasks_pool, pool_f1 = load_prior()
+    E_pool, y_pool, _tasks_pool, pool_f1 = load_prior()
     # embeddings candidats : fichier session-embeds.npz requis (ids alignés)
     em_f = sdir / "session-embeds.npz"
     if not em_f.is_file():
@@ -105,7 +105,6 @@ def main() -> int:
 
     scores = session_scores(E_local, y_local, E_pool, y_pool, E_cand)
     regime = "local" if n >= N_MIN else "fallback-prior"
-    preds = {}
     if regime == "local":
         Xtr = E_local
         w = s11.logreg_fit(Xtr, y_local, lam=1.0, iters=300)

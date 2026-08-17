@@ -57,7 +57,6 @@ def conformal_tau(conf: np.ndarray, errors: np.ndarray, alpha: float, n_min: int
     kept = err_kept = 0
     tau = None
     # parcourt les paliers de conf décroissants : retient dès que l'erreur ≤ α
-    i = 0
     ranked_conf = conf[order]
     ranked_err = errors[order].astype(int)
     cum_err = np.cumsum(ranked_err)
@@ -149,7 +148,7 @@ def main() -> int:
         "pool": f"latent-pool-{pool}",
         "pool_sha256_16": __import__("hashlib").sha256(
             (PILOT / f"latent-pool-{pool}.json").read_bytes()).hexdigest()[:16],
-        "n_rows": int(len(rows)), "positives": int(y.sum()),
+        "n_rows": len(rows), "positives": int(y.sum()),
         "method": METHOD,
         "alphas_registered": list(ALPHAS), "n_min": N_MIN,
         "thr_pool": thr,
