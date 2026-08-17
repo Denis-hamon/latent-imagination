@@ -1,0 +1,67 @@
+{
+ "arm": "mondrian-metric-awareness",
+ "prereg": "80fd6523",
+ "population": {
+  "name": "pooled7",
+  "n": 585
+ },
+ "auc_globale": 0.6946,
+ "auc_stratifiee": 0.5645,
+ "delta": -0.1301,
+ "grille": "plateau REPRÉSENTATION confirmé (delta < +0.05)",
+ "intra": [
+  {
+   "famille": "acre__blocks",
+   "n": 14,
+   "pos": 14,
+   "neg": 0,
+   "auc": null,
+   "statut": "mono-classe (AUC indéfinie)"
+  },
+  {
+   "famille": "date_fns__bizdays",
+   "n": 17,
+   "pos": 16,
+   "neg": 1,
+   "auc": 0.5
+  },
+  {
+   "famille": "omniroute__affinity",
+   "n": 14,
+   "pos": 13,
+   "neg": 1,
+   "auc": 0.8462
+  },
+  {
+   "famille": "omniroute__lite",
+   "n": 15,
+   "pos": 5,
+   "neg": 10,
+   "auc": 0.38
+  },
+  {
+   "famille": "omniroute__real",
+   "n": 294,
+   "pos": 135,
+   "neg": 159,
+   "auc": 0.5877
+  },
+  {
+   "famille": "omniroute__usage",
+   "n": 18,
+   "pos": 10,
+   "neg": 8,
+   "auc": 0.4875
+  },
+  {
+   "famille": "zod__real",
+   "n": 33,
+   "pos": 23,
+   "neg": 10,
+   "auc": 0.3978
+  }
+ ],
+ "petites_familles_nb": 62,
+ "strates_conformables_projetees": 7,
+ "generated_at": "2026-08-17T15:02:53.573292Z"
+}

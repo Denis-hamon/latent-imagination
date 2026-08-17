@@ -1,0 +1,27 @@
+{
+ "arm": "embedder-qwen3-embedding-0.6b",
+ "prereg": "e8214bd5",
+ "population": "pooled7 585 lignes",
+ "generated_at": "2026-08-17T15:09:16.508208Z",
+ "jina_controle": {
+  "auc": 0.6946,
+  "ic95": [
+   0.652,
+   0.7365
+  ],
+  "attendu": "0.6946 +/- 0.001",
+  "ok": true
+ },
+ "qwen3_0_6b": {
+  "auc": 0.656,
+  "ic95": [
+   0.61,
+   0.7002
+  ]
+ },
+ "grille": {
+  "promouvable_si": "AUC>=0.72 ET IC lo>=0.70 ET > jina",
+  "verdict": "CLOS"
+ },
+ "cloture_famille_si_clos": "unixcoder-base 0.66-0.72 ; jina-v2-code 0.69-0.74 ; Qwen3-8B 0.63 ; Qwen3-0.6B = cette mesure. Levier perception clos sur supervision binaire => pivot supervision plus riche (per-test) ou plafond accepté (le produit calibre déjà par session)."
+}
