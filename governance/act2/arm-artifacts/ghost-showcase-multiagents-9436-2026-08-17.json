@@ -1,0 +1,32 @@
+{
+ "demo": "vitrine multi-agents réels — ticket #9436 OmniRoute (vrai bug historique)",
+ "at": "2026-08-17T08:35:12.254767Z",
+ "agents": {
+  "Claude Code 2.1.233": {
+   "candidats": 3,
+   "tests_reels": "3 variantes appliquées + suites 20/20",
+   "ghost_phase1": "plan d'exécution [varA,varB,varC], aucune reco (n<8)",
+   "ghost_phase2": "ABSTENTION honnête (3/8 issues, disclosure complet) sous la règle v0.7.0",
+   "decision": "varC par mesures propres + critère d'ingénierie (hoisters byte-identical hors fix)",
+   "verifie_ground_truth": "20/20 tests verts sur worktree propre"
+  },
+  "Codex 0.142.4": {
+   "candidats": 3,
+   "tests_reels": "3 variantes appliquées, 20/20 chacune",
+   "ghost_phase1": "1er appel timeout au warm-up GPU (relance réussie)",
+   "ghost_phase2": "RECOMMANDATION A_shared_disposition, régime fully-measured (v0.7.1 déployé entre les deux sessions), basis 'issue mesurée y=1'",
+   "decision": "suit la recommandation Ghost => PATCH_FINAL = A",
+   "verifie_ground_truth": "20/20 tests verts sur worktree propre"
+  }
+ },
+ "produit": [
+  "la boucle plan->exécution->issues->reco a été parcourue EN VRAI par deux agents extérieurs, sans intervention humaine sur le raisonnement",
+  "l'abstention de Claude (v0.7.0) et la reco de Codex (v0.7.1) sont TOUTES DEUX correctes : le produit ne prédit que quand il peut prouver",
+  "GAP PRODUIT DÉCOUVERT PAR LA DÉMO : n_min=8 structurellement inatteignable pour K<8 candidats même tous mesurés => régime fully-measured ajouté (v0.7.1, 4 tests, déployé, smoke live) — un agent réel a amélioré le produit en l'utilisant",
+  "convergence : les deux agents ont trouvé la même classe de fix (hoist system/developer + préservation cache_control dans les conversions tool_result/document), distincte du fix humain mais vérifiée équivalente par les 20 tests"
+ ],
+ "limites": [
+  "K=3 (tous mesurés) => le chemin prédiction-calibrée (n>=8 sur K>8) n'a pas été exercé par cette vitrine — il l'a été en démo 15.4 (G1 4/4)",
+  "sandbox Codex a bloqué ssh au premier run (--full-auto) : relancé avec bypass, comportement documenté"
+ ]
+}

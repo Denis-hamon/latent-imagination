@@ -1,0 +1,39 @@
+{
+ "population": "pooled5",
+ "generated_at": "2026-08-17T08:33:44.546719Z",
+ "n": 219,
+ "pos": 121,
+ "neg": 98,
+ "encoder": "jina-v2-base-code",
+ "auc_ext_loao": 0.7217,
+ "ic95": [
+  0.652,
+  0.788
+ ],
+ "p_below_0_60": 0.0004,
+ "gate_0_65": "PASS",
+ "harvest_par_auteur": {
+  "DeepSeek-V4-Flash": {
+   "pos": 23,
+   "neg": 56
+  },
+  "GLM-5.2-NVFP4": {
+   "pos": 18,
+   "neg": 9
+  }
+ },
+ "controle_pooled4_unixcoder_rappel": {
+  "auc": 0.6951,
+  "ic95": [
+   0.5954,
+   0.793
+  ]
+ },
+ "controle_pooled4_jina_rappel": {
+  "auc": 0.7428,
+  "ic95": [
+   0.6402,
+   0.8402
+  ]
+ }
+}

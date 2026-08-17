@@ -48,11 +48,24 @@ désormais à portée de cérémonie.
   (commit-ajout-test sans exigence de n° d'issue dans le sujet).
 - DW-42 étendu : cache vitest + parseur TAP (fixés ts_v10_label_exec).
 
+## Mise à jour post-réveil (journée)
+
+- Vagues reprises (amendement 2, go owner) : harvest final = **348/500 appels,
+  60/60 tickets validés consommés, 106 lignes appliquées = 41+/65−** (61 % neg).
+- **pooled5 post-vague = 219 lignes (121+/98−) : AUC 0.7217, IC95 [0.652,0.788],
+  p(<0.60) ≈ 0** — quasi-parité des classes.
+- Vitrine multi-agents réelle sur ticket #9436 : Claude Code + Codex branchés
+  sur le MCP produit ; boucle complète Ghost (plan→tests réels→issues→reco) ;
+  le produit a corrigé son propre gap grâce à la démo (v0.7.1 fully-measured).
+  Voir story 14-16 et arm-artifacts/ghost-showcase-multiagents-9436.
+- Page GitHub (README) réécrite aux couleurs produit Ghost + valeurs v12.
+
 ## Reste actif au réveil
 
-- Collecte FIGÉE proprement avant mix (322/500 appels consommés au gel) ;
-  239 tickets découverts non vérifiés restent disponibles pour une suite
-  (nouvelle fenêtre à ratifier si continuation).
+- Collecte : 348/500 consommés au total (gel v12 à 322, puis reprise amendement 2) ;
+  les 60 tickets validés sont tous consommés ; 239 candidats découverts rejetés
+  (journalisés) ; de nouveaux tickets exigent d'élargir la découverte
+  (autres repos : zod/date-fns ont leur historique à cloner, ou relax des filtres).
 - Flywheel 03:09 UTC : à vérifier (le timer était programmé 2h avant la fin
   de cette collecte ; run d'hier exit 0).
 - Verify terminé (60 validés) ; 239 candidats découverts non vérifiés restent
