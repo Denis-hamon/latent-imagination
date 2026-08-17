@@ -33,7 +33,7 @@ PROFILES = {
     },
     "zod": {
         "remote": "~/zod-source", "wt_root": "~/Zod-harvest",
-        "find_tests": "find packages/zod/src/v4 -path '*/tests/*.test.ts' -o -path '*/tests/*.test.mts' | head -400",
+        "find_tests": "find packages/zod/src/v4/classic/tests packages/zod/src/v4/core/tests packages/zod/src/v4/mini/tests -name \x27*.test.ts\x27 2>/dev/null | head -600",
         "src_filter": "packages/zod/src/",
         "runner": "vitest4",
         "cmd": "cd {wt} && timeout 240 npx vitest run --no-cache --reporter=tap {tests} 2>&1",
