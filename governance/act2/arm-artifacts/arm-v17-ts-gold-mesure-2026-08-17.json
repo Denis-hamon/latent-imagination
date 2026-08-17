@@ -1,0 +1,34 @@
+{
+ "window": "v17-ts-gold",
+ "anchor": "7072deb98348a6d0",
+ "population": {
+  "n": 312,
+  "positifs": 163,
+  "n_tickets": 99,
+  "rows_sha256_16": "599ee21c07bdf853"
+ },
+ "A1_auc_cd_recette_servie": 0.5022,
+ "A1_cov95_regime": 0.0,
+ "A2_goal_axis": {
+  "auc": 0.7408284267303495,
+  "acc100": 0.7083333333333334,
+  "max_cov": 0.0
+ },
+ "IC95_diff_goal_moins_cd": [
+  0.147,
+  0.3222
+ ],
+ "disclosure": "run1 invalide (recette ext ad hoc, AUC 0.0636 inversée) ; run2 bug formule IC (double soustraction AUC_cd, verdict erroné détecté au contrôle avant rapport) ; run3 = quantiles directs des diffs bootstrap ; recettes A1 (f1 LOAO+report, servie) et A2 (loao_energy+report, ancre v6) exactes",
+ "grille": {
+  "cond": "AUC_goal >= AUC_cd + 0.05 ET IC95 diff borne basse >= 0",
+  "auc_goal": 0.7408,
+  "auc_cd": 0.5022,
+  "delta": 0.2386,
+  "verdict": "VALIDÉ"
+ },
+ "runs": {
+  "run1": "INVALIDE (recette ad hoc)",
+  "run2": "INVALIDE (bug formule IC)",
+  "run3": "valide — ce fichier"
+ }
+}
