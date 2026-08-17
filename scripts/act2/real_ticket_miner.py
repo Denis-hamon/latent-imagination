@@ -39,6 +39,74 @@ PROFILES = {
         "cmd": "cd {wt} && timeout 240 npx vitest run --no-cache --reporter=tap {tests} 2>&1",
         "link_nm": "ln -sfn ~/zod-source/node_modules {wt}/node_modules",
     },
+    "kimi": {
+        "remote": "~/kimi-code", "wt_root": "~/Kimi-harvest",
+        "find_tests": "find packages apps -path '*/node_modules' -prune -o -path '*/dist' -prune -o -name '*.test.ts' -print -o -name '*.test.mts' -print 2>/dev/null | head -700",
+        "src_filter": "packages/",
+        "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "cd {wt} && pnpm install --ignore-scripts --prefer-offline --config.engine-strict=false >/dev/null 2>&1",
+    },
+    "qwen": {
+        "remote": "~/qwen-code", "wt_root": "~/Qwen-harvest",
+        "find_tests": "find packages -path '*/node_modules' -prune -o -name '*.test.ts' -print 2>/dev/null | grep -v integration | head -700",
+        "src_filter": "packages/",
+        "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 npx vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "ln -sfn ~/qwen-code/node_modules {wt}/node_modules",
+    },
+    "nx": {
+        "remote": "~/nx", "wt_root": "~/Nx-harvest",
+        "find_tests": "find packages -path '*/node_modules' -prune -o -name '*.spec.ts' -print 2>/dev/null | grep -v -E 'dist|e2e|integration|/src/plugins/' | head -700",
+        "src_filter": "packages/",
+        "runner": "jest",
+        "cmd": ("first=$(echo \"{tests}\" | awk '{{print $1}}'); pkg=$(echo $first | cut -d/ -f1-2); "
+                "cd {wt} && timeout 300 npx jest --config $pkg/jest.config.cts --verbose {tests} 2>&1"),
+        "link_nm": ("ln -sfn ~/nx/node_modules {wt}/node_modules; for d in {wt}/packages/*/; do "
+                    "b=$(basename $d); [ -d ~/nx/packages/$b/node_modules ] && "
+                    "ln -sfn ~/nx/packages/$b/node_modules $d/node_modules || true; done"),
+    },
+    "tanquery": {
+        "remote": "~/TanStack-query", "wt_root": "~/TanQuery-harvest",
+        "find_tests": "find packages -path '*/node_modules' -prune -o -path '*/__tests__' -name '*.test.ts*' -print 2>/dev/null | grep -v codemods | head -700",
+        "src_filter": "packages/query-core/src/ packages/query-persist-client-core/src/ packages/react-query/src/",
+        "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "ln -sfn ~/TanStack-query/node_modules {wt}/node_modules",
+    },
+    "cqe": {
+        "remote": "~/connectrpc-connect-query-es", "wt_root": "~/Cqe-harvest",
+        "find_tests": "find packages -path '*/node_modules' -prune -o -name '*.test.ts' -print 2>/dev/null | grep -v integration | head -400",
+        "src_filter": "packages/connect-query-core/src/ packages/connect-query/src/",
+        "runner": "vitan",
+        "cmd": "cd {wt}/packages/connect-query-core && timeout 240 npx vitest run --no-cache --reporter=tap {tests_rel} 2>&1",
+        "tests_rel_prefix": "packages/connect-query-core/",
+        "link_nm": "ln -sfn ~/connectrpc-connect-query-es/node_modules {wt}/node_modules; for pk in connect-query-core connect-query; do ln -sfn ~/connectrpc-connect-query-es/packages/$pk/node_modules {wt}/packages/$pk/node_modules 2>/dev/null || true; done",
+    },
+    "epv": {
+        "remote": "~/vitest-dev-eslint-plugin-vitest", "wt_root": "~/Epv-harvest",
+        "find_tests": "find src -name '*.test.ts' 2>/dev/null | head -300",
+        "src_filter": "src/",
+        "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "ln -sfn ~/vitest-dev-eslint-plugin-vitest/node_modules {wt}/node_modules",
+    },
+    "qkf": {
+        "remote": "~/lukemorales-query-key-factory", "wt_root": "~/Qkf-harvest",
+        "find_tests": "find src -name '*.spec.ts' -o -name '*.test.ts' 2>/dev/null | head -100",
+        "src_filter": "src/",
+        "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "ln -sfn ~/lukemorales-query-key-factory/node_modules {wt}/node_modules",
+    },
+    "nextjs": {
+        "remote": "~/nextjs", "wt_root": "~/Nextjs-harvest",
+        "find_tests": "find test/unit packages/next/src -name '*.test.ts' -o -name '*.test.tsx' 2>/dev/null | grep -v node_modules | head -700",
+        "src_filter": "packages/next/src/",
+        "runner": "jest",
+        "cmd": "cd {wt} && timeout 300 npx jest --verbose --silent {tests} 2>&1",
+        "link_nm": "ln -sfn ~/nextjs/node_modules {wt}/node_modules && ln -sfn ~/nextjs/packages/next/node_modules {wt}/packages/next/node_modules 2>/dev/null || true",
+    },
     "date-fns": {
         "remote": "~/date-fns-source", "wt_root": "~/DateFns-harvest",
         "find_tests": "find pkgs/core/src -maxdepth 2 -name test.ts -type f | head -400",
@@ -86,6 +154,25 @@ def parse_leaves(raw: str, kind: str) -> tuple[list[str], int]:
                 failed.append(stripped[7:].split(" # ")[0].split(" > ")[-1].strip())
             elif stripped.startswith("ok "):
                 passed += 1
+        elif kind == "jest":
+            # jest --verbose : feuilles "✓/✕ nom (N ms)" sous les lignes PASS/FAIL
+            stripped = line.strip()
+            if stripped.startswith(("\u2713", "✓")):
+                passed += 1
+            elif stripped.startswith(("\u2715", "✕")):
+                nm = stripped[1:].strip()
+                nm = nm.rsplit(" (", 1)[0].strip()
+                failed.append(nm)
+        elif kind == "vitan":
+            # TAP vitest imbriqué (kimi/qwen) : toute feuille ok/not ok, quel que
+            # soit le niveau d'indent ; les blocs parents finissent par "{"
+            stripped = line.strip()
+            if line.rstrip().endswith("{"):
+                continue
+            if stripped.startswith("not ok "):
+                failed.append(stripped[7:].split(" # ")[0].split(" > ")[-1].strip())
+            elif stripped.startswith("ok "):
+                passed += 1
     return failed, passed
 
 
@@ -107,7 +194,7 @@ while IFS= read -r line; do
     @@*) cur_add="${{line#@@}}"; cur_subj="${{cur_add#*|}}"; cur_add="${{cur_add%%|*}}";;
     *)
       case "$line" in
-        *.test.ts|*.test.mts|*/test.ts)
+        *.test.ts|*.test.mts|*.spec.ts|*.spec.tsx|*/test.ts)
           if [ -z "${{FA[$line]:-}}" ]; then FA[$line]="$cur_add"; FS[$line]="$cur_subj"; fi;;
       esac;;
   esac
@@ -130,9 +217,9 @@ for tf in "${{!FA[@]}}"; do
   [ "$bad" -eq 1 ] && continue
   [ "$tot" -gt {MAX_TOTAL} ] && continue
   par=$(git rev-parse "${{add}}^" 2>/dev/null)
-  tst=$(git diff --name-only "${{add}}^" "$add" 2>/dev/null | grep -E '(\\.test\\.(ts|mts)$|/test\\.ts$)' | head -3 | tr '\n' ' ')
+  tst=$(git diff --name-only "${{add}}^" "$add" 2>/dev/null | grep -E '(\\.test\\.(ts|mts|tsx)$|\\.spec\\.(ts|tsx)$|/test\\.ts$)' | head -3 | tr '\n' ' ')
   subj=$(echo "${{FS[$tf]}}" | cut -c1-140)
-  printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n" "$tf" "$add" "$par" "$(echo $src | tr '\n' ',')" "$subj" "$tst" "$dl" >> "$OUT"
+  printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n" "$tf" "$add" "$par" "$(echo $src | tr \" \" \",\")" "$subj" "$tst" "$dl" >> "$OUT"
 done
 echo "candidats: $(wc -l < "$OUT")" >&2
 cat "$OUT"
@@ -160,13 +247,13 @@ git log --format='%H|%s' -i --grep='^fix' -- {p['src_filter']} 2>/dev/null | hea
   [ "$tot" -gt {MAX_TOTAL} ] && continue
   par=$(git rev-parse "${{add}}^" 2>/dev/null)
   # tests : soit touchés par le commit, soit colocated dans les dirs des src
-  tst=$(git diff --name-only "${{add}}^" "$add" 2>/dev/null | grep -E '(\\.test\\.(ts|mts)$|/test\\.ts$)' | head -2 | tr '\n' ' ')
+  tst=$(git diff --name-only "${{add}}^" "$add" 2>/dev/null | grep -E '(\\.test\\.(ts|mts|tsx)$|\\.spec\\.(ts|tsx)$|/test\\.ts$)' | head -2 | tr '\n' ' ')
   if [ -z "$(echo $tst | tr -d ' ')" ]; then
     tst=$(for f in $src; do d=$(dirname "$f"); for cand in "$d/test.ts" "$d/tests/$(basename $d).test.ts" "$d/index.test.ts"; do git show "$add:$cand" >/dev/null 2>&1 && echo "$cand"; done; done | sort -u | head -2 | tr '\n' ' ')
   fi
   [ -z "$(echo $tst | tr -d ' ')" ] && continue
   subj2=$(echo "$subj" | cut -c1-140)
-  printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n" "$(echo $tst | awk '{{print $1}}')" "$add" "$par" "$(echo $src | tr '\n' ',')" "$subj2" "$tst" "$dl" >> "$OUT2"
+  printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n" "$(echo $tst | awk '{{print $1}}')" "$add" "$par" "$(echo $src | tr ' ' ',')" "$subj2" "$tst" "$dl" >> "$OUT2"
 done
 echo "candidats-fix: $(wc -l < "$OUT2")" >&2
 cat "$OUT2"
@@ -218,10 +305,10 @@ def verify_one(c: dict, relaxed_mode: bool = False) -> dict:
     run(p["link_nm"].format(wt=wt))
     tests = " ".join(c["tests_in_fix"])
     run(f"cd {wt} && git checkout {c['fix_commit']} -- {tests} 2>/dev/null")
-    cmd = p["cmd"].format(wt=wt, tests=tests, tests_rel=tests.replace("pkgs/core/", "", 1) if repo == "date-fns" else tests)
+    cmd = p["cmd"].format(wt=wt, tests=tests, tests_rel=(tests.replace("pkgs/core/", "", 1) if repo == "date-fns" else (tests.replace("packages/connect-query-core/", "", 1) if repo == "cqe" else tests)))
     try:
         red_raw = run(cmd, t=320)
-    except Exception:
+    except Exception:  # noqa: BLE001
         red_raw = ""
     failed, passed = parse_leaves(red_raw, p["runner"])
     wt_esc = wt
@@ -231,7 +318,7 @@ def verify_one(c: dict, relaxed_mode: bool = False) -> dict:
     run(f"cd {wt_esc} && git diff {c['parent']} {c['fix_commit']} -- {' '.join(c['src_files'])} > /tmp/fix-{abs(hash(c['issue']))%10**8}.diff && git apply --recount /tmp/fix-{abs(hash(c['issue']))%10**8}.diff 2>&1 | head -2")
     try:
         green_raw = run(cmd, t=320)
-    except Exception:
+    except Exception:  # noqa: BLE001
         green_raw = ""
     gfail, _ = parse_leaves(green_raw, p["runner"])
     run(f"cd {p['remote']} && git worktree remove --force {wt_esc} 2>/dev/null")
@@ -278,7 +365,7 @@ def main() -> int:
             print(f"[{i+1}/{len(cands)}] {c['issue'][:52]} …", flush=True)
             try:
                 r = verify_one(c, relaxed_mode=(args.stage == 'verify-relaxed'))
-            except (subprocess.SubprocessError, OSError, ValueError) as exc:  # noqa: BLE001
+            except (subprocess.SubprocessError, OSError, ValueError) as exc:
                 r = {**c, "rejected": f"exception: {str(exc)[:80]}"}
             if r.pop("ok", False):
                 done.append(r)
