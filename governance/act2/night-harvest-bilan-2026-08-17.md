@@ -9,7 +9,10 @@
 | Batch 1 Flash (7 tickets faciles) | 28 appels, 14+/1−, no-diff 46 % ⇒ escalade GLM pré-enregistrée déclenchée |
 | Batch 2 GLM (mêmes 7 tickets) | en cours / terminé — voir journal |
 | **pooled5 (139 lignes, 104+/35−)** | **PASS poison ext-LOAO jina : AUC 0.7069 IC95 [0.608,0.804], p(<0.60)=1.7 %** |
-| Budget | ~X / 500 appels |
+| Batch 2 GLM (mêmes 7 tickets faciles) | 21 appels, 10 appliqués, 9+/1− : les petits bugs réels restent faciles pour tous les auteurs (confirmation v8 sur du réel) |
+| Batch 3 mixte hard-first (GLM 12 tickets + Flash 20 en parallèle) | ~143 appels ; les tickets difficiles produisent enfin des réparations partielles : harvest cumulé 59 appliqués = **37+/22−** (Flash hard : 18 neg — l'usine tourne) |
+| **pooled5 intermédiaire (172 lignes, 117+/55−)** | **PASS : AUC 0.7209, IC95 [0.638,0.797], p(<0.60)=0.002 — IC resserré (largeur 0.16 vs 0.20)** |
+| Budget | 171 / 500 appels |
 
 ## Trajectoire populations TS (jina space)
 
@@ -29,4 +32,8 @@ doivent venir des tickets difficiles (batch 3 hard-first en cours).
 
 ## Suite de la nuit (plan restant)
 
-[mis à jour en continu]
+- verify continue (55+ tickets validés, ~257 candidats restants, garde timeout 240 s active) ;
+- fin flash-b2 puis vagues suivantes GLM/Flash sur le backlog hard (budget restant ~329 appels) ;
+- prochaine mesure pooled5 à ~250 lignes ; analyse strates + préparation cérémonie v12 en fin de nuit.
+- Incident race t9545 réglé (worktrees par (issue,auteur)) ; incident verify-crash réglé
+  (timeout par ticket + flush incrémental + re-run).

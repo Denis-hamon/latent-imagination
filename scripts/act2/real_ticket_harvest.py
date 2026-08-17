@@ -141,7 +141,8 @@ def measure(wt: str, t: dict, cid: str, diff: str) -> dict:
 
 
 def process_ticket(t: dict, author: str, draws: int, results_fh, consec_err: dict) -> dict:
-    wt = f"{WT_ROOT}/hv-{t['issue']}"
+    tag = MODEL["m"].split("-")[0].lower()
+    wt = f"{WT_ROOT}/hv-{t['issue']}-{tag}"
     cid_base = f"t{t['issue']}"
     srcs = {}
     for f in t["src_files"]:

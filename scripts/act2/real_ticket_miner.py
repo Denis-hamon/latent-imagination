@@ -113,7 +113,11 @@ def verify_one(c: dict) -> dict:
     run(f"ln -sfn {REPO.replace('~', '~')}/node_modules {wt}/node_modules 2>/dev/null; ln -sfn ~/OmniRoute/node_modules {wt}/node_modules")
     tests = " ".join(t for t in [c["test_file"]] + [t for t in c["tests_in_fix"] if t != c["test_file"] and t.endswith(".test.ts")][:2])
     run(f"cd {wt} && git checkout {c['fix_commit']} -- {' '.join(t for t in set(tests.split()))} 2>&1 | head -1")
-    red_raw = run(f"cd {wt} && node --import tsx/esm --test --test-reporter=tap {tests} 2>&1")
+    try:
+        red_raw = run(f"cd {wt} && timeout 240 node --import tsx/esm --test --test-reporter=tap {tests} 2>&1", t=320)
+    except subprocess.TimeoutExpired:
+        run(f"cd {REPO} && git worktree remove --force {wt} 2>&1 | head -1")
+        return {**c, "rejected": "RED-run timeout 240s (ticket inutilisable pour le harvest, DW-35)"}
     failed, passed = [], 0
     for line in red_raw.splitlines():
         l = line.strip()
@@ -125,7 +129,11 @@ def verify_one(c: dict) -> dict:
         run(f"cd {REPO} && git worktree remove --force {wt} 2>&1 | head -1")
         return {**c, "rejected": f"RED/P2P insuffisant : {len(failed)} F2P, {passed} P2P"}
     fixdiff = run(f"cd {wt} && git diff {c['parent']} {c['fix_commit']} -- {' '.join(c['src_files'])} > /tmp/fix-{c['issue']}.diff && git apply --recount /tmp/fix-{c['issue']}.diff 2>&1; echo APPLIED_RC=$?")
-    green_raw = run(f"cd {wt} && node --import tsx/esm --test --test-reporter=tap {tests} 2>&1")
+    try:
+        green_raw = run(f"cd {wt} && timeout 240 node --import tsx/esm --test --test-reporter=tap {tests} 2>&1", t=320)
+    except subprocess.TimeoutExpired:
+        run(f"cd {REPO} && git worktree remove --force {wt} 2>&1 | head -1")
+        return {**c, "rejected": "GREEN-run timeout 240s"}
     gfail = [ln.strip()[7:].split(" # ")[0].strip() for ln in green_raw.splitlines() if ln.strip().startswith("not ok ")]
     run(f"cd {REPO} && git worktree remove --force {wt} 2>&1 | head -1")
     if gfail:
@@ -167,13 +175,18 @@ def main() -> int:
         rejected = []
         for i, c in enumerate(cands):
             print(f"[{i+1}/{len(cands)}] ticket #{c['issue']} …", flush=True)
-            r = verify_one(c)
+            try:
+                r = verify_one(c)
+            except Exception as exc:  # noqa: BLE001 — jamals un ticket ne tue le run
+                r = {**c, "rejected": f"exception: {str(exc)[:80]}"}
             if r.pop("ok", False):
                 done.append(r)
                 print(f"    VALIDÉ : {len(r['f2p'])} F2P / {r['p2p_n']} P2P")
             else:
                 rejected.append(r)
-                print(f"    REJETÉ : {r['rejected'][:70]}")
+                print(f"    REJETÉ : {r.get('rejected', '?')[:70]}")
+            # flush incrémental : le harvest peut consommer pendant le verify
+            (OUT / "verified.json").write_text(json.dumps(done, indent=1) + "\n")
         (OUT / "verified.json").write_text(json.dumps(done, indent=1) + "\n")
         with (OUT / "verify-rejects.jsonl").open("w") as fh:
             for r in rejected:
