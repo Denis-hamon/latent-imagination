@@ -1,0 +1,37 @@
+{
+ "gate": "promotion-v13 (v12 + pooled7 585)",
+ "generated_at": "2026-08-17T16:13:53.688417Z",
+ "pool_v13": {
+  "n": 804,
+  "positifs": 397,
+  "negatifs": 407
+ },
+ "volet_1_ancre_v6": {
+  "auc": 0.8315,
+  "ok": true
+ },
+ "volet_2_regime_acc10": {
+  "v13": 0.875,
+  "v12_ref": 0.907,
+  "critere": ">= v12 - 0.01",
+  "ok": false,
+  "analyse": "l'ajout de 374 lignes TS micro-familles dilue le top-10% de confiance globale (signal intra-famille faible, confirmé par bras mondrian)"
+ },
+ "volet_3_conforme": {
+  "err_realisee": 0.0962,
+  "garantie": 0.1,
+  "ok": true,
+  "coverage_globale": {
+   "v13": 0.0647,
+   "v12": 0.1963,
+   "analyse": "couverture CONFORME GLOBALE divisée par 3 (19.6% -> 6.5%)"
+  },
+  "strates_garanties": {
+   "v13": 8,
+   "v12": 7,
+   "gain_net": "+1 strate (date_fns__bizdays 16+/1-)"
+  }
+ },
+ "verdict": "NON PROMOUVABLE",
+ "lecture": "La grille parle : volet 2 ÉCHOUÉ (acc@10 0.875 < 0.897 requis) et couverture globale dégradée (19.6%->6.5%) contre +1 strate seulement. Le mix des 585 lignes TS dans le pool servi DÉGRADE le produit. Décision discipline : v12 RESTE SERVI, pooled7 demeure archivé (valeur future : per-test, fine-tuning). Alternative owner possible : amender la métrique de gate (arbitrage assumé strates vs couverture globale) — jamais sans décision explicite."
+}
