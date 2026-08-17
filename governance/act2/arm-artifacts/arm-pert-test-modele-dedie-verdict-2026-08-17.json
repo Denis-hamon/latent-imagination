@@ -1,0 +1,38 @@
+{
+ "arm": "per-test-modele-dedie",
+ "prereg_chain": "3896a3e750a37f1d",
+ "date": "2026-08-17T19:06:30.259907Z",
+ "population": {
+  "lignes_avec_declared": 69,
+  "lignes_utilisées": 63,
+  "paires": 446,
+  "paires_rouges": 104,
+  "partielles_évaluées": 38
+ },
+ "mesures": {
+  "mediane_j_model_loo": 0.8333,
+  "mediane_j_b1_baseline": 0.6667,
+  "auc_paire_interne_moy": 0.6406,
+  "frac_lignes_battues": 0.342,
+  "distribution_j_model": {
+   ">=0.999": 18,
+   "==0": 7,
+   "<0.5": 15
+  }
+ },
+ "grille": {
+  "condition": "médiane j_model > 0.6667 + 0.05",
+  "seuil": 0.7167,
+  "mesure": 0.8333,
+  "verdict": "VALIDÉ"
+ },
+ "interpretation": "Le modèle dédié (logistique L2 sur [E_diff||E_test||cos], λ par LOO interne) dépasse la baseline « tout reste rouge » en médiane (0.8333 vs 0.6667). L'effet est distributionnel : il prédit EXACTEMENT le bon red-set sur une fraction des lignes (13 exactes à ≥0.999) mais perd sur 66% des partielles (AUC paire 0.64 modeste). C'est le premier signal per-test NON trivial démontré dans l'espace servi : la géométrie porte une partie du red-set quand on l'apprend au lieu de la consulter.",
+ "ouvertures": "intégration produit possible — colonne « tests prédits échoués » compare_patches v2, avec recalibration propre (nouvelle fenêtre, décision owner)",
+ "disclosures": [
+  "63/69 lignes : 6 diffs harvest (draws hauts) introuvables sur disque, paires 446/497",
+  "partielles évaluées 38 (pas 45 : les 6 lignes perdues + 1 complète parmi elles)",
+  "frac_jm>j1 = 0.34 : la médiane gagne par les exacts/1.0, pas par une domination uniforme",
+  "LBFGS 150 itérations (détail d'implémentation fixé au script, hors grille)",
+  "aucun nouvel embedder, aucune feature post-hoc, protocole prereg respecté mot à mot"
+ ]
+}
