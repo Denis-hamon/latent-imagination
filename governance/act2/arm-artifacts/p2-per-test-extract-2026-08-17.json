@@ -1,0 +1,392 @@
+[
+ {
+  "slot": "worldmonitor__511.triple_coordinated_defects-d1",
+  "task": "worldmonitor__511.triple_coordinated_defects",
+  "camp": "coverage-ts-3",
+  "red": [
+   "1 - per-host 511 limiter (\\#6618 v1)",
+   "5 - BC Open511 is paced at one request per second; Ontario stays 10/60"
+  ]
+ },
+ {
+  "slot": "worldmonitor__baserate.triple_coordinated-d2",
+  "task": "worldmonitor__baserate.triple_coordinated",
+  "camp": "coverage-ts-3",
+  "red": [
+   "1 - baseRateProbability",
+   "1 - estimates an upward-move frequency with Laplace smoothing",
+   "2 - handles a downward bet via the sign of required delta",
+   "3 - never emits a hard 0 or 1 even at the extremes",
+   "4 - falls back to a soft directional prior when history is too thin"
+  ]
+ },
+ {
+  "slot": "omniroute__usage.triple_coordinated-d1",
+  "task": "omniroute__usage.triple_coordinated",
+  "camp": "coverage-ts-4",
+  "red": [
+   "4 - \\#8331 addBufferToUsage still computes the safety margin internally (buffer not deleted)"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.backward_polarity_inverted-d1",
+  "task": "omniroute__lite.backward_polarity_inverted",
+  "camp": "coverage-ts-4",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half"
+  ]
+ },
+ {
+  "slot": "omniroute__usage.buffer_leaks_into_metering-d2",
+  "task": "omniroute__usage.buffer_leaks_into_metering",
+  "camp": "coverage-ts-4",
+  "red": [
+   "4 - \\#8331 addBufferToUsage still computes the safety margin internally (buffer not deleted)"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.triple_coordinated-d2",
+  "task": "omniroute__lite.triple_coordinated",
+  "camp": "coverage-ts-9-flash",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.triple_coordinated-d3",
+  "task": "omniroute__lite.triple_coordinated",
+  "camp": "coverage-ts-9-flash",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half"
+  ]
+ },
+ {
+  "slot": "omniroute__affinity.triple_coordinated-d2",
+  "task": "omniroute__affinity.triple_coordinated",
+  "camp": "coverage-ts-9-flash",
+  "red": [
+   "1 - BUG \\#8370: priority combo keeps its declared model-1-first order despite cross-model affinity"
+  ]
+ },
+ {
+  "slot": "omniroute__usage.triple_coordinated-d2",
+  "task": "omniroute__usage.triple_coordinated",
+  "camp": "coverage-ts-9-flash",
+  "red": [
+   "4 - \\#8331 addBufferToUsage still computes the safety margin internally (buffer not deleted)"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.triple_coordinated-d1",
+  "task": "omniroute__lite.triple_coordinated",
+  "camp": "coverage-ts-9-flash",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half"
+  ]
+ },
+ {
+  "slot": "omniroute__usage.buffer_leaks_into_metering-d2",
+  "task": "omniroute__usage.buffer_leaks_into_metering",
+  "camp": "coverage-ts-5",
+  "red": [
+   "1 - \\#8331 non-streaming: client-facing usage.prompt_tokens equals raw upstream value, not +2000",
+   "2 - \\#8331 streaming: SSE usage frame (addBufferToUsage + filterUsageForFormat chain) is not inflated",
+   "4 - \\#8331 addBufferToUsage still computes the safety margin internally (buffer not deleted)"
+  ]
+ },
+ {
+  "slot": "omniroute__usage.double_total_estimated-d2",
+  "task": "omniroute__usage.double_total_estimated",
+  "camp": "coverage-ts-5",
+  "red": [
+   "4 - \\#8331 addBufferToUsage still computes the safety margin internally (buffer not deleted)",
+   "5 - \\#8331 estimated usage remains fully unbuffered (unaffected by the fix)"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.double_polarity_maxlen-d2",
+  "task": "omniroute__lite.double_polarity_maxlen",
+  "camp": "coverage-ts-5",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half",
+   "2 - \\#8169: compressToolResults still truncates content well over MAX_TOOL_LENGTH",
+   "3 - \\#8169: compressToolResults falls back to hard cut when no whitespace found in lookback window"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.double_role_maxlen-d1",
+  "task": "omniroute__lite.double_role_maxlen",
+  "camp": "coverage-ts-5",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half",
+   "2 - \\#8169: compressToolResults still truncates content well over MAX_TOOL_LENGTH",
+   "3 - \\#8169: compressToolResults falls back to hard cut when no whitespace found in lookback window"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.backward_polarity_inverted-d2",
+  "task": "omniroute__lite.backward_polarity_inverted",
+  "camp": "coverage-ts-5",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.double_polarity_maxlen-d1",
+  "task": "omniroute__lite.double_polarity_maxlen",
+  "camp": "coverage-ts-5",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half",
+   "2 - \\#8169: compressToolResults still truncates content well over MAX_TOOL_LENGTH",
+   "3 - \\#8169: compressToolResults falls back to hard cut when no whitespace found in lookback window"
+  ]
+ },
+ {
+  "slot": "omniroute__usage.triple_coordinated-d3",
+  "task": "omniroute__usage.triple_coordinated",
+  "camp": "coverage-ts-10-glm",
+  "red": [
+   "4 - \\#8331 addBufferToUsage still computes the safety margin internally (buffer not deleted)"
+  ]
+ },
+ {
+  "slot": "zod__checks.double_min_max_bagpair-d1",
+  "task": "zod__checks.double_min_max_bagpair",
+  "camp": "coverage-ts-8-flash",
+  "red": [
+   "max value getters"
+  ]
+ },
+ {
+  "slot": "zod__str.ulid_and_nanoid-d1",
+  "task": "zod__str.ulid_and_nanoid",
+  "camp": "coverage-ts-8-glm",
+  "red": [
+   "ulid"
+  ]
+ },
+ {
+  "slot": "zod__str.ulid_and_nanoid-d2",
+  "task": "zod__str.ulid_and_nanoid",
+  "camp": "coverage-ts-7",
+  "red": [
+   "bad nanoid",
+   "nanoid",
+   "ulid"
+  ]
+ },
+ {
+  "slot": "date_fns__bizdays.double_weekend_weeks-d1",
+  "task": "date_fns__bizdays.double_weekend_weeks",
+  "camp": "coverage-ts-7",
+  "red": [
+   "accepts timestamps",
+   "can handle long ranges",
+   "normalizes the dates",
+   "returns a negative number if the time value of the first date is smaller",
+   "returns the number of business days between the given dates, excluding weekends",
+   "the same except both given dates fall on a weekend"
+  ]
+ },
+ {
+  "slot": "zod__str.ulid_and_nanoid-d1",
+  "task": "zod__str.ulid_and_nanoid",
+  "camp": "coverage-ts-7",
+  "red": [
+   "ulid"
+  ]
+ },
+ {
+  "slot": "omniroute__hb.double_early_return_inversions-d2",
+  "task": "omniroute__hb.double_early_return_inversions",
+  "camp": "coverage-ts-6",
+  "red": [
+   "1 - targetTokens: cuts body to ≤ targetTokens",
+   "14 - review\\#2: aggregate target keeps TOTAL ≤ target across multiple messages",
+   "17 - review\\#4: seam runs hard-budget post-pass when config.targetTokens is 0 (falsy)",
+   "18 - integration: applyStackedCompression with config.targetTokens cuts at end of pipeline",
+   "3 - targetRatio:0.5 halves the token count",
+   "8 - targetTokens wins when both targetTokens and targetRatio are set"
+  ]
+ },
+ {
+  "slot": "omniroute__trc.double_json_guard_errline-d2",
+  "task": "omniroute__trc.double_json_guard_errline",
+  "camp": "coverage-ts-6",
+  "red": [
+   "1 - compressToolResult",
+   "24 - json array compression preserves first 5 and last 2 elements"
+  ]
+ },
+ {
+  "slot": "omniroute__hb.double_priority_overbudget-d1",
+  "task": "omniroute__hb.double_priority_overbudget",
+  "camp": "coverage-ts-6",
+  "red": [
+   "15 - review\\#3: warns when preserved content exceeds budget",
+   "19 - review\\#3: unreachable-budget warning propagates through applyStackedCompression"
+  ]
+ },
+ {
+  "slot": "omniroute__trc.double_shell_dedup_grep_label-d2",
+  "task": "omniroute__trc.double_shell_dedup_grep_label",
+  "camp": "coverage-ts-6",
+  "red": [
+   "1 - compressToolResult",
+   "22 - grepSearch deduplicates paths"
+  ]
+ },
+ {
+  "slot": "omniroute__trc.double_keep_lines_json_size-d2",
+  "task": "omniroute__trc.double_keep_lines_json_size",
+  "camp": "coverage-ts-6",
+  "red": [
+   "1 - compressToolResult",
+   "7 - compresses large JSON array",
+   "8 - compresses large JSON object",
+   "9 - does not compress small JSON"
+  ]
+ },
+ {
+  "slot": "omniroute__hb.double_priority_overbudget-d2",
+  "task": "omniroute__hb.double_priority_overbudget",
+  "camp": "coverage-ts-6",
+  "red": [
+   "15 - review\\#3: warns when preserved content exceeds budget",
+   "19 - review\\#3: unreachable-budget warning propagates through applyStackedCompression"
+  ]
+ },
+ {
+  "slot": "date_fns__addbizdays.double_weeks_rest-d1",
+  "task": "date_fns__addbizdays.double_weeks_rest",
+  "camp": "coverage-ts-v14-df-flash",
+  "red": [
+   "accepts a timestamp",
+   "adds the given number of business days",
+   "can handle a large number of business days",
+   "handles negative amount",
+   "starting from a weekend day should land on a weekday when reducing a divisible by 5"
+  ]
+ },
+ {
+  "slot": "date_fns__setDay.double_day_delta-d3",
+  "task": "date_fns__setDay.double_day_delta",
+  "camp": "coverage-ts-v14-df-flash",
+  "red": [
+   "`options.weekStartsOn` overwrites the first day of the week specified in locale",
+   "allows to specify which day is the first day of the week",
+   "allows to specify which day is the first day of the week in locale",
+   "set the day of another week in the past",
+   "sets the day of another week in the future"
+  ]
+ },
+ {
+  "slot": "date_fns__addbizdays.double_weeks_rest-d2",
+  "task": "date_fns__addbizdays.double_weeks_rest",
+  "camp": "coverage-ts-v14-df-flash",
+  "red": [
+   "accepts a timestamp",
+   "adds the given number of business days",
+   "can handle a large number of business days",
+   "handles negative amount",
+   "starting from a weekend day should land on a weekday when reducing a divisible by 5"
+  ]
+ },
+ {
+  "slot": "date_fns__addbizdays.double_weeks_rest-d3",
+  "task": "date_fns__addbizdays.double_weeks_rest",
+  "camp": "coverage-ts-v14-df-flash",
+  "red": [
+   "accepts a timestamp",
+   "adds the given number of business days",
+   "can handle a large number of business days",
+   "handles negative amount",
+   "starting from a weekend day should land on a weekday when reducing a divisible by 5"
+  ]
+ },
+ {
+  "slot": "date_fns__addbizdays.triple_weeks_weekend_rest-d2",
+  "task": "date_fns__addbizdays.triple_weeks_weekend_rest",
+  "camp": "coverage-ts-v14-df-flash",
+  "red": [
+   "starting from a weekend day should land on a weekday when reducing a divisible by 5"
+  ]
+ },
+ {
+  "slot": "omniroute__usage.triple_coordinated-d1",
+  "task": "omniroute__usage.triple_coordinated",
+  "camp": "coverage-ts-9-pinned",
+  "red": [
+   "4 - \\#8331 addBufferToUsage still computes the safety margin internally (buffer not deleted)"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.triple_coordinated-d2",
+  "task": "omniroute__lite.triple_coordinated",
+  "camp": "coverage-ts-9-pinned",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half",
+   "2 - \\#8169: compressToolResults still truncates content well over MAX_TOOL_LENGTH",
+   "3 - \\#8169: compressToolResults falls back to hard cut when no whitespace found in lookback window"
+  ]
+ },
+ {
+  "slot": "omniroute__usage.triple_coordinated-d2",
+  "task": "omniroute__usage.triple_coordinated",
+  "camp": "coverage-ts-9-pinned",
+  "red": [
+   "4 - \\#8331 addBufferToUsage still computes the safety margin internally (buffer not deleted)"
+  ]
+ },
+ {
+  "slot": "omniroute__lite.triple_coordinated-d1",
+  "task": "omniroute__lite.triple_coordinated",
+  "camp": "coverage-ts-9-pinned",
+  "red": [
+   "1 - \\#8169: lite compressToolResults must not cut a word in half",
+   "2 - \\#8169: compressToolResults still truncates content well over MAX_TOOL_LENGTH"
+  ]
+ },
+ {
+  "slot": "zod__str.ulid_and_nanoid-d2",
+  "task": "zod__str.ulid_and_nanoid",
+  "camp": "coverage-ts-10-flash",
+  "red": [
+   "ulid"
+  ]
+ },
+ {
+  "slot": "date_fns__bizdays.double_weekend_weeks-d1",
+  "task": "date_fns__bizdays.double_weekend_weeks",
+  "camp": "coverage-ts-10-flash",
+  "red": [
+   "allows to specify the context",
+   "normalizes the dates",
+   "returns a negative number if the time value of the first date is smaller",
+   "the difference is less than a day, but the given dates are in different calendar days",
+   "the same except both given dates fall on a weekend",
+   "the same except given first date falls on a weekend",
+   "the same except given second date falls on a weekend",
+   "the same for the swapped dates",
+   "the time values of the given dates are the same"
+  ]
+ },
+ {
+  "slot": "omniroute__trc.double_shell_dedup_grep_label-d2",
+  "task": "omniroute__trc.double_shell_dedup_grep_label",
+  "camp": "coverage-ts-10-flash",
+  "red": [
+   "1 - compressToolResult",
+   "22 - grepSearch deduplicates paths"
+  ]
+ },
+ {
+  "slot": "omniroute__trc.double_shell_dedup_grep_label-d1",
+  "task": "omniroute__trc.double_shell_dedup_grep_label",
+  "camp": "coverage-ts-10-flash",
+  "red": [
+   "1 - compressToolResult",
+   "22 - grepSearch deduplicates paths"
+  ]
+ }
+]
