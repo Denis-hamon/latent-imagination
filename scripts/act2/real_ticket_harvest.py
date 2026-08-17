@@ -126,7 +126,10 @@ def load_verified(repo: str | None) -> list[dict]:
     if repo and repo != "all":
         f = NH / repo / "verified.json"
         if f.is_file():
-            out += json.loads(f.read_text())
+            out += [dict(t, repo=t.get("repo", repo)) for t in json.loads(f.read_text())]
+        legacy = NH / "verified.json"
+        if repo == "omniroute" and legacy.is_file():
+            out += [dict(t, repo="omniroute") for t in json.loads(legacy.read_text())]
         return out
     legacy = NH / "verified.json"
     if legacy.is_file() and repo in (None, "all"):
@@ -188,10 +191,17 @@ def measure(t: dict, cid: str, diff: str, wt: str, repo: str) -> dict:
     cmd = prof["cmd"].format(wt=wt, tests=tests, tests_rel=tests.replace("pkgs/core/", "", 1))
     raw = run(cmd, t=420)
     failed, passed = parse_leaves(raw, prof["runner"])
+    passed_names = []
+    for line in raw.splitlines():
+        l = line.strip()
+        if l.startswith("ok ") or (line.startswith("    ok ") and not line.rstrip().endswith("{")):
+            nm = l.split(" - ", 1)[-1].split(" # ")[0].split(" > ")[-1].strip()
+            passed_names.append(nm)
     f2p_set = set(t["f2p"])
     f2p_red = sorted(f2p_set & set(failed))
     p2p_failed = [x for x in failed if x not in f2p_set]
     out.update({"f2p_red": f2p_red[:8], "p2p_failed": p2p_failed[:6], "n_passed": passed,
+                "failed_all": failed[:40], "passed_all": passed_names[:120],
                 "y": 1 if (not f2p_red and not p2p_failed) else 0})
     run(f"cd {wt} && git checkout -- . && rm -f {rf}", t=120)
     return out
@@ -259,13 +269,15 @@ def main() -> int:
     ap.add_argument("--hard-first", action="store_true")
     ap.add_argument("--redraw", action="store_true",
                     help="re-tirages sur tickets déjà récoltés (draws décalés, mêmes auteurs possibles)")
+    ap.add_argument("--min-f2p", type=int, default=0,
+                    help="v15 per-test : tickets à >= N F2P, done_pairs ignoré (multi-tirages autorisés par fenêtre v15)")
     args = ap.parse_args()
     MODEL["m"] = args.author
     verified = load_verified(args.repo)
     results = NH / "harvest-results-v13.jsonl"
     excl_f = NH / "exclude.json"
     excl = set(json.loads(excl_f.read_text())) if excl_f.is_file() else set()
-    done_pairs = set() if args.redraw else {(j["issue"], j["author"]) for l in results.read_text().splitlines() if l.strip()
+    done_pairs = set() if (args.redraw or args.min_f2p > 0) else {(j["issue"], j["author"]) for l in results.read_text().splitlines() if l.strip()
                   for j in [json.loads(l)] if "issue" in j and "author" in j and j.get("id") not in excl} if results.is_file() else set()
     # héritage nuit : les issues déjà récoltées la nuit comptent comme faites (mêmes tickets omniroute)
     legacy = NH / "harvest-results.jsonl"
@@ -275,6 +287,8 @@ def main() -> int:
                 j = json.loads(l)
                 done_pairs.add((j.get("issue"), j.get("author")))
     todo = [t for t in verified if (t["issue"], MODEL["m"]) not in done_pairs]
+    if args.min_f2p > 0:
+        todo = [t for t in todo if len(t.get("f2p", [])) >= args.min_f2p]
     if args.redraw:
         # cibler les tickets ayant produit >=2 négatifs (classes discriminantes)
         neg_by_issue = {}

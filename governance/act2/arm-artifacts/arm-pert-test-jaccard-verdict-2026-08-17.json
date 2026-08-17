@@ -1,0 +1,47 @@
+{
+ "arm": "per-test-jaccard",
+ "prereg_chain": "ef8ca091ddbc0f56",
+ "date": "2026-08-17T16:58:40.480102Z",
+ "population": {
+  "lignes": 82,
+  "partielles": 58,
+  "target_v15": 100,
+  "par_source": {
+   "v15-label": 7,
+   "harvest-full": 19,
+   "p2-legacy": 32
+  }
+ },
+ "mesures": {
+  "B1_triviale_declared": {
+   "n": 45,
+   "mediane_jaccard": 0.6667
+  },
+  "B2_voisin1_sans_exclusion": {
+   "n": 58,
+   "mediane_jaccard": 1.0,
+   "frac_exact": 0.48
+  },
+  "B3_voisin1_avec_exclusion_tache": {
+   "n": 58,
+   "mediane_jaccard": 0.0,
+   "frac_gt0": 0.38,
+   "note": "38% des lignes transfèrent partiellement, insuffisant pour la grille"
+  },
+  "paires_meme_tache_redsets_identiques": "38/47"
+ },
+ "grille": {
+  "condition": "mediane B3 > mediane B1 + 0.05",
+  "b3": 0.0,
+  "b1": 0.6667,
+  "verdict": "CLOS"
+ },
+ "interpretation": "Le red-set est porté par l'identité de tâche (voisins même-tâche = mêmes tests, Jaccard 1.0 trivial) mais la géométrie E_diff ne généralise PAS le red-set au-delà de la tâche (B3 médiane 0.0). La supervision per-test existe comme DONNÉE (58 red-sets nommés) mais pas comme signal exploitable par 1-NN dans l'espace servi ; la colonne 'tests prédits échoués' de compare_patches v2 requerrait un modèle dédié hors périmètre v15.",
+ "disclosures": [
+  "shortfall population : 58 partielles vs 100 indicatif (16+15 ok synth, 19 harvest-full ; no-diff flash 19/42)",
+  "3/58 diffs tronqués à 6000 chars à l'export (protocole jina 8192 tok inchangé)",
+  "bug d'étiquetage B2/B3 dans le script de mesure : flags d'exclusion inversés, détecté au contrôle de vraisemblance avant tout jugement, corrigé in-script, grille rejouée sur les sémantiques réelles",
+  "B1 calculée sur 45/58 (13 harvest sans declared_f2p non récupérables par les manifests)",
+  "budgets v15 : A-flash 55/55 gen + 16 label ; A-qwen 30/30 gen + 15 label ; B 42 draws harvest"
+ ]
+}
