@@ -1,0 +1,83 @@
+{
+ "window": "coverage-ts-v13",
+ "anchor": "5dc38db3",
+ "axe4_amendment": "surface élargie (ledger)",
+ "closed_at": "2026-08-17T13:04:55.309280Z",
+ "enveloppe": "~687 / 900 appels (underspend honnête, backlog épuisé)",
+ "collecte": {
+  "tentatives": 738,
+  "appliques": 379,
+  "no_diff": 359,
+  "labels": "185+ / 194-",
+  "auteurs": {
+   "DeepSeek-V4-Flash": {
+    "pos": 115,
+    "neg": 189,
+    "nodiff": 308
+   },
+   "Qwen3.8-2.4T-A95B-NVFP4": {
+    "pos": 70,
+    "neg": 0,
+    "nodiff": 40
+   },
+   "GLM-5.2-NVFP4": {
+    "pos": 0,
+    "neg": 5,
+    "nodiff": 11
+   }
+  },
+  "par_repo": {
+   "omniroute": [
+    0,
+    0
+   ],
+   "zod": [
+    0,
+    0
+   ]
+  },
+  "tickets_sources": {
+   "omniroute_verified": 172,
+   "zod_verified": 28,
+   "date_fns_verified": 2
+  }
+ },
+ "mesures": [
+  {
+   "pooled6_final": {
+    "n": 546,
+    "classes": "279+/267-",
+    "auc": 0.6912,
+    "ic95": [
+     0.647,
+     0.7341
+    ],
+    "verdict": "PASS poison (>=0.65, classes >=5) — cible +10% (0.79) NON atteinte"
+   }
+  },
+  {
+   "snapshot_intermediaire_430": {
+    "auc": 0.7496,
+    "ic95": [
+     0.704,
+     0.7943
+    ],
+    "statut": "checkpoint de suivi, NON retenu comme référence (anti-cherry-picking : la référence est la population finale pré-spécifiée par le protocole)"
+   }
+  },
+  {
+   "grille_v13": {
+    "critere_mix": "AUC>=0.79 OU (AUC>=0.75 ET IC lo>0.72)",
+    "verdict": "NON satisfaite sur population finale (0.6912)"
+   }
+  }
+ ],
+ "lecons": [
+  "RE-DRAWS CORRÉLÉS = DILUTION : les tirages supplémentaires d5-d8 sur les mêmes tickets (vague redraw 100 appels) ont ajouté du volume sans information => AUC 0.7496 -> 0.6912 lors de l'absorption. Ne jamais re-tirer un ticket déjà mesuré ; dépenser le budget en NOUVEAUX tickets/classes.",
+  "Qwen3.8-2.4T = négatifs purs (0+/24-) : population géométriquement à part (jamais un positif sur tickets réels bornés) ; utile comme classe négative dédiée, à stratifier séparément.",
+  "tickets relaxed (P2P=0, veto affaibli) = labels plus bruités ; le disclosure par ligne est conservé.",
+  "GLM sur zod = très lent (typecheck vitest) ; Flash reste le meilleur rendement (label/appel ≈ 0.45).",
+  "La diversité INTER-repos reste le levier non exploité : zod 28 tickets seulement, date-fns toujours quasi vide (2 réels) — l'axe synthétique date-fns n'a pas été ouvert cette session."
+ ],
+ "etat_serving": "GHOST v0.7.1 / pool v12 (430 lignes) INTACT — pooled6 n'est PAS mixé (grille v13 non satisfaite ; décision owner requise pour tout serving)"
+}
