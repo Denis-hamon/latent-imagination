@@ -64,6 +64,7 @@ def verify_bearer(authorization: str | None) -> bool:
 
 mcp_kwargs: dict = {
     "title": "GHOST MCP",
+    "version": "0.8.0",
     "description": "Le fantôme de chaque run passé note votre brouillon de patch "
                    "(world model goal-free, abstention calibrée).",
     "instructions": INSTRUCTIONS,
@@ -144,8 +145,9 @@ def report_outcome(call_id: str, passed: bool, reporter: str = "",
 
 @mcp.tool()
 def compare_patches(candidates: list[dict], budget_n: int = 8,
-                    issues: dict | None = None, reporter: str = "") -> str:
-    """Ghost PR-Simulator : compare K patchs candidats pour un même problème.
+                    issues: dict | None = None, declared_tests: list | None = None,
+                    reporter: str = "") -> str:
+    """Ghost PR-Simulator (v0.8.0) : compare K patchs candidats pour un même problème.
 
     Phase 1 (issues < 8 mesurées) : retourne un PLAN D'EXÉCUTION — les patchs
     à tester réellement en priorité (sélection informative sur le prior servi)
@@ -153,10 +155,15 @@ def compare_patches(candidates: list[dict], budget_n: int = 8,
     réelles, la géométrie ne distingue pas des candidats proches).
     Phase 2 (issues ≥ 8) : calibration locale CONFORME sur vos issues réelles
     => recommandation + probabilités par candidat + abstentions + disclosures.
+    Colonne per-test (DW-48, arm 3896a3e7) : declared_tests = noms des tests
+    à surveiller => pour chaque candidat P(test reste rouge) avec proba ;
+    absent/vide => la colonne s'abstient (jamais de devinette).
     Ghost n'exécute jamais les tests : issues = {id: {y: 0|1, grounded_by}}
     mesurées PAR VOUS (tests réellement exécutés, jamais un avis de modèle)."""
     return _run("compare_patches", {"candidates": candidates, "budget_n": budget_n,
-                                    "issues": issues or {}, "reporter": reporter})
+                                    "issues": issues or {},
+                                    "declared_tests": declared_tests or [],
+                                    "reporter": reporter})
 
 
 @mcp.tool()
