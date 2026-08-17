@@ -9,7 +9,6 @@ import importlib.util
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 _SPEC = importlib.util.spec_from_file_location(
     "conformal", Path(__file__).resolve().parent / "conformal_calibrate.py")
