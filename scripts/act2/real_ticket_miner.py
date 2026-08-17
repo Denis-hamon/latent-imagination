@@ -303,8 +303,20 @@ def verify_one(c: dict, relaxed_mode: bool = False) -> dict:
     wt = f"{p['wt_root']}/probe-{abs(hash(c['issue']))%10**8}"
     run(f"cd {p['remote']} && git worktree remove --force {wt} 2>/dev/null; git worktree add {wt} {c['parent']} >/dev/null 2>&1")
     run(p["link_nm"].format(wt=wt))
-    tests = " ".join(c["tests_in_fix"])
-    run(f"cd {wt} && git checkout {c['fix_commit']} -- {tests} 2>/dev/null")
+    tests_in = list(c["tests_in_fix"])
+    # DW-52-suite : les commits qui n'ajoutent qu'UN test n'ont pas de P2P dans
+    # le run-set -> veto affaibli à tort. Extension : jusqu'à 3 fichiers test
+    # FRÈRES du répertoire (au parent) entrent dans le run pour fournir un P2P
+    # réel (plus de fichiers = veto plus fort, pas plus faible).
+    if len(tests_in) < 2:
+        d0 = "/".join(tests_in[0].split("/")[:-1])
+        sib = [x for x in run(
+            f"cd {p['remote']} && git ls-tree --name-only {c['parent']} {d0}/ 2>/dev/null").split()
+            if (x.endswith(".test.ts") or x.endswith(".test.tsx") or x.endswith(".spec.ts"))
+            and d0 + "/" + x.split("/")[-1] not in tests_in]
+        tests_in += [d0 + "/" + x.split("/")[-1] for x in sib[:3]]
+    tests = " ".join(tests_in[:6])
+    run(f"cd {wt} && git checkout {c['fix_commit']} -- {' '.join(c['tests_in_fix'])} 2>/dev/null")
     cmd = p["cmd"].format(wt=wt, tests=tests, tests_rel=(tests.replace("pkgs/core/", "", 1) if repo == "date-fns" else (tests.replace("packages/connect-query-core/", "", 1) if repo == "cqe" else tests)))
     try:
         red_raw = run(cmd, t=320)
