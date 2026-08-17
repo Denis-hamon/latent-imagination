@@ -1,0 +1,33 @@
+{
+ "window": "coverage-ts-v14",
+ "anchor": "6c5d6293",
+ "closed_at": "2026-08-17T14:48:58.989454Z",
+ "collecte": {
+  "budget": "~105/400 appels (underspend honnête : backlog de tickets neufs épuisé, jamais de re-draw DW-43)",
+  "zod": "discovery élargie 59 candidats, +4 vérifiés relaxed, tous consommes",
+  "date_fns_synthetique": "10 tâches validées zéro-appel (0 écartée) : 6 neuves + 4 réutilisées ; générations Flash x2 vagues + Qwen x1",
+  "lignes_v14": 39,
+  "labels_v14": "41+/~? (df 13/5 flash, 20/0 qwen, 7/0 df2, zod ~2)"
+ },
+ "mesure_finale": {
+  "pooled7": {
+   "n": 585,
+   "classes": "313+/272-",
+   "auc": 0.6946,
+   "ic95": [
+    0.652,
+    0.7365
+   ],
+   "grille_v14": "NON satisfaite (>=0.72 ET lo>0.66)"
+  }
+ },
+ "trajectoire_complete": {
+  "pooled5_219l": 0.7217,
+  "pooled6_546l": 0.6912,
+  "pooled6_snapshot430l": 0.7496,
+  "pooled7_585l": 0.6946,
+  "lecture": "l'AUC globale LOAO-F1 plafonne ~0.69-0.75 quel que soit le volume ajouté depuis pooled5 ; les IC se resserrent (0.136 -> 0.085) => la précision augmente, le signal global stagne"
+ },
+ "verdict_pivot": "conforme au pré-enregistrement v14 : la question n'est plus le volume de données mais la REPRÉSENTATION/MÉTRIQUE. Pistes v15 : (1) métrique par strate/famille (Mondrian-aware) plutôt qu'AUC globale — le produit sert déjà par strate ; (2) second bras encodeur : Qwen3-Embedding-0.6B (Apache-2.0, tient sur la 5000 — à auditer licence), graphcodebert ; (3) scoring goal-bound sur familles denses",
+ "serving": "v0.7.1 / pool v12 (430 lignes) INTACT ; pooled6/585-lignes pooled7 archivés pour décision owner"
+}

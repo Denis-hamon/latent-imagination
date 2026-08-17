@@ -1,0 +1,20 @@
+{
+ "population": "pooled7-final",
+ "n": 585,
+ "pos": 313,
+ "neg": 272,
+ "auc": 0.6946,
+ "ic95": [
+  0.652,
+  0.7365
+ ],
+ "grille_v14": {
+  "critere": ">=0.72 ET lo>0.66",
+  "verdict": "NON satisfaite"
+ },
+ "rappels": {
+  "pooled6_546": "0.6912 [0.647,0.734]",
+  "pooled5_219": "0.7217 [0.652,0.788]",
+  "snapshot430": "0.7496 [0.704,0.794]"
+ }
+}
