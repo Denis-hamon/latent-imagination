@@ -21,10 +21,13 @@ def main() -> int:
     d4 = np.load(PILOT / "coverage-ts-pooled4" / "coverage-ts-pooled4-embed.npz")
     verified = {t["issue"]: t for t in json.loads((NH / "verified.json").read_text())}
     states, diffs, new_rows, seen = [], [], [], set()
+    excl = set(json.loads((NH / "exclude.json").read_text())) if (NH / "exclude.json").is_file() else set()
     for line in (NH / "harvest-results.jsonl").read_text().splitlines():
         if not line.strip():
             continue
         r = json.loads(line)
+        if r.get("id") in excl or r.get("type") == "incident-note":
+            continue
         if not r.get("applied") or not isinstance(r.get("y"), int):
             continue
         key = r["id"]

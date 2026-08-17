@@ -192,13 +192,21 @@ def main() -> int:
     ap.add_argument("--author", default="DeepSeek-V4-Flash")
     ap.add_argument("--draws", type=int, default=4)
     ap.add_argument("--limit", type=int, default=8)
+    ap.add_argument("--hard-first", action="store_true",
+                    help="priorité aux tickets difficiles (F2P nombreux + gros diff)")
     args = ap.parse_args()
     MODEL["m"] = args.author
     verified = json.loads((NH / "verified.json").read_text())
     results = NH / "harvest-results.jsonl"
-    done_pairs = {(json.loads(l)["issue"], json.loads(l)["author"]) for l in results.read_text().splitlines() if l.strip()} if results.is_file() else set()
+    excl = set(json.loads((NH / "exclude.json").read_text())) if (NH / "exclude.json").is_file() else set()
+    done_pairs = {(j["issue"], j["author"]) for l in results.read_text().splitlines() if l.strip()
+                  for j in [json.loads(l)]
+                  if "issue" in j and "author" in j and j.get("id") not in excl} if results.is_file() else set()
     todo = [t for t in verified if (t["issue"], MODEL["m"]) not in done_pairs]
-    todo.sort(key=lambda t: sum(t.get("src_sizes", {}).values() or [t["diff_lines"]]))
+    if args.hard_first:
+        todo.sort(key=lambda t: -(len(t.get("f2p", [])) * 1000 + t.get("diff_lines", 0)))
+    else:
+        todo.sort(key=lambda t: sum(t.get("src_sizes", {}).values() or [t["diff_lines"]]))
     todo = todo[:args.limit]
     print(f"harvest : {len(todo)} tickets (déjà faits: {len(done_pairs)}), cap global {budget_used()}/{CAP}")
     consec = {"n": 0}
