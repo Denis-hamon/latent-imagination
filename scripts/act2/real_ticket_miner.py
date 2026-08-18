@@ -68,7 +68,8 @@ PROFILES = {
     },
     "tanquery": {
         "remote": "~/TanStack-query", "wt_root": "~/TanQuery-harvest",
-        "find_tests": "find packages -path '*/node_modules' -prune -o -path '*/__tests__' -name '*.test.ts*' -print 2>/dev/null | grep -v codemods | head -700",
+        "since": "2025-08-17",
+        "find_tests": "find packages -path '*/node_modules' -prune -o -name '*.test.ts*' -print 2>/dev/null | grep -v -E 'codemods|dist' | head -700",
         "src_filter": "packages/query-core/src/ packages/query-persist-client-core/src/ packages/react-query/src/",
         "runner": "vitan",
         "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
@@ -180,13 +181,14 @@ def discover(repo: str) -> list[dict]:
     p = PROFILES[repo]
     tests = run(f"cd {p['remote']} && {p['find_tests']}", t=300).split()
     print(f"{repo}: {len(tests)} fichiers test détectés")
+    SINCE = f" --since=\"{p['since']}\"" if p.get("since") else ""
     remote_script = f"""#!/bin/bash
 cd {p['remote']}
 OUT=/tmp/discovery_{repo}.tsv
 > "$OUT"
 > /tmp/tflist_{repo}.txt
 for t in {' '.join(f'"{t}"' for t in tests[:400])}; do echo "$t" >> /tmp/tflist_{repo}.txt; done
-git log --reverse --diff-filter=A --format='@@%H|%s' --name-only -- $(cat /tmp/tflist_{repo}.txt | tr '\n' ' ') 2>/dev/null > /tmp/addlog_{repo}.txt
+git log --reverse --diff-filter=A{SINCE} --format='@@%H|%s' --name-only -- $(cat /tmp/tflist_{repo}.txt | tr '\n' ' ') 2>/dev/null > /tmp/addlog_{repo}.txt
 cur_add=""; cur_subj=""
 declare -A FA FS
 while IFS= read -r line; do
@@ -229,7 +231,7 @@ cat "$OUT"
 cd {p['remote']}
 OUT2=/tmp/discovery_{repo}_fix.tsv
 > "$OUT2"
-git log --format='%H|%s' -i --grep='^fix' -- {p['src_filter']} 2>/dev/null | head -600 | while IFS='|' read -r add subj; do
+git log{SINCE} --format='%H|%s' -i --grep='^fix' -- {p['src_filter']} 2>/dev/null | head -600 | while IFS='|' read -r add subj; do
   src=$(git diff --name-only "${{add}}^" "$add" -- {p['src_filter']} 2>/dev/null | grep -E '\\.(ts|mts)$' | grep -v -i test | head -5)
   [ -z "$src" ] && continue
   nsrc=$(echo "$src" | wc -l)
@@ -258,13 +260,47 @@ done
 echo "candidats-fix: $(wc -l < "$OUT2")" >&2
 cat "$OUT2"
 """
+    remote_script3 = f"""#!/bin/bash
+# stratégie 3 : commits fix qui MODIFIENT un test existant + src (fenêtre SINCE)
+cd {p['remote']}
+OUT3=/tmp/discovery_{repo}_mod.tsv
+> "$OUT3"
+git log{SINCE} --format='%H|%s' -i --grep='^fix' -- $(cat /tmp/tflist_{repo}.txt | tr '\\n' ' ') 2>/dev/null | head -400 | while IFS='|' read -r add subj; do
+  mod=$(git diff --name-only --diff-filter=M "${{add}}^" "$add" 2>/dev/null | grep -E '\\.test\\.(ts|mts|tsx)$|\\.spec\\.(ts|tsx)$' | head -1)
+  [ -z "$mod" ] && continue
+  src=$(git diff --name-only "${{add}}^" "$add" -- {p['src_filter']} 2>/dev/null | grep -E '\\.(ts|mts|tsx)$' | grep -v -i -E 'test|spec' | head -5)
+  [ -z "$src" ] && continue
+  nsrc=$(echo "$src" | wc -l)
+  [ "$nsrc" -gt {MAX_SRC_FILES} ] && continue
+  dl=$(git diff "${{add}}^" "$add" -- $src 2>/dev/null | wc -l)
+  [ "$dl" -gt {MAX_DIFF_LINES} ] && continue
+  tot=0; bad=0
+  for f in $src; do
+    n=$(git show "${{add}}^:$f" 2>/dev/null | wc -l)
+    if [ "$n" -eq 0 ] || [ "$n" -gt {MAX_FILE_LINES} ]; then bad=1; break; fi
+    tot=$((tot+n))
+  done
+  [ "$bad" -eq 1 ] && continue
+  [ "$tot" -gt {MAX_TOTAL} ] && continue
+  par=$(git rev-parse "${{add}}^" 2>/dev/null)
+  tst=$(git diff --name-only "${{add}}^" "$add" 2>/dev/null | grep -E '(\\.test\\.(ts|mts|tsx)$|\\.spec\\.(ts|tsx)$|/test\\.ts$)' | head -3 | tr '\\n' ' ')
+  subj3=$(echo "$subj" | cut -c1-140)
+  printf "%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" "$mod" "$add" "$par" "$(echo $src | tr ' ' ',')" "$subj3" "$tst" "$dl" >> "$OUT3"
+done
+echo "candidats-mod: $(wc -l < "$OUT3")" >&2
+cat "$OUT3"
+"""
     tmp = Path("/tmp") / f"discover_{repo}.sh"
     tmp.write_text(remote_script)
     tmp2 = Path("/tmp") / f"discover_{repo}_fix.sh"
     tmp2.write_text(remote_script2)
-    subprocess.run(["scp", "-q", str(tmp), str(tmp2), f"{HOST}:/tmp/"],
+    tmp3 = Path("/tmp") / f"discover_{repo}_mod.sh"
+    tmp3.write_text(remote_script3)
+    subprocess.run(["scp", "-q", str(tmp), str(tmp2), str(tmp3), f"{HOST}:/tmp/"],
                    capture_output=True, check=False, timeout=60)
-    out = run(f"bash /tmp/discover_{repo}.sh", t=2400) + "\n" + run(f"bash /tmp/discover_{repo}_fix.sh", t=2400)
+    out = (run(f"bash /tmp/discover_{repo}.sh", t=2400) + "\n"
+           + run(f"bash /tmp/discover_{repo}_fix.sh", t=2400) + "\n"
+           + run(f"bash /tmp/discover_{repo}_mod.sh", t=2400))
     cands, seen = [], set()
     for line in out.splitlines():
         parts = line.split("\t")

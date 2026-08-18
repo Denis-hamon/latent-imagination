@@ -36,6 +36,48 @@ REPOS = {
                  "runner": "vitest8",
                  "cmd": "cd {wt}/pkgs/core && timeout 240 npx vitest run --no-cache --reporter=tap {tests_rel} 2>&1"},
 }
+REPOS.update({
+    "kimi": {
+        "remote": "~/kimi-code", "wt_root": "~/Kimi-harvest", "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "cd {wt} && pnpm install --ignore-scripts --prefer-offline --config.engine-strict=false >/dev/null 2>&1",
+    },
+    "qwen": {
+        "remote": "~/qwen-code", "wt_root": "~/Qwen-harvest", "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 npx vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "ln -sfn ~/qwen-code/node_modules {wt}/node_modules",
+    },
+    "epv": {
+        "remote": "~/vitest-dev-eslint-plugin-vitest", "wt_root": "~/Epv-harvest", "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "ln -sfn ~/vitest-dev-eslint-plugin-vitest/node_modules {wt}/node_modules",
+    },
+    "tanquery": {
+        "remote": "~/TanStack-query", "wt_root": "~/TanQuery-harvest", "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "ln -sfn ~/TanStack-query/node_modules {wt}/node_modules",
+    },
+    "nx": {
+        "remote": "~/nx", "wt_root": "~/Nx-harvest", "runner": "jest",
+        "cmd": ("first=$(echo \"{tests}\" | awk '{{print $1}}'); pkg=$(echo $first | cut -d/ -f1-2); "
+                "cd {wt} && timeout 300 npx jest --config $pkg/jest.config.cts --verbose {tests} 2>&1"),
+        "link_nm": ("ln -sfn ~/nx/node_modules {wt}/node_modules; for d in {wt}/packages/*/; do "
+                    "b=$(basename $d); [ -d ~/nx/packages/$b/node_modules ] && "
+                    "ln -sfn ~/nx/packages/$b/node_modules $d/node_modules || true; done"),
+    },
+    "cqe": {
+        "remote": "~/connectrpc-connect-query-es", "wt_root": "~/Cqe-harvest", "runner": "vitan",
+        "cmd": "cd {wt}/packages/connect-query-core && timeout 240 npx vitest run --no-cache --reporter=tap {tests_rel} 2>&1",
+        "link_nm": ("ln -sfn ~/connectrpc-connect-query-es/node_modules {wt}/node_modules; "
+                    "for pk in connect-query-core connect-query; do "
+                    "ln -sfn ~/connectrpc-connect-query-es/packages/$pk/node_modules {wt}/packages/$pk/node_modules 2>/dev/null || true; done"),
+    },
+    "qkf": {
+        "remote": "~/lukemorales-query-key-factory", "wt_root": "~/Qkf-harvest", "runner": "vitan",
+        "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": "ln -sfn ~/lukemorales-query-key-factory/node_modules {wt}/node_modules",
+    },
+})
 LINK_NM = {
     "omniroute": "ln -sfn ~/OmniRoute/node_modules {wt}/node_modules",
     "zod": "ln -sfn ~/zod-source/node_modules {wt}/node_modules",
@@ -108,6 +150,20 @@ def parse_leaves(raw: str, kind: str) -> tuple[list[str], int]:
                 failed.append(stripped[7:].split(" # ")[0].split(" > ")[-1].strip())
             elif stripped.startswith("ok "):
                 passed += 1
+        elif kind == "vitan":
+            stripped = line.strip()
+            if line.rstrip().endswith("{"):
+                continue
+            if stripped.startswith("not ok "):
+                failed.append(stripped[7:].split(" # ")[0].split(" > ")[-1].strip())
+            elif stripped.startswith("ok "):
+                passed += 1
+        elif kind == "jest":
+            stripped = line.strip()
+            if stripped.startswith(("\u2713", "✓")):
+                passed += 1
+            elif stripped.startswith(("\u2715", "✕")):
+                failed.append(stripped[1:].strip().rsplit(" (", 1)[0].strip())
     return failed, passed
 
 
