@@ -45,6 +45,11 @@ Usage recommandé, dans l'ordre :
    IMPORTANT : "abstain" signifie que le modèle n'est PAS assez sûr pour
    trancher (il ne prédit que dans un régime mesuré à acc ≥ 0.95). Sur
    abstain, décidez via vos tests, pas via ce score.
+2b. compare_patches(..., declared_tests=[...]) — colonne per-test (v0.8.1,
+   DW-48) : pour chaque patch candidat passé, P(« ce test reste rouge ») par
+   test déclaré. C'est un SIGNAL proba par test, jamais un verdict binaire ;
+   abstention si declared_tests absent/vide. Utilisez-le pour ordonner vos
+   candidats et cibler vos exécutions réelles.
 3. Faites tourner les vrais tests.
 4. report_outcome(call_id, passed, reporter, grounded_by) — renvoyez l'issue
    GROUNDÉE (résultat d'exécution, jamais votre avis). Chaque issue groundée
@@ -64,7 +69,7 @@ def verify_bearer(authorization: str | None) -> bool:
 
 mcp_kwargs: dict = {
     "title": "GHOST MCP",
-    "version": "0.8.0",
+    "version": "0.8.1",
     "description": "Le fantôme de chaque run passé note votre brouillon de patch "
                    "(world model goal-free, abstention calibrée).",
     "instructions": INSTRUCTIONS,

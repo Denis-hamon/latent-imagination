@@ -25,7 +25,7 @@ agent generates K patches ──> Ghost compares their futures
 
 | Tool | What it does |
 |---|---|
-| `compare_patches` | Ranks K candidate patches for one problem. Phase 1 returns the minimal set of tests to run first; Phase 2 (≥ 8 real outcomes) returns a calibrated recommendation with per-candidate probabilities and abstentions. |
+| `compare_patches` | Ranks K candidate patches for one problem. Phase 1 returns the minimal set of tests to run first; Phase 2 (≥ 8 real outcomes) returns a calibrated recommendation with per-candidate probabilities and abstentions. Optional `declared_tests`: per-test P(still failing) column (signal, never a verdict; abstains when absent). |
 | `risk_scan` | Scores a single draft patch against the geometry of past grounded outcomes. Verdicts only in the calibrated regime; named abstention everywhere else. |
 | `near_mis_patches` | The k nearest past patches with their **actual** execution outcomes — evidence, not vibes. |
 | `preflight_patch` | Free deterministic checks (does it apply? does it parse?) before spending a single token. |
@@ -72,7 +72,7 @@ proofs. See `governance/`.
 ## Repository
 
 - `packages/` — pipeline stages (batch core, zero network at runtime)
-- `scripts/mcp/` — the served MCP server (`ghost_server.py`, v0.7.0) + HTTP transport
+- `scripts/mcp/` — the served MCP server (`ghost_server.py`, v0.8.1) + HTTP transport
 - `scripts/futures/` — session bootstrap & local calibration (the
   `compare_patches` engine, usable standalone)
 - `scripts/act2/` — measurement windows: quotas, probes, label chains,
