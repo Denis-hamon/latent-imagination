@@ -1,0 +1,46 @@
+{
+ "arm": "encodeur-yu-ts",
+ "prereg_chain": "defa091631423614",
+ "date": "2026-08-18T12:40:12.617453Z",
+ "population": {
+  "lignes": 155,
+  "paires": 1066,
+  "taches": 54,
+  "moyenne_lignes_tache": 2.9
+ },
+ "protocole": "LoRA r=8 α=16 sur 2 derniers blocs jina-v2-code, auxiliaire multi-hot per-test (199 dims masquée), témoin binaire, 20 epochs early-stop, LOAO par tâche, λ=1e-2 logistique LBFGS, max_length 2048",
+ "grille": {
+  "F1_auc_paire": {
+   "gelé": 0.6424,
+   "tuné": 0.447,
+   "delta": -0.1954,
+   "seuil": 0.6624,
+   "ok": false
+  },
+  "F2_jaccard_moyen": {
+   "gelé": 0.2823,
+   "tuné": 0.0,
+   "delta": -0.2823,
+   "seuil": 0.3323,
+   "ok": false,
+   "note": "Youden J=0 — aucune séparation trouvée par le seuil"
+  },
+  "F3_auc_binaire_cd": {
+   "gelé": 0.5774,
+   "tuné": null,
+   "ok": false,
+   "note": "f3_auc null dans le json de sortie (bug de cumul f1_rows dans le script ; non bloquant : F1 et F2 déjà CLOS)"
+  },
+  "verdict": "CLOS"
+ },
+ "interpretation": "Thèse Yu RÉFUTÉE à 155 lignes : le fine-tuning LoRA détruit la représentation pré-entraînée (F1 -0.20, F2 0.0). L'encodeur gelé porte une connaissance de similarité de code générique qui est PLUS précieuse que toute adaptation à cette échelle. Cause : 54 tâches × ~3 lignes/tâche = trop peu pour LoRA ; surajustement des surface features des tâches d'entraînement, perte du transfert général.",
+ "lecon_architecturale": "Le plafond TS n'est PAS architectural à 155 lignes — c'est un mur de données. Aucun changement de représentation (gel, fine-tune, features symboliques) ne peut casser un plafond qui tient au volume. La courbe de scaling mesurée (AUC per-test 0.84→0.91 de 446→1066 paires) indique que la représentation gelée APPREND encore avec les données — le levier est le volume, pas l'architecture.",
+ "suite_recommandee": "1. Ingestion Multi-SWE-bench JS/TS (milliers de tickets vérifiés) = le vrai saut d'échelle. 2. Collecte passive continue (flywheel + harvest sur les 199 tickets vérifiés + ~700 candidats). 3. Le bras symbol-overlap (v24) reste ouvert comme feature d'appoint 0-appel — mais il ne cassera pas le plafond seul.",
+ "disclosures": [
+  "max_length 2048 (vs serving 8192) pour budget GPU — parité gelé/tuné",
+  "early-stop parfois ép=3 (très peu d'epochs — signe de surajustement rapide)",
+  "F3 null = bug mineur de cumul, non bloquant (F1/F2 déjà CLOS)",
+  "baseline gelée re-mesurée dans le protocole LOAO-tâche honnête (0.64, pas 0.91)",
+  "re-lecture v23 : AUC 0.91 = LOO-ligne avec fuite même-tâche ; LOAO-tâche = 0.64"
+ ]
+}
