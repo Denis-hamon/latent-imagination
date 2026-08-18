@@ -61,14 +61,16 @@ def main() -> int:
             rows.append({"key": p["slot"], "task": p["task"], "declared_f2p": [],
                          "red_set": sorted(p["red"]), "applied": "?",
                          "source": "p2-legacy", "window": "pre-v15"})
-    # (d) replay v22 : paires réelles multi-repos ( diffs sur disque )
-    v22 = PILOT / "ts-gold-v18" / "v22-pairs.json"
-    if v22.is_file():
-        for r in json.loads(v22.read_text()):
+    # (d) replay v22/v25 : paires réelles multi-repos (diffs sur disque)
+    for vtag, vfile in (("v22", "v22-pairs.json"), ("v25", "v25-pairs.json")):
+        vf = PILOT / "ts-gold-v18" / vfile
+        if not vf.is_file():
+            continue
+        for r in json.loads(vf.read_text()):
             rows.append({"key": r["key"], "task": r["task"],
                          "declared_f2p": r["declared_f2p"], "red_set": r["red_set"],
-                         "applied": "git", "source": "v22-replay",
-                         "window": "v22", "model": r["model"], "turn": r["turn"]})
+                         "applied": "git", "source": f"{vtag}-replay",
+                         "window": vtag, "model": r["model"], "turn": r["turn"]})
     # récupération declared_f2p (harvest : issue dans la clé ; legacy : staging)
     verifs = []
     for f in list((PILOT / "night-harvest").glob("*/verified.json")) + [PILOT / "night-harvest" / "verified.json"]:
@@ -85,6 +87,19 @@ def main() -> int:
             continue
         k = r["key"]
         if r["source"] == "harvest-full" and "-d" in k:
+            hrow = None
+            for hf in sorted((PILOT / "night-harvest").glob("harvest-results*.jsonl")):
+                for l in hf.read_text().splitlines():
+                    if '"id"' in l and json.loads(l).get("id") == k:
+                        hrow = json.loads(l)
+                        break
+                if hrow:
+                    break
+            if hrow:
+                tv = next((t for t in verifs if t.get("issue") == hrow.get("issue")), None)
+                if tv and tv.get("f2p"):
+                    r["declared_f2p"] = sorted(tv["f2p"])
+                    continue
             core = k.rsplit("-d", 1)[0]
             for t in verifs:
                 iss = t.get("issue", "")
