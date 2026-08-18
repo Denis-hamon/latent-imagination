@@ -43,5 +43,15 @@
   "rendement paires : 29 paires / 317 appels ≈ 0.09 — la grille 300 paires exigeait ~3300 appels (60 h test)",
   "nx non viable (jest par-package instable sur parents anciens)",
   "le vrai rendement de v22 est le dataset per-test (×2.4) et le stock de 199 tickets, pas les paires y-opposés"
- ]
+ ],
+ "addendum_tail_glm": {
+  "final_etats": 365,
+  "appliques": 114,
+  "taux": 0.312,
+  "mixtes": 8,
+  "paires": 45,
+  "convergences": 16,
+  "budget": "365/480 (deja skips glm)",
+  "verdict": "P1/P2 inchangés"
+ }
 }
