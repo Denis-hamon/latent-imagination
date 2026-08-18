@@ -1,0 +1,47 @@
+{
+ "window": "v22-collecte-paires",
+ "anchor": "812f6ad478095263",
+ "close_at_states": 317,
+ "budget_cap": 480,
+ "grid": {
+  "P1_apply_rate": {
+   "mesure": 0.303,
+   "seuil": 0.45,
+   "ok": false
+  },
+  "P2_paires_y_opposes": {
+   "mesure": 31,
+   "seuil": 300,
+   "ok": false
+  },
+  "P3_tickets_mixtes": {
+   "mesure": 7,
+   "descriptif": true
+  },
+  "verdict": "GRILLE MANQUÉE (P1 et P2)"
+ },
+ "par_modele": {
+  "DeepSeek|appl": 51,
+  "DeepSeek|non-appl.": 71,
+  "GLM|appl": 24,
+  "GLM|non-appl.": 30,
+  "GLM|pas-de-diff-extrable": 19,
+  "Qwen3.8|appl": 21,
+  "Qwen3.8|non-appl.": 21,
+  "Qwen3.8|pas-de-diff-extrable": 80
+ },
+ "actifs": {
+  "dataset_per_test": "58 -> 138 partiels nommés (174 lignes au total)",
+  "tickets_verifies_minee": "199 nouveaux (kimi 129, qwen 46, epv 20, tanquery 3, nx 1)",
+  "convergences_v22": 13,
+  "v22_paires_archivees": "ts-gold-v18/v22-pairs.json (92 états appliqués)"
+ },
+ "tail_run": "chaîne glm continue vers cap 480 en fond ; états supplémentaires appendés au même replay-rows-v22.jsonl, addendum au closing si variation",
+ "lecons": [
+  "mitigation DW-52 confirmée : apply rate pro 42% / glm 35% sur fichiers complets <=1200L (vs 16-35% v21 tronqué)",
+  "Qwen3.8 inutilisable en collecte : 17% apply, clôtures de fences mangées par le reasoning (101 non-appliqués)",
+  "rendement paires : 29 paires / 317 appels ≈ 0.09 — la grille 300 paires exigeait ~3300 appels (60 h test)",
+  "nx non viable (jest par-package instable sur parents anciens)",
+  "le vrai rendement de v22 est le dataset per-test (×2.4) et le stock de 199 tickets, pas les paires y-opposés"
+ ]
+}

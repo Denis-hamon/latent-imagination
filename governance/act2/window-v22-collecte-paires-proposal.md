@@ -42,3 +42,29 @@ séparée, décision owner). Sinon ⇒ données conservées, leçon consignée.
 
 Pas de changement de prompt en cours de run ; pas de modèle ajouté après
 constat d'échec ; les tickets non éligibles M1/M3 ne participent pas.
+
+---
+
+## FERMETURE — 2026-08-18 : GRILLE MANQUÉE, window close (tail-run glm disclosé)
+
+- P1 : taux d'application 30,3 % (seuil 45 %) — mitigations DW-52 réelles
+  (pro 42 %, glm 35 % sur fichiers complets) mais Qwen3.8 à 17 % plombe
+  la moyenne globale (fences de raisonnement tronquées sur prompts longs).
+- P2 : 31 paires intra-ticket y-opposés (seuil 300) — le rendement mesuré
+  est 0,09 paire/appel ; la grille exigeait ~3300 appels ≈ 60 h de tests.
+- P3 descriptif : 7 tickets mixtes, 13 convergences (y=1).
+- Close à 317 appels ; la chaîne glm finit vers le cap 480 en fond (mêmes
+  fichiers, addendum si variation significative).
+
+**Actifs réels de la fenêtre (la grille est manquée, pas la collecte)** :
+- dataset per-test 58 → **138 partiels nommés** (174 lignes, 4 sources) ;
+- **199 tickets vérifiés RED-GREEN** minés de GitHub (kimi 129, qwen 46,
+  epv 20, tanquery 3, nx 1) + ~990 candidats découverts non vérifiés ;
+- profils mineurs/harvest pour 7 nouveaux repos ; stratégie 3 (tests
+  modifiés) ; --since ; parseurs vitan/jest ; protocole frères P2P.
+
+**Lecture pour la suite** (au-delà de la grille) : la reprise (b) DW-51
+exigeait 300 paires — or le dataset per-test à 138 partiels RÉELS multi-repos
+dépasse déjà ce sur quoi le modèle dédié a été validé (58). La condition de
+reprise peut être ré-évaluée sur cette base par une fenêtre de modélisation
+(décision owner), sans attendre 60 h de collecte supplémentaire.
