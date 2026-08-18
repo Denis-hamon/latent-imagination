@@ -50,6 +50,13 @@ def budget() -> int:
     return sum(1 for l in COUNTER.read_text().splitlines() if l.strip()) if COUNTER.is_file() else 0
 
 
+def budget_model(m: str) -> int:
+    if not COUNTER.is_file():
+        return 0
+    return sum(1 for l in COUNTER.read_text().splitlines()
+               if l.strip() and json.loads(l).get("model") == m)
+
+
 def count(row: dict) -> None:
     with COUNTER.open("a") as fh:
         fh.write(json.dumps(row, ensure_ascii=False) + "\n")
@@ -138,7 +145,7 @@ def replay_ticket(t: dict, model_key: str, model: str, fh) -> None:
             if budget() >= CAP_TOTAL:
                 return
             prompt = base_prompt + (FB_TMPL.format(prev=turn - 1, pdiff=prev_diff[:PREV_DIFF_CHARS], fb=prev_fb) if turn > 1 else "")
-            cid = f"v21-{t['repo']}-{model_key}-{slug[-40:]}-t{turn}"
+            cid = f"v22-{t['repo']}-{model_key}-{slug[-40:]}-t{turn}"
             try:
                 rth.MODEL["m"] = model
                 g = rth.call_t07(prompt)
@@ -201,18 +208,25 @@ def main() -> int:
     want = os.environ.get("GEN_MODELS", "pro,qwen,glm").split(",")
     models = [(k, MODELS[k.strip()]) for k in want if k.strip() in MODELS]
     sel = json.loads(SELECTION.read_text())["tickets"] if SELECTION.is_file() else select_tickets()
-    print(f"REPLAY v21 : {len(sel)} tickets × modèles {[k for k, _ in models]} | budget {budget()}/{CAP_TOTAL}", flush=True)
-    used_model = {k: 0 for k, _ in models}
+    deja = set()
+    if ROWS.is_file():
+        for l in ROWS.read_text().splitlines():
+            if l.strip():
+                r = json.loads(l)
+                deja.add((r.get("issue"), r.get("model")))
+    print(f"REPLAY v22 : {len(sel)} tickets × modèles {[k for k, _ in models]} "
+          f"| budget {budget()}/{CAP_TOTAL} | déjà joués {len(deja)}", flush=True)
     with ROWS.open("a") as fh:
         for k, mname in models:
             for t in sel:
-                if budget() >= CAP_TOTAL or used_model[k] >= CAP_MODEL:
+                if budget() >= CAP_TOTAL or budget_model(mname) >= CAP_MODEL:
                     break
-                n0 = budget()
+                if (t["issue"], mname) in deja:
+                    continue
                 print(f"[{k}] {t['issue']} ({len(t['f2p'])} F2P)", flush=True)
                 replay_ticket(t, k, mname, fh)
-                used_model[k] += budget() - n0
-    print("REPLAY V21 DONE", flush=True)
+                deja.add((t["issue"], mname))
+    print("REPLAY V22 DONE", flush=True)
     return 0
 
 

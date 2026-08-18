@@ -61,6 +61,14 @@ def main() -> int:
             rows.append({"key": p["slot"], "task": p["task"], "declared_f2p": [],
                          "red_set": sorted(p["red"]), "applied": "?",
                          "source": "p2-legacy", "window": "pre-v15"})
+    # (d) replay v22 : paires réelles multi-repos ( diffs sur disque )
+    v22 = PILOT / "ts-gold-v18" / "v22-pairs.json"
+    if v22.is_file():
+        for r in json.loads(v22.read_text()):
+            rows.append({"key": r["key"], "task": r["task"],
+                         "declared_f2p": r["declared_f2p"], "red_set": r["red_set"],
+                         "applied": "git", "source": "v22-replay",
+                         "window": "v22", "model": r["model"], "turn": r["turn"]})
     # dédup keys
     seen, uniq = set(), []
     for r in rows:
