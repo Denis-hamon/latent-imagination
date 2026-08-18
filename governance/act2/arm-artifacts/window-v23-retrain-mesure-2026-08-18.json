@@ -1,0 +1,68 @@
+{
+ "window": "v23-pert-test-retrain",
+ "anchor": "c4d89d182f5f3816",
+ "generated_at": "2026-08-18T08:07:01.129627Z",
+ "population": {
+  "lignes_entrainables": 155,
+  "paires": 1066,
+  "rouges": 507,
+  "par_source": {
+   "v15-label": 31,
+   "p2-legacy": 32,
+   "v22-replay": 92
+  },
+  "diffs_harvest_non_resolus": 10
+ },
+ "grille": {
+  "M1_mediane_jaccard": {
+   "modele": 1.0,
+   "baseline": 1.0,
+   "seuil": "B1+0.05",
+   "ok": false,
+   "cause": "saturation : 59/108 partielles ont B1=1.0 trivial (rien de réparé), la médiane est aveugle"
+  },
+  "M2_auc_paire_loo": {
+   "mesure": 0.9117,
+   "seuil": 0.62,
+   "ok": true,
+   "rappel_modele_v2": 0.842
+  },
+  "M3_v22_mediane": {
+   "modele": 1.0,
+   "baseline": 1.0,
+   "ok": false,
+   "meme_saturation": true
+  },
+  "verdict": "NON PROMOUVABLE (grille scellée respectée mot à mot)"
+ },
+ "mesures_secondaires_hors_grille": {
+  "moyenne_jaccard_global": {
+   "modele": 0.7977,
+   "baseline": 0.7526,
+   "delta": 0.0451
+  },
+  "moyenne_jaccard_v22": {
+   "modele": 0.8941,
+   "baseline": 0.8158,
+   "delta": 0.0783
+  },
+  "youden": {
+   "J": 0.7629,
+   "thr": 0.4963,
+   "rappel_v2": {
+    "J": 0.6104
+   }
+  },
+  "brier_isotonic": 0.1008,
+  "lignes_battues": 34,
+  "egalites": 56,
+  "total": 108
+ },
+ "lecture": "Le modèle ré-entraîné est objectivement meilleur sur toutes les lectures non dégénérées (AUC +0.07, Youden +0.15, v22 moyenne +0.078), mais la métrique M1 gelée (médiane) sature sur la nouvelle population : les lignes v22 'tout reste rouge' rendent baseline et modèle égaux à 1.0 en médiane. Le NON PROMOUVABLE est un verdict de métrique, pas de performance.",
+ "disclosures": [
+  "lambda=1e-2 gelé (pas de re-sélection LOO interne, coût x5 évité)",
+  "10 diffs harvest-full non résolus exclus",
+  "poids v23 sauvés sur node (v23-weights.npz) mais NON servis",
+  "queue glm v22 toujours en cours (350/480), sans impact sur v23"
+ ]
+}

@@ -69,6 +69,36 @@ def main() -> int:
                          "declared_f2p": r["declared_f2p"], "red_set": r["red_set"],
                          "applied": "git", "source": "v22-replay",
                          "window": "v22", "model": r["model"], "turn": r["turn"]})
+    # récupération declared_f2p (harvest : issue dans la clé ; legacy : staging)
+    verifs = []
+    for f in list((PILOT / "night-harvest").glob("*/verified.json")) + [PILOT / "night-harvest" / "verified.json"]:
+        if f.is_file():
+            verifs += json.loads(f.read_text())
+    stag_tasks = {}
+    for camp in sorted(PILOT.glob("coverage-ts-*")) + sorted(PILOT.glob("ts-v*")):
+        se = camp / "staging-extract.json"
+        if se.is_file():
+            for t in json.loads(se.read_text())["tasks"]:
+                stag_tasks[t["instance_id"].replace("/", "_")] = sorted(t.get("f2p", []))
+    for r in rows:
+        if r["declared_f2p"] or not r["red_set"]:
+            continue
+        k = r["key"]
+        if r["source"] == "harvest-full" and "-d" in k:
+            core = k.rsplit("-d", 1)[0]
+            for t in verifs:
+                iss = t.get("issue", "")
+                tail = iss.rsplit("_", 1)[-1] if "_" in iss else iss
+                if tail and (tail.lower().replace("_", "-") in core.lower()
+                             or core.lower().endswith(iss.lower()[-24:].replace("_", "-"))):
+                    r["declared_f2p"] = sorted(t.get("f2p", []))
+                    break
+        elif not r["declared_f2p"]:
+            cand = r["task"].split("__", 1)[-1].replace("/", "_")
+            for iid, f2p in stag_tasks.items():
+                if f2p and (iid.endswith(cand[-40:]) or cand.endswith(iid.split("__")[-1][-40:])):
+                    r["declared_f2p"] = f2p
+                    break
     # dédup keys
     seen, uniq = set(), []
     for r in rows:
