@@ -62,7 +62,7 @@ def main() -> int:
                          "red_set": sorted(p["red"]), "applied": "?",
                          "source": "p2-legacy", "window": "pre-v15"})
     # (d) replay v22/v25 : paires réelles multi-repos (diffs sur disque)
-    for vtag, vfile in (("v22", "v22-pairs.json"), ("v25", "v25-pairs.json")):
+    for vtag, vfile in (("v22", "v22-pairs.json"), ("v25", "v25-pairs.json"), ("v28", "v28-pairs.json")):
         vf = PILOT / "ts-gold-v18" / vfile
         if not vf.is_file():
             continue

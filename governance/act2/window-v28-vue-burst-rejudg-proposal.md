@@ -30,3 +30,20 @@ live zed-hosted comparatif). Échec ⇒ close, données conservées.
 Pas d'amendement de métrique (la médiane reste l'instrument de grille tant
 qu'elle n'est pas saturée ; la saturation se mesure : si M1 ressort encore
 1.0=1.0, c'est un RÉSULTAT, pas un bug à contourner).
+
+---
+
+## Phase B1 — RÉSULTAT : G1 MANQUÉE, G2 REMPLIE, fenêtre close
+
+- 106/192 appels (qwen a épuisé les 17 tickets avant le cap) ;
+- 30 appliqués = **28 %** (G1 ≥35 % échouée — l'apply rate reste le talon
+  d'Achille, même sur petits patchs connus) ;
+- 14 convergences (47 % des appliqués — très élevé : les petits fix vue sont
+  apprenables) ; **16 partielles non-triviales** (G2 ≥8 ✓) ;
+- dataset : 303 lignes / 225 partielles ; **triviales 45 % / non-triviales
+  55 %** — première population à majorité non-triviale : la médiane Jaccard
+  est mathématiquement désaturée.
+- Conséquence : la phase B2 ne s'exécute PAS dans v28 (grille G1∧G2 requise) ;
+  la re-mesure propre passe par une nouvelle fenêtre (v29) sur la population
+  étendue — même motif que v23→v24→v26, la fenêtre précédente ne juge jamais
+  la population qu'elle a contribué à créer hors grille.

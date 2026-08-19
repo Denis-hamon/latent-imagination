@@ -127,8 +127,15 @@ def replay_ticket(t: dict, model_key: str, model: str, fh) -> None:
     base_prompt = rth.build_prompt(t, srcs)
     rth.run(f"cd {prof['remote']} && git worktree remove --force {wt} 2>/dev/null; "
             f"git worktree add {wt} {t['parent']} >/dev/null 2>&1 && "
-            + prof["link_nm"].format(wt=wt) +
-            f" && cd {wt} && git checkout {t['fix_commit']} -- {' '.join(t['tests_run'])} 2>/dev/null")
+            + prof["link_nm"].format(wt=wt))
+    # pose des tests : checkout depuis fix_commit (mineur git) OU application du
+    # test_patch (tickets MSWB, pas de fix_commit)
+    if t.get("fix_commit"):
+        rth.run(f"cd {wt} && git checkout {t['fix_commit']} -- {' '.join(t['tests_run'])} 2>/dev/null")
+    elif t.get("test_patch"):
+        tp = t["test_patch"]
+        rth.run(f"cd {wt} && (git apply --recount - <<'EOFP'\n{tp}\nEOFP\n) 2>&1 || "
+                f"(patch -p1 -l --fuzz=3 <<'EOFP'\n{tp}\nEOFP\n) 2>&1")
     prev_diff, prev_fb = "", ""
     try:
         for turn in range(1, MAX_TURNS + 1):
