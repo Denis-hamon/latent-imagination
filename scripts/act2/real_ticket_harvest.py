@@ -37,6 +37,13 @@ REPOS = {
                  "cmd": "cd {wt}/pkgs/core && timeout 240 npx vitest run --no-cache --reporter=tap {tests_rel} 2>&1"},
 }
 REPOS.update({
+    "vuejs__core": {
+        "remote": "~/vue-core", "wt_root": "~/Vue-harvest", "runner": "vitan",
+        "cmd": "cd {wt} && timeout 300 ./node_modules/.bin/vitest run --no-cache --reporter=tap {tests} 2>&1",
+        "link_nm": ("cd {wt} && rm -rf node_modules packages/*/node_modules 2>/dev/null; "
+                    "timeout 300 pnpm install --ignore-scripts --prefer-offline "
+                    "--config.engine-strict=false --reporter=silent >/dev/null 2>&1"),
+    },
     "kimi": {
         "remote": "~/kimi-code", "wt_root": "~/Kimi-harvest", "runner": "vitan",
         "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
