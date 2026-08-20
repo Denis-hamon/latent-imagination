@@ -33,7 +33,7 @@ PROFILES = {
                          "link_nm": "ln -sfn ~/svelte/node_modules {wt}/node_modules",
                          "suite_runner": True},
     "iamkun__dayjs": {"remote": "~/dayjs", "wt_root": "~/Dayjs-mswb", "runner": "jest",
-                      "cmd": "cd {wt} && timeout 300 ./node_modules/.bin/jest --verbose {tests} 2>&1",
+                      "cmd": "cd {wt} && TZ=America/New_York timeout 300 ./node_modules/.bin/jest --verbose {tests} 2>&1",
                       "link_nm": "ln -sfn ~/dayjs/node_modules {wt}/node_modules"},
 }
 
