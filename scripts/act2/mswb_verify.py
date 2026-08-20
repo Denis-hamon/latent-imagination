@@ -34,6 +34,12 @@ PROFILES = {
                          "cmd": "cd {wt} && timeout 300 ./node_modules/.bin/vitest run --no-cache --reporter=tap {tests} {names} 2>&1",
                          "link_nm": "ln -sfn ~/svelte/node_modules {wt}/node_modules",
                          "suite_runner": True},
+    "expressjs__express": {"remote": "~/express", "wt_root": "~/Express-mswb", "runner": "mochajson",
+                           "cmd": ("cd {wt} && timeout 300 ./node_modules/.bin/mocha --require test/support/env "
+                                   "--reporter json --check-leaks {tests} 2>/dev/null"),
+                           "link_nm": ("cd {wt} && rm -rf node_modules 2>/dev/null; "
+                                       "timeout 300 npm install --no-audit --no-fund --ignore-scripts "
+                                       "--prefer-offline >/dev/null 2>&1 || true")},
     "iamkun__dayjs": {"remote": "~/dayjs", "wt_root": "~/Dayjs-mswb", "runner": "jestsuite",
                       "cmd": ("cd {wt} && for TZV in Pacific/Auckland Europe/London America/Whitehorse UTC; do "
                               "TZ=$TZV timeout 120 ./node_modules/.bin/jest --verbose {tests} 2>&1 | "

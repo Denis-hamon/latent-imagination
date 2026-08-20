@@ -33,3 +33,21 @@ densifiée, grille T1/T2 identique) ; sinon constat et décision owner.
 Aucun serving ; pas de re-jeu des tickets v22/v25 (leurs lignes anciennes
 restent dans l'inventaire telles quelles — hétérogénéité de recette tracée
 par fenêtre dans les transitions).
+
+---
+
+## FERMETURE — 2026-08-20 : grilles D1/D2 manquées de peu, densification ×2.5 réelle
+
+- **D1 : 180 transitions / 747 paires (vs 72/152 avant)** — seuil 222 manqué
+  (+108 au lieu de +150), mais inventaire ×2.5 et paires ×4.9 ;
+- **D2 : résolution 34/60 = 57 %** (< 70 %) — les tickets minés (F2P 3–27,
+  repos applicatifs kimi-code/qwen-code) sont structurellement plus durs que
+  le bloc MSWB (91-93 %) ; pour comparaison, l'ancienne recette 16k faisait
+  ~15-20 % sur ces mêmes repos : la recette 65k triple le rendement ;
+- **D3 : 311/400 appels** ✓ ;
+- apply 68 % (record sur repos minés) ; solveurs : DeepSeek-V4-Pro 190 appels,
+  Qwen3.8 121 (confirmation : « kimi » dans la sélection = le REPO miné
+  kimi-code, pas un modèle).
+
+Suite approuvée owner : v41 re-jugement de l'arm transition sur cette
+population figée (180 transitions, 747 paires).
