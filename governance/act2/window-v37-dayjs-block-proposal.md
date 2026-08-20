@@ -21,3 +21,21 @@ DW-52 src ≤ 1200 lignes ; cap 200 appels.
 - R3 : ≤ 200 appels.
 R1 ET R2 ⇒ la recette généralise hors vue ; échec ⇒ la recette est
 spécifique à vue/vitest et l'extension demande de l'adaptation par repo.
+
+---
+
+## FERMETURE — 2026-08-20 : **GRILLE 3/3 FRANCHIE — GÉNÉRALISATION CONFIRMÉE**
+
+- **R1 : 39/43 instances dayjs résolues = 91 %** (≥60 % ✓✓) ;
+- **R2 : apply 54/64 = 84 %** (≥45 % ✓✓) ;
+- **R3 : 64/200 appels** (68 % sous le cap ✓) ;
+- finish_reason=length : 7/64 (11 %) à 65k tokens — troncature marginale ;
+- 4 irréductibles sur 43 (9 %).
+
+**La recette v36 généralise AU-DELÀ de son repo d'origine** : vitest→jest,
+TS→JS, environnement multi-TZ, fichiers ≤992 lignes, Qwen3.8 seul. Le score
+combiné sur les deux blocs vérifiés sur notre hôte :
+vue 15/17 (88 %) + dayjs 39/43 (91 %) = **54/60 = 90 %**.
+
+Échelle de progression nocturne : 50 % (one-shot) → 65 % (boucle v32, troncature)
+→ 82 % (v35, 40k tokens) → 88 % (v36, 65k, vue) → **91 % (v37, 65k, dayjs)**.
