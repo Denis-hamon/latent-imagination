@@ -24,3 +24,23 @@ tours ; (C) pièges d'état cumulé (« file exists » non corrigés).
   le constat est définitif pour ce bloc et la recette 90 % reste la référence ;
 - G2 descriptif : taux finish_reason=length avec la consigne vs 35 % mesuré.
 Aucune modification de la référence interne (v36/v37 restent les scores).
+
+---
+
+## FERMETURE — 2026-08-20 : **G1 VALIDÉ (2/6), référence interne mise à jour**
+
+- **2/6 irréductibles résolus** : vuejs__core-9572 (t2) et iamkun__dayjs-1047
+  (t2) — deux instances qui avaient résisté à v36/v37 (état cumulé seul) ;
+- apply 14/18 = 78 % ; **pas-de-diff = 0/18** (vs 23/44 en v34) : la consigne
+  « raisonnement court » élimine l'échec d'extraction même quand la troncature
+  frappe encore (6/18 finish=length — le diff passe avant l'épuisement) ;
+- extraction tolérante : 0 utilisation (assurance infra pour le futur) ;
+- G2 descriptif : finish length 33 % (vs 53 % v34 à 16k, 11-25 % v35/v36 à 40-65k
+  sans consigne courte) ;
+- **restent irréductibles à 4 tours (mur cognitif confirmé)** : vuejs__core-11854
+  (CSS scoped ::v-deep, 4 tours y=0), dayjs-1502 (locale bg), dayjs-1964
+  (locales ar-ly/mr), dayjs-873 (customParseFormat yyyy) — sous-systèmes
+  pointus locales/CSS, diagnostic cohérent pour les 4.
+
+**Référence interne mise à jour** : vue 16/17 (94 %), dayjs 40/43 (93 %),
+combiné **56/60 = 93 %** (contre 54/60 = 90 % avant v38).
