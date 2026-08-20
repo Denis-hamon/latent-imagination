@@ -86,9 +86,11 @@ def main() -> int:
                if t["repo"].replace("/", "__") == args.repo or t["repo"] == args.repo]
     if args.limit:
         tickets = tickets[:args.limit]
-    done, rej = [], 0
     verified_f = OUT / "verified-mswb.json"
-    prior = {t["issue"] for t in (json.loads(verified_f.read_text()) if verified_f.is_file() else [])}
+    prior_raw = json.loads(verified_f.read_text()) if verified_f.is_file() else []
+    prior_list = [t for t in prior_raw if isinstance(t, dict) and "issue" in t]
+    prior = {t["issue"] for t in prior_list}
+    done, rej = list(prior_list), 0  # fusion : jamais écraser les validations acquises
     for i, t in enumerate(tickets):
         if t["issue"] in prior:
             continue
@@ -151,7 +153,7 @@ def main() -> int:
                                      "apply2": r2[-120:]}, ensure_ascii=False) + "\n")
             print(f"    REJETÉ : tier={tier} green_ok={green_ok}", flush=True)
         verified_f.write_text(json.dumps(done, indent=1, ensure_ascii=False) + "\n")
-    print(f"mswb-verify {args.repo} : {len(done)} validés, {rej} rejetés ce run")
+    print(f"mswb-verify {args.repo} : {len(done)} validés au total (fusion), {rej} rejetés ce run")
     return 0
 
 
