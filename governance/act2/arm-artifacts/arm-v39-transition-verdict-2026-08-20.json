@@ -1,0 +1,31 @@
+{
+ "arm": "transition-sequentielle-v39",
+ "prereg_chain": "1ffa1fff375678b6",
+ "date": "2026-08-20T11:02:35.410071Z",
+ "population": {
+  "transitions": 72,
+  "trajectoires": 26,
+  "paires": 152,
+  "rouges": 30,
+  "transitions_avec_changement": 39,
+  "trans_évaluées_jaccard": 25
+ },
+ "T1_auc": {
+  "modele": 0.9601,
+  "persistance": 0.7533,
+  "delta": 0.2068,
+  "seuil": "+0.03",
+  "ok": true
+ },
+ "T2_jaccard": {
+  "modele": 0.9,
+  "persistance": 0.78,
+  "delta": 0.12,
+  "seuil": "+0.05",
+  "ok": true
+ },
+ "verdict": "VALIDÉ (T1 ET T2, marges 7x et 2.4x les seuils)",
+ "features": "[E_diff_{t+1}||E_test||cos||persist||frac_rouges_t||tour] (1540 dims, doc disait 1534 — coquille arithmétique, disclosure)",
+ "interpretation": "Le signal séquentiel EXISTE : connaître l'état des tests au tour précédent + le nouveau diff permet de prédire l'évolution avec AUC 0.96 vs 0.75 pour la persistance seule. Premier bras de modélisation positif depuis v15. Population petite (152 paires) — la marge (7x le seuil) absorbe en partie l'incertitude, mais un re-jugement sur trajectoires additionnelles est requis avant serving.",
+ "suite_prereg": "ouvre une fenêtre produit (colonne « évolution prédite des tests » / prédiction post-exécution partielle) — décision owner ; serving actuel v0.8.1 intouché dans ce bras."
+}
