@@ -1,0 +1,22 @@
+{
+ "arm": "transition-sequentielle-v41 (re-jugement sur population densifiée)",
+ "prereg_chain": "6928f0ab963e4490",
+ "population": {"transitions": 180, "trajectoires": 70, "paires": 747,
+                "rouges": 30, "trans_évaluées_jaccard": 25,
+                "source": "v32-v38+v40, builder figé à la fermeture v40"},
+ "T1_auc": {"modele": 0.9931, "persistance": 0.8197, "delta": 0.1734,
+            "seuil": "+0.03", "ok": true},
+ "T2_jaccard": {"modele": 0.9333, "persistance": 0.78, "delta": 0.1533,
+                "seuil": "+0.05", "ok": true, "n_eval": 25},
+ "comparaison_v39": {"auc": "0.9601 -> 0.9931", "persistance": "0.7533 -> 0.8197",
+                     "jaccard": "0.90 -> 0.9333"},
+ "verdict": "VALIDÉ (T1 ET T2, marges 5.8x et 3x les seuils)",
+ "caveat": (
+   "les 30 labels rouges sont les MÊMES qu'en v39 : v40 n'a pas ajouté de "
+   "transitions à red déclaré non vide (les tickets minés convergent ou "
+   "cassent hors-declared). L'AUC 0.99 est donc mesurée sur des négatifs "
+   "enrichis, pas sur de nouveaux positifs — l'estimation reste honnête "
+   "(LOO par trajectoire) mais la classe rare impose la prudence avant serving."),
+ "consequence_prereg": ("ouvre la fenêtre produit « évolution prédite des "
+   "tests » à la décision owner ; serving actuel inchangé.")
+}
