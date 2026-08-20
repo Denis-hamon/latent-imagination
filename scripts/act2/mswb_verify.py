@@ -9,8 +9,10 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import pathlib
 import re
 import subprocess
+from hashlib import sha256
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,6 +38,20 @@ PROFILES = {
                       "cmd": "cd {wt} && TZ=America/New_York timeout 300 ./node_modules/.bin/jest --verbose {tests} 2>&1",
                       "link_nm": "ln -sfn ~/dayjs/node_modules {wt}/node_modules"},
 }
+
+
+def apply_file(wt: str, patch: str, tag: str) -> str:
+    """Pose par fichier scp (jamais heredoc ssh : transport corrompt les
+    bytes — prouvé par sha sur dayjs 2026-08-19)."""
+    import subprocess as _sp
+    h = sha256(patch.encode()).hexdigest()[:10]
+    tmp = pathlib.Path(f"/tmp/mswb-{tag}-{h}.diff")
+    tmp.write_text(patch if patch.endswith("\n") else patch + "\n")
+    rf = f"/tmp/mswb-{tag}-{h}.diff"
+    _sp.run(["scp", "-q", str(tmp), f"{HOST}:{rf}"], capture_output=True, check=False, timeout=120)
+    tmp.unlink(missing_ok=True)
+    out = run(f"cd {wt} && (git apply --recount {rf} 2>&1) || (patch -p1 -l --fuzz=3 --batch < {rf} 2>&1); rm -f {rf}")
+    return out
 
 
 def run(cmd: str, t: int = 700) -> str:
@@ -91,23 +107,28 @@ def main() -> int:
         else:
             tests = " ".join(t["tests_run"][:6])
             names = ""
-        # RED : test_patch appliqué au parent, fix absent (recette pose miner :
-        # git apply --recount puis fallback patch -p1 -l --fuzz=3)
-        r1 = run(f"cd {wt} && (git apply --recount - <<'EOFP'\n{t['test_patch']}\nEOFP\n) 2>&1 || (patch -p1 -l --fuzz=3 <<'EOFP'\n{t['test_patch']}\nEOFP\n) 2>&1")
+        # RED : test_patch appliqué au parent, fix absent (pose par fichier scp)
+        r1 = apply_file(wt, t["test_patch"], "tp")
         red_raw = run(prof["cmd"].format(wt=wt, tests=tests, names=names))
         failed_r, passed_r = rth.parse_leaves(red_raw, prof["runner"])
         nf = {norm(x) for x in failed_r}
         f2p_norm = {norm(x) for x in t["f2p"]}
         def hit(x):
-            return any(x == fn or fn.startswith(x) or x.startswith(fn) for fn in nf)
+            tail = x.split(":")[-1].strip()
+            return any(x == fn or fn.startswith(x) or x.startswith(fn)
+                       or (tail and len(tail) > 3 and (tail == fn or fn.startswith(tail) or tail.startswith(fn)))
+                       for fn in nf)
         n_red_matched = sum(1 for x in f2p_norm if hit(x))
         def hit2(x):
             fg = {norm(g) for g in failed_g}
-            return any(x == fn or fn.startswith(x) or x.startswith(fn) for fn in fg)
+            tail = x.split(":")[-1].strip()
+            return any(x == fn or fn.startswith(x) or x.startswith(fn)
+                       or (tail and len(tail) > 3 and (tail == fn or fn.startswith(tail) or tail.startswith(fn)))
+                       for fn in fg)
         red_all = f2p_norm and n_red_matched == len(f2p_norm)
         red_some = n_red_matched >= 1
-        # GREEN : fix_patch ajouté (même recette de pose)
-        r2 = run(f"cd {wt} && (git apply --recount - <<'EOFP'\n{t['fix_patch']}\nEOFP\n) 2>&1 || (patch -p1 -l --fuzz=3 <<'EOFP'\n{t['fix_patch']}\nEOFP\n) 2>&1")
+        # GREEN : fix_patch ajouté (pose par fichier scp)
+        r2 = apply_file(wt, t["fix_patch"], "fp")
         green_raw = run(prof["cmd"].format(wt=wt, tests=tests, names=names))
         failed_g, passed_g = rth.parse_leaves(green_raw, prof["runner"])
         green_ok = passed_g >= 1 and not any(hit2(x) for x in f2p_norm)
