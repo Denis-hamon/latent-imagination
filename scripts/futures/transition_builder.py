@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 NH = ROOT / "data" / "landing" / "act2-pilot" / "night-harvest"
 MSWB = ROOT / "data" / "landing" / "act2-pilot" / "mswb"
 OUT = ROOT / "data" / "landing" / "act2-pilot" / "transitions"
-WINDOWS = ("v32", "v33", "v34", "v35", "v36", "v37", "v38")
+WINDOWS = ("v32", "v33", "v34", "v35", "v36", "v37", "v38", "v40")
 KEY_MODEL = {"DeepSeek-V4-Pro": "pro", "Qwen3.8-2.4T-A95B-NVFP4": "qwen",
              "GLM-5.2-NVFP4": "glm", "gemma-4-31B-it": "gemma",
              "NVIDIA-Nemotron-3-Super-120B-A12B-MLX": "nemotron"}
@@ -27,8 +27,21 @@ def load_declared() -> dict:
         f = MSWB / repo / "verified-mswb.json"
         if f.is_file():
             for t in json.loads(f.read_text()):
-                if isinstance(t, dict):
-                    dec[t["issue"]] = sorted(set(t.get("f2p", [])))
+                if isinstance(t, dict) and t.get("f2p"):
+                    dec[t["issue"]] = sorted(set(t["f2p"]))
+    for repo in ("kimi", "qwen", "epv", "tanquery"):
+        f = NH / repo / "verified.json"
+        if f.is_file():
+            for t in json.loads(f.read_text()):
+                if t.get("f2p"):
+                    dec.setdefault(t["issue"], sorted(set(t["f2p"])))
+    for sf in sorted(NH.glob("replay-v*/replay-selection-*.json")):
+        try:
+            for t in json.loads(sf.read_text())["tickets"]:
+                if t.get("f2p"):
+                    dec.setdefault(t["issue"], sorted(set(t["f2p"])))
+        except (json.JSONDecodeError, KeyError):
+            continue
     return dec
 
 
