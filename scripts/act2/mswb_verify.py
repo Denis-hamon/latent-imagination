@@ -34,8 +34,10 @@ PROFILES = {
                          "cmd": "cd {wt} && timeout 300 ./node_modules/.bin/vitest run --no-cache --reporter=tap {tests} {names} 2>&1",
                          "link_nm": "ln -sfn ~/svelte/node_modules {wt}/node_modules",
                          "suite_runner": True},
-    "iamkun__dayjs": {"remote": "~/dayjs", "wt_root": "~/Dayjs-mswb", "runner": "jest",
-                      "cmd": "cd {wt} && TZ=America/New_York timeout 300 ./node_modules/.bin/jest --verbose {tests} 2>&1",
+    "iamkun__dayjs": {"remote": "~/dayjs", "wt_root": "~/Dayjs-mswb", "runner": "jestsuite",
+                      "cmd": ("cd {wt} && for TZV in Pacific/Auckland Europe/London America/Whitehorse UTC; do "
+                              "TZ=$TZV timeout 120 ./node_modules/.bin/jest --verbose {tests} 2>&1 | "
+                              "grep -E '^(PASS|FAIL)|✕|✓'; done"),
                       "link_nm": "ln -sfn ~/dayjs/node_modules {wt}/node_modules"},
 }
 

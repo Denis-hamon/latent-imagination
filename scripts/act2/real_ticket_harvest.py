@@ -44,6 +44,13 @@ REPOS.update({
                     "timeout 300 pnpm install --ignore-scripts --prefer-offline "
                     "--config.engine-strict=false --reporter=silent >/dev/null 2>&1"),
     },
+    "iamkun__dayjs": {
+        "remote": "~/dayjs", "wt_root": "~/Dayjs-mswb", "runner": "jestsuite",
+        "cmd": ("cd {wt} && for TZV in Pacific/Auckland Europe/London America/Whitehorse UTC; do "
+                "TZ=$TZV timeout 120 ./node_modules/.bin/jest --verbose {tests} 2>&1 | "
+                "grep -E '^(PASS|FAIL)|✕|✓'; done"),
+        "link_nm": "ln -sfn ~/dayjs/node_modules {wt}/node_modules",
+    },
     "kimi": {
         "remote": "~/kimi-code", "wt_root": "~/Kimi-harvest", "runner": "vitan",
         "cmd": "cd {wt} && timeout 240 pnpm exec vitest run --no-cache --reporter=tap {tests} 2>&1",
@@ -136,6 +143,7 @@ def run(cmd: str, t: int = 600) -> str:
 
 def parse_leaves(raw: str, kind: str) -> tuple[list[str], int]:
     failed, passed = [], 0
+    suite = None
     for line in raw.splitlines():
         if kind == "node":
             l = line.strip()
@@ -160,6 +168,22 @@ def parse_leaves(raw: str, kind: str) -> tuple[list[str], int]:
                 failed.append(stripped[7:].split(" # ")[0].split(" > ")[-1].strip())
             elif stripped.startswith("ok "):
                 passed += 1
+        elif kind == "jestsuite":
+            # jest --verbose avec contexte de suite (harnais officiel MSWB dayjs :
+            # noms "suite:test") ; multi-TZ agrégé en amont
+            stripped = line.strip()
+            if stripped.startswith("PASS ") or stripped.startswith("FAIL "):
+                suite = stripped.split(" ", 1)[1].split(" (")[0].strip()
+                if stripped.startswith("PASS "):
+                    pass
+                continue
+            if suite is None:
+                continue
+            if stripped.startswith(("\u2713", "✓")):
+                passed += 1
+            elif stripped.startswith(("\u2715", "✕")):
+                nm = stripped[1:].strip().rsplit(" (", 1)[0].strip()
+                failed.append(f"{suite}:{nm}")
         elif kind == "vitan":
             stripped = line.strip()
             if line.rstrip().endswith("{"):
