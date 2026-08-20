@@ -104,8 +104,9 @@ MODEL = {"m": ""}
 
 def call_t07(prompt: str) -> dict:
     key = os.environ.get("LI_GALERE_KEY") or os.environ.get("OPENCODE_GALERE_KEY")
+    mt = int(os.environ.get("LI_MAX_TOKENS", "16000"))
     body = json.dumps({"model": MODEL["m"], "messages": [{"role": "user", "content": prompt}],
-                       "temperature": 0.7, "max_tokens": 16000})
+                       "temperature": 0.7, "max_tokens": mt})
     cmd = ["curl", "-sS", "--max-time", "580", "-X", "POST", gg.pr.GALERE,
            "-H", "Content-Type: application/json", "-H", "User-Agent: opencode/1.0",
            "--data-binary", "@-"]
@@ -119,7 +120,9 @@ def call_t07(prompt: str) -> dict:
         raise RuntimeError(str(j)[:200])
     mm = j["choices"][0]["message"]
     return {"text": (mm.get("content") or "") + "\n" +
-            (mm.get("reasoning") or mm.get("reasoning_content") or ""), "usage": j.get("usage", {})}
+            (mm.get("reasoning") or mm.get("reasoning_content") or ""),
+            "usage": j.get("usage", {}),
+            "finish_reason": j["choices"][0].get("finish_reason")}
 
 
 def run(cmd: str, t: int = 600) -> str:
