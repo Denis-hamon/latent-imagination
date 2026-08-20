@@ -25,12 +25,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 NH = ROOT / "data" / "landing" / "act2-pilot" / "night-harvest"
-OUT = NH / "replay-v36"
-ROWS = NH / "replay-rows-v36.jsonl"
-COUNTER = NH / "call-counter-v36.jsonl"
-SELECTION = OUT / "replay-selection-v32.json"
-CAP_TOTAL = 80
-CAP_MODEL = 80
+OUT = NH / "replay-v37"
+ROWS = NH / "replay-rows-v37.jsonl"
+COUNTER = NH / "call-counter-v37.jsonl"
+SELECTION = OUT / "replay-selection-v37.json"
+CAP_TOTAL = 200
+CAP_MODEL = 200
 MAX_TURNS = 4
 FEEDBACK_CHARS = 1600
 PREV_DIFF_CHARS = 3000
@@ -227,7 +227,7 @@ def replay_ticket(t: dict, model_key: str, model: str, fh) -> None:
                 return
             srcs = current_srcs(t, wt)
             prompt = build_prompt_v32(t, srcs, prev_diff, prev_fb, turn)
-            cid = f"v36-{t['repo']}-{model_key}-{slug[-40:]}-t{turn}"
+            cid = f"v37-{t['repo']}-{model_key}-{slug[-40:]}-t{turn}"
             try:
                 rth.MODEL["m"] = model
                 g = rth.call_t07(prompt)
@@ -288,7 +288,7 @@ def main() -> int:
             if l.strip():
                 r = json.loads(l)
                 deja.add((r.get("issue"), r.get("model")))
-    print(f"REPLAY v36 : {len(sel)} tickets × modèles {[k for k, _ in models]} "
+    print(f"REPLAY v37 : {len(sel)} tickets × modèles {[k for k, _ in models]} "
           f"| budget {budget()}/{CAP_TOTAL} | déjà joués {len(deja)}", flush=True)
     with ROWS.open("a") as fh:
         for k, mname in models:
@@ -300,7 +300,7 @@ def main() -> int:
                 print(f"[{k}] {t['issue']} ({len(t['f2p'])} F2P)", flush=True)
                 replay_ticket(t, k, mname, fh)
                 deja.add((t["issue"], mname))
-    print("REPLAY V36 DONE", flush=True)
+    print("REPLAY V37 DONE", flush=True)
     return 0
 
 
