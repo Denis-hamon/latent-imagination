@@ -56,8 +56,11 @@ def main() -> int:
         by = defaultdict(list)
         for r in rows:
             if r.get("applied") and r.get("turn") and r.get("failed_all") is not None:
-                by[(r["issue"], r.get("model", "?"))].append(r)
-        for (issue, model), seq in by.items():
+                # clé AVEC fenêtre : jamais de trajectoire traversant deux
+                # fenêtres (tours dupliqués par replay successifs sur les
+                # mêmes instances créeraient des transitions fantômes)
+                by[(w, r["issue"], r.get("model", "?"))].append(r)
+        for (wkey, issue, model), seq in by.items():
             seq.sort(key=lambda r: r["turn"])
             declared = dec.get(issue, [])
             if not declared:
@@ -72,8 +75,8 @@ def main() -> int:
                 red_a = sorted(set(a["failed_all"]))
                 red_b = sorted(set(b["failed_all"]))
                 trans.append({
-                    "key": f"{w}-{issue}-{KEY_MODEL.get(model, model)}-{a['turn']}>{b['turn']}",
-                    "instance": issue, "window": w, "model": model,
+                    "key": f"{wkey}-{issue}-{KEY_MODEL.get(model, model)}-{a['turn']}>{b['turn']}",
+                    "instance": issue, "window": wkey, "model": model,
                     "turn_from": a["turn"], "turn_to": b["turn"],
                     "declared": declared, "red_from": red_a, "red_to": red_b,
                     "red_from_dec": sorted(set(red_a) & set(declared)),
