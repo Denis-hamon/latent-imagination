@@ -1,0 +1,111 @@
+{
+ "titre": "Comparaison à spectre égal : notre boucle vs agents du marché (Multi-SWE-bench)",
+ "date": "2026-08-21T17:03:28",
+ "protocole": "MÊMES instances, MÊME harnais d'exécution sur notre hôte, MÊME oracle (f2p verts + aucun p2p cassé). Marché = patch FINAL soumis par MSWE-agent (exécuté 1 fois, sans itération chez nous). Nous = boucle ≤4 tours avec feedback de tests réels. Les deux méthodes sont agentiques ; l'asymétrie résiduelle = scaffold (le leur côté génération, le nôtre côté mesure).",
+ "bloc_vue_17": {
+  "nous_boucle_qwen38_65k": {
+   "resolues": 16,
+   "taux": 0.94
+  },
+  "marche_meilleur_seul": {
+   "Doubao-1.5-pro": [
+    9,
+    0.53
+   ],
+   "o1": [
+    8,
+    0.47
+   ],
+   "Claude-3.7": [
+    7,
+    0.41
+   ],
+   "Qwen2.5-72B": [
+    7,
+    0.41
+   ],
+   "Gemini-2.5-pro": [
+    0,
+    0.0
+   ]
+  },
+  "marche_union_12_modeles": [
+   16,
+   0.94
+  ]
+ },
+ "bloc_dayjs_43": {
+  "nous_boucle_qwen38_65k": {
+   "resolues": 40,
+   "taux": 0.93
+  },
+  "marche_meilleur_seul": {
+   "Doubao-thinking-1.5": [
+    33,
+    0.77
+   ],
+   "o3-mini-high": [
+    33,
+    0.77
+   ],
+   "Doubao-1.5-pro": [
+    32,
+    0.74
+   ],
+   "Gemini-2.5-pro": [
+    30,
+    0.7
+   ],
+   "Qwen2.5-72B": [
+    30,
+    0.7
+   ],
+   "Claude-3.7": [
+    29,
+    0.67
+   ],
+   "Claude-3.5(Oct)": [
+    20,
+    0.47
+   ],
+   "Llama-4": [
+    19,
+    0.44
+   ]
+  },
+  "marche_union_11_modeles": [
+   41,
+   0.95
+  ]
+ },
+ "combine_60": {
+  "nous": [
+   56,
+   0.93
+  ],
+  "union_marche": [
+   57,
+   0.95
+  ],
+  "les_deux": 54,
+  "que_nous": [
+   "iamkun__dayjs-1019",
+   "vuejs__core-11694"
+  ],
+  "que_marche": [
+   "iamkun__dayjs-1502",
+   "iamkun__dayjs-873",
+   "vuejs__core-11854"
+  ],
+  "personne": [
+   "iamkun__dayjs-1964"
+  ]
+ },
+ "repere_public_benchmark_complet_437TS": "papier MSWB Table 4 : meilleurs 11.6 % (MopenHands Claude-3.5) et 11.2 % (MSWE-agent Claude-3.7) sur l'ENSEMBLE TS incluant svelte/mui/darkreader non exécutables sur notre hôte — non comparable directement, donné comme contexte uniquement.",
+ "lectures": [
+  "à méthode comparable, notre boucle (1 seul modèle interne) égale l'UNION de 11-12 modèles frontier du marché (93-94 % vs 95 %)",
+  "elle bat chaque modèle marché pris isolément de +16 à +40 points",
+  "complémentarité réelle : 2 instances résolues seulement par nous, 3 seulement par le marché (dont les 2 murs cognitifs identifiés v38 : CSS scoped vue, locales dayjs — résolus par leurs agents dans LEUR docker)",
+  "l'instance dayjs-1964 reste irrésolue par tout le monde"
+ ]
+}
