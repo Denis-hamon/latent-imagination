@@ -100,9 +100,14 @@ en direction, affinés sur données complètes.) **E4 est clos.**
   seulement calculée en mémoire lors des runs LOO. Trouver « où le juge a
   raison et Ghost a tort » exige d'invoquer `predict_transition()` en direct
   (chargement du modèle, potentiellement sur le nœud GPU distant) — pas un
-  simple croisement de fichiers comme scopé initialement. **Décision owner
-  requise avant de lancer cette invocation** (action plus lourde qu'une
-  lecture de fichiers) — mise en pause le 2026-08-21, pas d'invocation faite.
+  simple croisement de fichiers comme scopé initialement. **AUTORISÉ le
+  2026-08-22** (décision owner scellée dans `window-v46-e6-adversarial-transition-proposal.md`) :
+  à la suite du contrôle positif P0 de v46 (harnais LOO reconstruit et
+  validé localement), réutiliser la même instance pour invoquer
+  `predict_transition()` sur les 180 transitions et persister la prédiction
+  Ghost par transition — coût marginal nul, pas de nouvel appel LLM, pas de
+  dépendance au nœud GPU. Mesure séparée de v46, à ne pas pooler dans son
+  verdict A1/A2/A3.
 
 ## Menu d'expérimentations
 
@@ -115,7 +120,7 @@ sauf mention contraire explicite.
 | # | Expérimentation | Impact | Innovation | Temps | Pourquoi ce score |
 |---|---|---|---|---|---|
 | E4 | **Calibration LLM auto-déclarée vs ECE Ghost.** Le champ `conf 0-100` existe déjà, peuplé, dans `judge-outputs-*.jsonl` de w45. Comparer son ECE à celui de Ghost déjà mesuré (0,0205 post-PAV, `arm-pert-test-isotonic-prereg.md`). Zéro nouvel appel. | 4 | 3 | **1** | **CLOS** — voir résultat ci-dessus |
-| E9 | **Carte d'erreur localisée depuis les divergences w45.** Croiser `judge-outputs-*.jsonl` × `v39-transitions.jsonl` × issues groundées existantes : chercher un sous-ensemble structuré où c'est le JUGE qui a raison et Ghost qui se trompe. | 4 | 4 | **1** (≤2 j) | **EN PAUSE** — exige `predict_transition()` en direct, décision owner requise. Dit OÙ investir ensuite au lieu de deviner — condition d'entrée pour E1. Note 21/08 au soir : le prérequis P0 de v46 (harnais LOO persisté) lève le blocage d'infra — E9 deviendrait exécutable en local sitôt v46 scellée |
+| E9 | **Carte d'erreur localisée depuis les divergences w45.** Croiser `judge-outputs-*.jsonl` × `v39-transitions.jsonl` × issues groundées existantes : chercher un sous-ensemble structuré où c'est le JUGE qui a raison et Ghost qui se trompe. | 4 | 4 | **1** (≤2 j) | **AUTORISÉ (22/08), à la suite de P0.** Réutilise le harnais LOO reconstruit pour v46 — coût marginal nul. Dit OÙ investir ensuite au lieu de deviner — condition d'entrée pour E1 |
 | E8 | **Signal cascade/triage rétrospectif.** Sur les logs déjà groundés : combien d'appels LLM auraient été évités si Ghost filtrait en amont ? | 3 *(révisé de 4)* | 3 | **1** (≤2 j) | **À REFORMULER** — gater sur pft/pev, pas sur risk_scan (voir ci-dessus). Attendre plus de sessions (sweep v44) |
 | E6 | **Sondage adversarial du modèle de transition.** Construire des quasi-diffs (même syntaxe, effet sémantique inversé) et vérifier si `predict_transition()` (`latent-imagination/scripts/mcp/ghost_server.py:309-351`, pool `_load_transition():290-306`) s'effondre. Jamais fait — `near_mis_patches` n'a servi qu'à la sélection informative, jamais au stress-test. | **5** | 4 | **2** (2-3 j) | **PROCHAINE PRIORITÉ.** Seule expérience qui attaque DIRECTEMENT le doute initial : le 0,9931 LOO est-il de la vraie compréhension ou un raccourci de surface ? |
 | E2 | **Étendre le gabarit w45 (prereg + grille G1/G2/G3) à l'axe per-test** (`compare_patches`, J servi 0,80). Décision sur Jaccard/J, jamais sur AUC seul. | 3 *(révisé de 4)* | 2 | **2** (2-3 j) | DW-58 a déjà établi que le per-test servi est bien calibré (Brier 0,1035) — confirmera probablement un G2-like ; utile pour la complétude, pas décisif |
@@ -134,13 +139,13 @@ un chantier ; à faire avant E2 si E2 ajoute un 4e point d'appel dupliqué.
 ```
 Phase 0 (données déjà sur disque)
   E4 ─┐  CLOS
-  E9 ─┼─→ EN PAUSE (décision owner : invoquer predict_transition() en direct ?)
+  E9 ─┼─→ AUTORISÉ (22/08), enchaîné après P0 de v46 (même harnais réutilisé)
   E8 ─┘  À REFORMULER (gater sur pft/pev)
 
-Phase 1 (prochaine à lancer)
-  E6 (le plus important — tranche la robustesse du seul axe qui gagne)
-       → fenêtre v46 PROPOSÉE 2026-08-21 (window-v46-e6-adversarial-transition-proposal.md),
-         grille A1/A2/A3 scellée dans la proposition ; en attente scellage owner
+Phase 1 (en cours)
+  E6 → fenêtre v46 SCELLÉE 2026-08-22 (window-v46-e6-adversarial-transition-proposal.md,
+       grille A1/A2/A3 gelée, aucun ajustement de seuil possible désormais) —
+       P0 (reconstruction + contrôle positif) puis P1/P2 (sonde adversariale) à lancer
   E2 (complétude, pas de dépendance dure avec E6)
 
 Phase 2 (conditionnée aux résultats — PAS à E6)
