@@ -69,7 +69,7 @@ def verify_bearer(authorization: str | None) -> bool:
 
 mcp_kwargs: dict = {
     "title": "GHOST MCP",
-    "version": "0.8.1",
+    "version": "0.8.2",
     "description": "Le fantôme de chaque run passé note votre brouillon de patch "
                    "(world model goal-free, abstention calibrée).",
     "instructions": INSTRUCTIONS,
@@ -151,6 +151,7 @@ def report_outcome(call_id: str, passed: bool, reporter: str = "",
 @mcp.tool()
 def compare_patches(candidates: list[dict], budget_n: int = 8,
                     issues: dict | None = None, declared_tests: list | None = None,
+                    known_red_tests: list | None = None, evolution_turn: int = 2,
                     reporter: str = "") -> str:
     """Ghost PR-Simulator (v0.8.0) : compare K patchs candidats pour un même problème.
 
@@ -168,6 +169,8 @@ def compare_patches(candidates: list[dict], budget_n: int = 8,
     return _run("compare_patches", {"candidates": candidates, "budget_n": budget_n,
                                     "issues": issues or {},
                                     "declared_tests": declared_tests or [],
+                                    "known_red_tests": known_red_tests or [],
+                                    "evolution_turn": evolution_turn,
                                     "reporter": reporter})
 
 

@@ -80,6 +80,7 @@ LOG_PATH = Path(os.environ.get(
     ROOT / "data" / "landing" / "act2-pilot" / "mcp-log.jsonl"))
 # pool servi : v8 (n=207) par défaut — surchargable par env pour tests/reculs
 PERTEST_PATH = Path(os.environ.get("LI_PERTEST_MODEL", ""))  # v0.8.0 : vide = colonne per-test désactivée
+TRANSITION_PATH = Path(os.environ.get("LI_TRANSITION_MODEL", ""))  # v0.8.2 : vide = pas de colonne évolution
 POOL_JSON = Path(os.environ.get(
     "LI_POOL_JSON",
     ROOT / "data/landing/act2-pilot/latent-pool-v8.json"))
@@ -278,6 +279,75 @@ def predict_failing_tests(diff_text: str, declared_tests: list) -> dict:
                       "lambda": pt["lam"], "threshold": pt["threshold"],
                       "disclosure": "seuil Youden sur probas recalibrées LOO ; "
                       "une proba par test, signal additif — jamais un verdict"},
+            "tests": rows}
+
+
+# ---------------- transition séquentielle (v42, arms v39 1ffa1fff / v41 6928f0ab VALIDÉS) ----
+
+_TRANSITION = None
+
+
+def _load_transition():
+    global _TRANSITION
+    if _TRANSITION is not None:
+        return _TRANSITION
+    if not TRANSITION_PATH or not Path(TRANSITION_PATH).is_file():
+        _TRANSITION = False
+        return _TRANSITION
+    import numpy as np
+
+    d = np.load(TRANSITION_PATH)
+    _TRANSITION = {"w": d["w"].astype("float64"), "b": float(d["b"]),
+                   "threshold": float(d["threshold"]), "lam": float(d.get("lam", 0.01)),
+                   "feat_dims": int(d["feat_dims"])}
+    if "cal_x" in d.files:
+        _TRANSITION["cal_x"] = d["cal_x"].astype("float64")
+        _TRANSITION["cal_p"] = d["cal_p"].astype("float64")
+    return _TRANSITION
+
+
+def predict_transition(diff_text: str, declared_tests: list, known_red: list,
+                       turn: int = 2) -> dict:
+    """v0.8.2 : évolution prédite des tests (régime SÉQUENTIEL uniquement).
+    Entrée = état rouge courant RÉEL (known_red, mesuré par l'appelant) + diff
+    candidat. ABSTENTION si known_red vide/absent — jamais de repli one-shot."""
+    import math
+
+    import numpy as np
+    tm = _load_transition()
+    if not tm:
+        return {"status": "unavailable", "reason": "LI_TRANSITION_MODEL absent", "tests": []}
+    if not declared_tests:
+        return {"status": "abstained", "reason": "no declared tests", "tests": []}
+    if not known_red:
+        return {"status": "abstained",
+                "reason": "known_red_tests requis (état mesuré réel) — régime séquentiel",
+                "tests": []}
+    Ed = embed(diff_text[:8000])
+    known = {k.strip() for k in known_red if isinstance(k, str)}
+    names = [t.strip() for t in declared_tests if isinstance(t, str) and t.strip()]
+    frac = len([t for t in names if t in known]) / max(1, len(names))
+    embs = _test_embeddings(names)
+    rows = []
+    for t in names:
+        Et = embs[t]
+        persist = 1.0 if t.strip() in known else 0.0
+        x = np.concatenate([Ed, Et, [float(Ed @ Et), persist, frac, float(turn)]])
+        if len(x) != tm["feat_dims"]:
+            return {"status": "unavailable",
+                    "reason": f"dims features {len(x)} != poids {tm['feat_dims']}", "tests": []}
+        p_raw = 1.0 / (1.0 + math.exp(-max(-30.0, min(30.0, float(tm["w"] @ x + tm["b"])))))
+        p = float(np.interp(p_raw, tm["cal_x"], tm["cal_p"],
+                            left=float(tm["cal_p"][0]), right=float(tm["cal_p"][-1]))) \
+            if "cal_x" in tm else p_raw
+        rows.append({"test": t.strip(), "was_red": bool(persist == 1.0),
+                     "p_still_red": round(p, 4),
+                     "predicted_red": bool(p >= tm["threshold"])})
+    return {"status": "measured",
+            "model": {"kind": "transition-sequentielle", "preregs": ["1ffa1fff375678b6", "6928f0ab963e4490"],
+                      "calibration": "isotonic-PAV-LOO" if "cal_x" in tm else "raw-sigmoid",
+                      "threshold": tm["threshold"], "turn_assumed": turn,
+                      "disclosure": "régime séquentiel : état rouge courant requis ; signal, jamais verdict"},
             "tests": rows}
 
 
@@ -571,6 +641,14 @@ TOOLS = [
                     "description": "v2 (DW-48) : noms des tests déclarés à l'avance — Ghost "
                                    "retourne pour chaque candidat P(test reste rouge). "
                                    "Absent/vide => abstention de la colonne.", "default": []},
+                "known_red_tests": {"type": "array", "items": {"type": "string"},
+                    "description": "v0.8.2 (v42) : tests MESURÉS rouges dans l'état courant "
+                                   "(exécution réelle par vos soins). Active la section "
+                                   "predicted_evolution (régime séquentiel). Vide => section absente.",
+                    "default": []},
+                "evolution_turn": {"type": "integer",
+                    "description": "v0.8.2 : n° du courant essai pour le modèle séquentiel (défaut 2).",
+                    "default": 2},
                 "reporter": {"type": "string"},
             },
             "required": ["candidates"],
@@ -620,7 +698,7 @@ def handle(msg: dict) -> dict | None:
         return _resp(mid, {
             "protocolVersion": "2025-06-18",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "ghost", "version": "0.8.0"},
+            "serverInfo": {"name": "ghost", "version": "0.8.2"},
         })
     if method == "notifications/initialized":
         return None
@@ -884,14 +962,16 @@ def do_risk_scan(args: dict) -> dict:
 
 @tool
 def do_compare_patches(args: dict) -> dict:
-    """Ghost PR-Simulator (v0.8.0) : plan d'exécution (n<8) ou recommandation
-    calibrée conforme (n>=8 issues réelles fournies par l'appelant) + colonne
-    per-test « tests prédits échoués » (DW-48, arm 3896a3e7 VALIDÉ)."""
+    """Ghost PR-Simulator (v0.8.2) : plan d'exécution (n<8) ou recommandation
+    calibrée conforme (n>=8 issues réelles) + colonne per-test DW-48 + section
+    predicted_evolution v42 (régime séquentiel, arms v39/v41 VALIDÉS)."""
     import importlib.util
 
     import numpy as _np
     cands = args.get("candidates") or []
     declared = args.get("declared_tests") or []
+    known_red = args.get("known_red_tests") or []
+    evolu_turn = int(args.get("evolution_turn") or 2)
     if not cands or any(not c.get("id") or not c.get("diff_text") for c in cands):
         raise ToolInputError("candidates requis : [{id, state_text, diff_text}] non vides")
     n_min = 8
@@ -922,6 +1002,10 @@ def do_compare_patches(args: dict) -> dict:
                            for cid in issues}}
     out["predicted_failing_tests"] = {
         c["id"]: predict_failing_tests(c["diff_text"], declared) for c in cands}
+    if known_red:
+        out["predicted_evolution"] = {
+            c["id"]: predict_transition(c["diff_text"], declared, known_red, evolu_turn)
+            for c in cands}
     if len(issues) < n_min and len(issues) < len(ids):
         # plan d'exécution seulement s'il RESTE des candidats non mesurés ;
         # sinon (tous mesurés) la calibration répond en régime fully-measured

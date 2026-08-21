@@ -207,3 +207,70 @@ class TestPerTestColumn:
         assert base["phase"] == avec["phase"] == "execution-plan"
         assert base["execution_plan"] == avec["execution_plan"]
         assert "predicted_failing_tests" not in base or base is not avec
+
+
+class TestTransitionColumn:
+    """v42 : section predicted_evolution, régime séquentiel strict."""
+
+    @pytest.fixture()
+    def transition_model(self, tmp_path, monkeypatch):
+        rng = np.random.default_rng(7)
+        dims = 768 * 2 + 4
+        w = rng.normal(size=dims).astype("float32")
+        f = tmp_path / "transition-model.npz"
+        np.savez(f, w=w, b=np.float32(0.0), threshold=np.float32(0.55),
+                 lam=np.float32(0.01), cal_x=np.float32([0.0, 1.0]),
+                 cal_p=np.float32([0.1, 0.9]), n_train=np.int32(10),
+                 feat_dims=np.int32(dims))
+        monkeypatch.setattr(gs, "TRANSITION_PATH", f)
+        monkeypatch.setattr(gs, "_TRANSITION", None)
+        return f
+
+    @pytest.fixture()
+    def synth_embed(self, monkeypatch):
+        def fake_embed(text):
+            rng = np.random.default_rng(abs(hash(text)) % (2**32))
+            v = rng.normal(size=768).astype(np.float32)
+            return v / (np.linalg.norm(v) + 1e-9)
+
+        monkeypatch.setattr(gs, "embed", fake_embed)
+        return fake_embed
+
+    def _cands(self, k=2):
+        return [{"id": f"c{i}", "state_text": f"probleme {i}",
+                 "diff_text": f"diff --git a/f{i} b/f{i}\n+x{i}\n"} for i in range(k)]
+
+    def test_section_absente_sans_known_red(self, synth_embed, transition_model):
+        base = gs.do_compare_patches({"candidates": self._cands(), "budget_n": 8,
+                                      "declared_tests": ["t1", "t2"]})
+        avec = gs.do_compare_patches({"candidates": self._cands(), "budget_n": 8,
+                                      "declared_tests": ["t1", "t2"], "known_red_tests": []})
+        assert "predicted_evolution" not in base
+        assert "predicted_evolution" not in avec
+
+    def test_abstention_sans_declared(self, synth_embed, transition_model):
+        out = gs.do_compare_patches({"candidates": self._cands(), "budget_n": 8,
+                                     "known_red_tests": ["t1"]})
+        v = out["predicted_evolution"]["c0"]
+        assert v["status"] == "abstained" and v["reason"] == "no declared tests"
+
+    def test_mesure_avec_etat_rouge_reel(self, synth_embed, transition_model):
+        out = gs.do_compare_patches({"candidates": self._cands(), "budget_n": 8,
+                                     "declared_tests": ["t1", "t2", "t3"],
+                                     "known_red_tests": ["t1", "t3"]})
+        v = out["predicted_evolution"]["c0"]
+        assert v["status"] == "measured"
+        assert len(v["tests"]) == 3
+        rouges = {t["test"] for t in v["tests"] if t["was_red"]}
+        assert rouges == {"t1", "t3"}
+        for row in v["tests"]:
+            assert 0.0 <= row["p_still_red"] <= 1.0
+            assert row["predicted_red"] == (row["p_still_red"] >= v["model"]["threshold"])
+        assert v["model"]["turn_assumed"] == 2
+
+    def test_unavailable_sans_fichier(self, synth_embed, tmp_path, monkeypatch):
+        monkeypatch.setattr(gs, "TRANSITION_PATH", tmp_path / "absent.npz")
+        monkeypatch.setattr(gs, "_TRANSITION", None)
+        out = gs.do_compare_patches({"candidates": self._cands(), "budget_n": 8,
+                                     "declared_tests": ["t1"], "known_red_tests": ["t1"]})
+        assert out["predicted_evolution"]["c0"]["status"] == "unavailable"
