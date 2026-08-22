@@ -347,7 +347,12 @@ def predict_transition(diff_text: str, declared_tests: list, known_red: list,
             "model": {"kind": "transition-sequentielle", "preregs": ["1ffa1fff375678b6", "6928f0ab963e4490"],
                       "calibration": "isotonic-PAV-LOO" if "cal_x" in tm else "raw-sigmoid",
                       "threshold": tm["threshold"], "turn_assumed": turn,
-                      "disclosure": "régime séquentiel : état rouge courant requis ; signal, jamais verdict"},
+                      "disclosure": ("régime séquentiel : état rouge courant requis ; signal, jamais verdict. "
+                                      "arm-v46 (2026-08-22, A3 EFFONDRÉ) : ce signal ne lit PAS l'effet "
+                                      "sémantique du diff (sonde adversariale déterministe, flip_R=0/250) — "
+                                      "il reflète des corrélats de surface (persist/turn/frac + embedding "
+                                      "brut), pas une compréhension du patch. Traiter p_still_red comme un "
+                                      "prior faible, jamais comme une lecture du contenu du candidat.")},
             "tests": rows}
 
 
