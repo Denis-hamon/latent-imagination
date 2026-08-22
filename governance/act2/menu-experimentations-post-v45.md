@@ -72,6 +72,42 @@ confiance affichée. Ghost est 15 à 24× mieux calibré. (Chiffres du 21/08 au 
 — GLM 0,304 / Qwen 0,446 / DeepSeek 0,520 sur données partielles — confirmés
 en direction, affinés sur données complètes.) **E4 est clos.**
 
+## E6 exécuté (2026-08-22) — résultat FINAL : A3 EFFONDRÉ
+
+Fenêtre v46 scellée (commit 21682ac). Verdict :
+`arm-artifacts/arm-v46-e6-adversarial-verdict-2026-08-22.json`.
+
+**P0 (contrôle positif) : OK mais avec deux findings.** Reconstruction LOO du
+modèle v41 = AUC 0,9949 / Jaccard 0,9333 (réf 0,9931/0,9333, dans les tolérances
+scellées ±0,005/±0,015). Findings tracés :
+1. Le 0,9931 servi est un **LOO par TRANSITION** (180 plis) ; le LOO par
+   trajectoire (sans fuite de sœurs) plafonne à AUC 0,9891 / J 0,89-0,95. Le
+   chiffre de référence contient donc une fuite de structure intra-trajectoire.
+2. Le fichier `v39-transitions.jsonl` a été régénéré (mtime 21/08 00:39) après
+   le verdict v41 (20/08 23:27) : la baseline persistance AUC 0,8197 ne s'y
+   reproduit plus (0,9083), preuve de dérive de la contingence persist×label.
+
+**P1/P2 (sonde adversariale) : A3.** Sur 250 cas gelés (paires red_from\red_to
+où le pli LOO-trajectoire prédisait « réparé ») :
+- `flip_R` = **0/250** : inverser l'effet du diff (lignes +/- échangées) ne fait
+  JAMAIS repasser la prédiction à « encore rouge ». Idem pour la variante neutre.
+- Mécanisme établi en deux étages : l'encodeur jina est quasi aveugle à
+  l'inversion de signes (cos(orig, revert) = 0,980 moy sur n=45), ET la tête
+  logistique ne dépend pas de Ed pour ces cas (contrôle Ed=0 invariant, Δz brut
+  médian −0,15 dans le mauvais sens).
+- Conclusion : le signal LOO est porté par persist/Et/frac/turn + contenu de
+  surface du diff, **jamais par la direction de son effet**. Le 0,9931 ne peut
+  pas s'interpréter comme une compréhension de l'effet des patchs.
+
+**Conséquence scellée** : revue de serving à ouvrir — au minimum disclosure sur
+la colonne `predicted_evolution`, au pire déotion. **Décision owner attendue.**
+
+**Leçon méthodologique (à répercuter)** : la grille v45 prédisait « décider sur
+Jaccard, jamais AUC seul » ; E6 montre qu'il faut aller plus loin — ni l'AUC ni
+le Jaccard LOO ne détectent l'absence de lecture causale. Seule une sonde
+adversariale à effet inversé la révèle. Tout futur bras « compréhension du diff »
+doit inclure une sonde revert dès le prereg.
+
 ## E8 et E9 — gap découvert en exécutant, pas en spéculant
 
 - **E8 — localisé et vérifié (ni Kimsufi ni le serveur MCP distant — LOCAL) :**
@@ -120,11 +156,11 @@ sauf mention contraire explicite.
 | # | Expérimentation | Impact | Innovation | Temps | Pourquoi ce score |
 |---|---|---|---|---|---|
 | E4 | **Calibration LLM auto-déclarée vs ECE Ghost.** Le champ `conf 0-100` existe déjà, peuplé, dans `judge-outputs-*.jsonl` de w45. Comparer son ECE à celui de Ghost déjà mesuré (0,0205 post-PAV, `arm-pert-test-isotonic-prereg.md`). Zéro nouvel appel. | 4 | 3 | **1** | **CLOS** — voir résultat ci-dessus |
-| E9 | **Carte d'erreur localisée depuis les divergences w45.** Croiser `judge-outputs-*.jsonl` × `v39-transitions.jsonl` × issues groundées existantes : chercher un sous-ensemble structuré où c'est le JUGE qui a raison et Ghost qui se trompe. | 4 | 4 | **1** (≤2 j) | **AUTORISÉ (22/08), à la suite de P0.** Réutilise le harnais LOO reconstruit pour v46 — coût marginal nul. Dit OÙ investir ensuite au lieu de deviner — condition d'entrée pour E1 |
+| E9 | **Carte d'erreur localisée depuis les divergences w45.** Croiser `judge-outputs-*.jsonl` × `v39-transitions.jsonl` × issues groundées existantes : chercher un sous-ensemble structuré où c'est le JUGE qui a raison et Ghost qui se trompe. | 4 | 4 | **1** (≤2 j) | **CLOS (2026-08-22)** — 12 cas structurés (seuil ≥5 atteint), 100 % fausses alarmes Ghost sur tests réparés, accord ≥2 juges sur les 12 ; voir `w46/e9-errormap.json`. Donne sa cible à E1 |
 | E8 | **Signal cascade/triage rétrospectif.** Sur les logs déjà groundés : combien d'appels LLM auraient été évités si Ghost filtrait en amont ? | 3 *(révisé de 4)* | 3 | **1** (≤2 j) | **À REFORMULER** — gater sur pft/pev, pas sur risk_scan (voir ci-dessus). Attendre plus de sessions (sweep v44) |
-| E6 | **Sondage adversarial du modèle de transition.** Construire des quasi-diffs (même syntaxe, effet sémantique inversé) et vérifier si `predict_transition()` (`latent-imagination/scripts/mcp/ghost_server.py:309-351`, pool `_load_transition():290-306`) s'effondre. Jamais fait — `near_mis_patches` n'a servi qu'à la sélection informative, jamais au stress-test. | **5** | 4 | **2** (2-3 j) | **PROCHAINE PRIORITÉ.** Seule expérience qui attaque DIRECTEMENT le doute initial : le 0,9931 LOO est-il de la vraie compréhension ou un raccourci de surface ? |
+| E6 | **Sondage adversarial du modèle de transition.** Construire des quasi-diffs (même syntaxe, effet sémantique inversé) et vérifier si `predict_transition()` (`latent-imagination/scripts/mcp/ghost_server.py:309-351`, pool `_load_transition():290-306`) s'effondre. Jamais fait — `near_mis_patches` n'a servi qu'à la sélection informative, jamais au stress-test. | **5** | 4 | **2** (2-3 j) | **CLOS — A3 EFFONDRÉ** (fenêtre v46, verdict 2026-08-22) : flip_R = 0/250, le modèle ne distingue pas un diff de son inverse ; voir section résultat ci-dessous |
 | E2 | **Étendre le gabarit w45 (prereg + grille G1/G2/G3) à l'axe per-test** (`compare_patches`, J servi 0,80). Décision sur Jaccard/J, jamais sur AUC seul. | 3 *(révisé de 4)* | 2 | **2** (2-3 j) | DW-58 a déjà établi que le per-test servi est bien calibré (Brier 0,1035) — confirmera probablement un G2-like ; utile pour la complétude, pas décisif |
-| E1 | **Durcir la classe rare** (DW-62, 30 positifs). **Gaté par E9**, pas lancé en aveugle : filtrer le stock déjà découvert non vérifié seulement sur le sous-ensemble qu'E9 identifie comme pertinent en production. | 3 *(révisé de 4)* | 2 | **3** (~1 semaine) | DW-62 dit que les tickets minés « convergent ou cassent hors-declared » — problème de stratégie de mining, pas de volume ; vérifier plus du même stock sans cible ne corrige pas le biais (piège déjà puni en DW-37) |
+| E1 | **Durcir la classe rare** (DW-62, 30 positifs). **Dé-gaté par E9 (clos 22/08)** : la cible est identifiée — les 12 cas « juge a raison, Ghost a tort » sont 100 % des FAUSSES ALERTES Ghost (persist=1, le diff répare, Ghost prédit rouge à tort), 100 % vuejs__core. La classe rare à durcir n'est PAS « ajouter des positifs encore-rouge » mais « apprendre à Ghost qu'un diff peut RÉPARER un test rouge » (signal anti-persistence). **Contrainte héritée de A3** : l'encodeur jina est quasi invariant à l'inversion +/- (cos 0,98 diff/revert) — plus d'exemples « réparé » ne suffiront PAS sans une représentation sensible à la direction d'effet (features structurées : lignes ajoutées/supprimées séparément, signes par hunk, ou encodeur alternatif). | 3 *(révisé de 4)* | 2 | **3** (~1 semaine) | DW-62 disait « les tickets minés convergent ou cassent hors-declared » ; E9 précise : là où ça converge (test réparé), Ghost se trompe systématiquement par raccourci persist. Direction ciblée : classe « réparé » + représentation directionnelle (pas du volume au hasard, piège DW-37) |
 | E5 | **Transfert cross-langue du modèle de TRANSITION** (pas le classifieur cd-only, déjà raté en TS, DW-49) sur repos Python/Go déjà instrumentés par SWE-smith. **Vérifié directement** : `swe-smith-trajectories/smith-matched-full/matched-items.json` (18 547 lignes) est du **single-shot** (`instance_id, model, patch, resolved, source` — un seul patch, un seul booléen, aucune séquence red_t→diff→red_t+1) ; `swe-smith-tasks/` = énoncés seuls. **Aucune trajectoire séquentielle n'existe dans ce pool.** | **5** | 4 | **3** (~1 semaine — nouvelle mini-campagne façon DW-59, sur repos déjà vérifiés/testables, pas de mining RED-GREEN à refaire) | Lève une inconnue structurelle réelle sur le périmètre du produit (JS/TS seulement, ou plus large ?) — ce n'est PAS un portage de builder, c'est refaire la recette DW-59 sur un nouveau parc de repos déjà instrumenté |
 | E3 | **Attribution/ablation contre-factuelle au hunk.** Ré-exécuter les tests en retirant un hunk à la fois sur le stock RED-GREEN déjà vérifié, zéro appel LLM, nouveau signal de blâme localisé (critique injectable dans une boucle d'agent). | **5** | **5** | **5** *(révisé de 4 — incertain)* | Deux coûts cachés confirmés en contre-expertise : (a) `verified.json` ne stocke que `diff_lines` (entier), jamais le texte du diff — extraction git préalable nécessaire ; (b) `mswb_verify.py` borne chaque run à 120-300s et il n'est PAS confirmé que `node_modules` est réemployé entre variantes d'ablation d'un même ticket — si réinstallation à chaque variante, le budget explose. **Ne pas lancer avant d'avoir vérifié ce point de réemploi** |
 
@@ -139,17 +175,19 @@ un chantier ; à faire avant E2 si E2 ajoute un 4e point d'appel dupliqué.
 ```
 Phase 0 (données déjà sur disque)
   E4 ─┐  CLOS
-  E9 ─┼─→ AUTORISÉ (22/08), enchaîné après P0 de v46 (même harnais réutilisé)
+  E9 ─┼─→ CLOS (2026-08-22) : 12 cas structurés « juge a raison, Ghost a tort »,
+          100 % fausses alertes Ghost sur tests réparés — donne sa cible à E1
   E8 ─┘  À REFORMULER (gater sur pft/pev)
 
-Phase 1 (en cours)
-  E6 → fenêtre v46 SCELLÉE 2026-08-22 (window-v46-e6-adversarial-transition-proposal.md,
-       grille A1/A2/A3 gelée, aucun ajustement de seuil possible désormais) —
-       P0 (reconstruction + contrôle positif) puis P1/P2 (sonde adversariale) à lancer
+Phase 1
+  E6 → CLOS : fenêtre v46 verdict A3 EFFONDRÉ (2026-08-22). Le modèle servi ne
+       lit pas la direction d'effet des diffs. Revue de serving à décider (owner).
   E2 (complétude, pas de dépendance dure avec E6)
 
-Phase 2 (conditionnée aux résultats — PAS à E6)
-  E1 ← gaté par E9 (cibler le sous-ensemble qu'E9 identifie, pas le stock au hasard)
+Phase 2 (conditionnée aux résultats)
+  E1 ← dé-gatée : E9 a identifié la cible (12 cas fausses alertes Ghost sur
+       tests réparés). Mais A3 impose une représentation sensible à la
+       direction d'effet avant tout minage de volume (sinon piège DW-37).
   E5 ← gaté par la vérification structurelle swe-smith (déjà FAITE : go, mais
        c'est une nouvelle campagne, pas une lecture de données)
 
@@ -173,6 +211,13 @@ données Python/Go (E5) ni sur où cibler la classe rare (E1, qui dépend d'E9).
   toute modification touchant risk_scan/compare_patches — vérifie que la
   proscription LLM-dans-la-boucle-de-décision tient)
 - Données transition/classe rare : `data/landing/act2-pilot/transitions/v39-transitions.jsonl`
+  — **GELÉ le 2026-08-22** (finding P0 de v46 : régénéré silencieusement le
+  21/08 après le verdict v41, baseline persistance dérivée 0,8197→0,9083 sans
+  changement des compteurs globaux). sha256 de référence :
+  `a8b51943cb25b037a64fb7bf9f418abfa133bc0b6adb0e76c98950795383bdd4`
+  (loggé `data/release-store/prereg-ledger.jsonl`, type `data-freeze`). **Tout
+  arm futur qui prétend utiliser « la même population » doit vérifier ce hash
+  avant calcul et HALT sinon** — même discipline que le contrôle positif P0.
 - Modèle de transition SERVI (copie locale du nœud, 2026-08-21) :
   `data/landing/act2-pilot/transition-model-served.npz` (1540 dims, λ 0.01,
   seuil Youden 0.0190, isotonic 703 pts)
