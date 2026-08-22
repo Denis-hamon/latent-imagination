@@ -99,14 +99,28 @@ où le pli LOO-trajectoire prédisait « réparé ») :
   surface du diff, **jamais par la direction de son effet**. Le 0,9931 ne peut
   pas s'interpréter comme une compréhension de l'effet des patchs.
 
-**Conséquence scellée** : revue de serving à ouvrir — au minimum disclosure sur
-la colonne `predicted_evolution`, au pire déotion. **Décision owner attendue.**
+**Conséquence scellée — DÉCIDÉE ET EXÉCUTÉE (2026-08-22)** : owner a choisi
+**disclosure, pas déotion** (commit 8573aa3 : code + ledger + garde-fou vert).
+Déployé sur le nœud servi le 22/08 ~10:41 (fichier synchronisé, service
+redémarré, disclosure A3 vérifié EN LIVE dans la réponse `predicted_evolution`).
+La colonne reste servie ; chaque réponse porte désormais : signal de surface
+(persist/turn/frac + embedding brut), pas une lecture de l'effet du patch.
 
 **Leçon méthodologique (à répercuter)** : la grille v45 prédisait « décider sur
 Jaccard, jamais AUC seul » ; E6 montre qu'il faut aller plus loin — ni l'AUC ni
 le Jaccard LOO ne détectent l'absence de lecture causale. Seule une sonde
 adversariale à effet inversé la révèle. Tout futur bras « compréhension du diff »
 doit inclure une sonde revert dès le prereg.
+
+**Leçon transverse — baselines dégénérées dans les grilles Jaccard (2e occurrence, à généraliser)** :
+DW-58 (per-test, régime ≥50 % triviales) et v48/E5 (`persist` constant par
+construction single-shot+ablation) sont le même piège vu deux fois : un
+Jaccard-vs-baseline scellé AVANT d'avoir vérifié que la baseline a une vraie
+variance sur la population qui sera réellement mesurée. **Règle à appliquer
+à toute future grille Jaccard-vs-baseline** : vérifier la variance de la
+baseline sur un échantillon de la population gelée AVANT de sceller le
+seuil, pas après avoir vu le résultat. Un T2 échoué contre une baseline
+dégénérée ne dit rien sur le modèle — il dit que l'instrument est cassé.
 
 ## E8 et E9 — gap découvert en exécutant, pas en spéculant
 
@@ -160,9 +174,9 @@ sauf mention contraire explicite.
 | E8 | **Signal cascade/triage rétrospectif.** Sur les logs déjà groundés : combien d'appels LLM auraient été évités si Ghost filtrait en amont ? | 3 *(révisé de 4)* | 3 | **1** (≤2 j) | **À REFORMULER** — gater sur pft/pev, pas sur risk_scan (voir ci-dessus). Attendre plus de sessions (sweep v44) |
 | E6 | **Sondage adversarial du modèle de transition.** Construire des quasi-diffs (même syntaxe, effet sémantique inversé) et vérifier si `predict_transition()` (`latent-imagination/scripts/mcp/ghost_server.py:309-351`, pool `_load_transition():290-306`) s'effondre. Jamais fait — `near_mis_patches` n'a servi qu'à la sélection informative, jamais au stress-test. | **5** | 4 | **2** (2-3 j) | **CLOS — A3 EFFONDRÉ** (fenêtre v46, verdict 2026-08-22) : flip_R = 0/250, le modèle ne distingue pas un diff de son inverse ; voir section résultat ci-dessous |
 | E2 | **Étendre le gabarit w45 (prereg + grille G1/G2/G3) à l'axe per-test** (`compare_patches`, J servi 0,80). Décision sur Jaccard/J, jamais sur AUC seul. | 3 *(révisé de 4)* | 2 | **2** (2-3 j) | DW-58 a déjà établi que le per-test servi est bien calibré (Brier 0,1035) — confirmera probablement un G2-like ; utile pour la complétude, pas décisif |
-| E1 | **Durcir la classe rare** (DW-62, 30 positifs). **Dé-gaté par E9 (clos 22/08)** : la cible est identifiée — les 12 cas « juge a raison, Ghost a tort » sont 100 % des FAUSSES ALERTES Ghost (persist=1, le diff répare, Ghost prédit rouge à tort), 100 % vuejs__core. La classe rare à durcir n'est PAS « ajouter des positifs encore-rouge » mais « apprendre à Ghost qu'un diff peut RÉPARER un test rouge » (signal anti-persistence). **Contrainte héritée de A3** : l'encodeur jina est quasi invariant à l'inversion +/- (cos 0,98 diff/revert) — plus d'exemples « réparé » ne suffiront PAS sans une représentation sensible à la direction d'effet (features structurées : lignes ajoutées/supprimées séparément, signes par hunk, ou encodeur alternatif). | 3 *(révisé de 4)* | 2 | **3** (~1 semaine) | DW-62 disait « les tickets minés convergent ou cassent hors-declared » ; E9 précise : là où ça converge (test réparé), Ghost se trompe systématiquement par raccourci persist. Direction ciblée : classe « réparé » + représentation directionnelle (pas du volume au hasard, piège DW-37) |
-| E5 | **Transfert cross-langue du modèle de TRANSITION** (pas le classifieur cd-only, déjà raté en TS, DW-49) sur repos Python/Go déjà instrumentés par SWE-smith. **Vérifié directement** : `swe-smith-trajectories/smith-matched-full/matched-items.json` (18 547 lignes) est du **single-shot** (`instance_id, model, patch, resolved, source` — un seul patch, un seul booléen, aucune séquence red_t→diff→red_t+1) ; `swe-smith-tasks/` = énoncés seuls. **Aucune trajectoire séquentielle n'existe dans ce pool.** | **5** | 4 | **3** (~1 semaine — nouvelle mini-campagne façon DW-59, sur repos déjà vérifiés/testables, pas de mining RED-GREEN à refaire) | Lève une inconnue structurelle réelle sur le périmètre du produit (JS/TS seulement, ou plus large ?) — ce n'est PAS un portage de builder, c'est refaire la recette DW-59 sur un nouveau parc de repos déjà instrumenté |
-| E3 | **Attribution/ablation contre-factuelle au hunk.** Ré-exécuter les tests en retirant un hunk à la fois sur le stock RED-GREEN déjà vérifié, zéro appel LLM, nouveau signal de blâme localisé (critique injectable dans une boucle d'agent). | **5** | **5** | **5** *(révisé de 4 — incertain)* | Deux coûts cachés confirmés en contre-expertise : (a) `verified.json` ne stocke que `diff_lines` (entier), jamais le texte du diff — extraction git préalable nécessaire ; (b) `mswb_verify.py` borne chaque run à 120-300s et il n'est PAS confirmé que `node_modules` est réemployé entre variantes d'ablation d'un même ticket — si réinstallation à chaque variante, le budget explose. **Ne pas lancer avant d'avoir vérifié ce point de réemploi** |
+| E1 | **Durcir la classe rare** (DW-62, 30 positifs). Cible identifiée par E9 (clos 22/08) : les 12 cas « juge a raison, Ghost a tort » sont 100 % des FAUSSES ALERTES Ghost (persist=1, le diff répare, Ghost prédit rouge à tort). La classe rare à durcir n'est PAS « ajouter des positifs encore-rouge » mais « apprendre à Ghost qu'un diff peut RÉPARER un test rouge » (signal anti-persistence). **v47 (sign-split embedding) EXÉCUTÉE (2026-08-22) : V3 PERDU** — R12 = 1/12 fausses alertes réparées (cible ≥4), flip_R sonde revert = 0,042 (cible ≥0,35), AUC/J25 en légère régression vs baseline. Mécanisme : cos(E_add,E_del) = 0,58, la composante antisymétrique de l'embedding jina est trop faible pour porter la direction. **La voie embedding (plain A3 + sign-split v47) est fermée.** Pivot scellé : features STRUCTURELLES pures (comptes add/del par hunk, pas d'embedding) ou s'appuyer sur E3 (ablation, déjà validé en V2 PARTIEL). | 3 *(révisé de 4)* | 2 | **3** (~1 semaine) | Deux voies fermées en une nuit (A3 puis v47) resserrent utilement l'espace : la direction d'effet n'est pas dans l'embedding, elle doit venir d'une représentation structurelle ou de l'exécution (E3) — pas du volume au hasard, piège DW-37 |
+| E5 | **Transfert cross-langue du modèle de TRANSITION** (pas le classifieur cd-only, déjà raté en TS, DW-49) sur repos Python/Go déjà instrumentés par SWE-smith. **Vérifié directement** : `swe-smith-trajectories/smith-matched-full/matched-items.json` (18 547 lignes) est du **single-shot** (`instance_id, model, patch, resolved, source` — un seul patch, un seul booléen, aucune séquence red_t→diff→red_t+1) ; `swe-smith-tasks/` = énoncés seuls. **Aucune trajectoire séquentielle n'existe dans ce pool.** **FINDING 2026-08-22 (smoke Kimsufi)** : RED reproductible en 15 s (boltons, 2/2 F2P échouent, pytest 0,07 s, image x86_64 native sur Kimsufi), MAIS les labels `resolved` sont inutilisables tels quels — **72,7 % des 5 460 patches résolus ciblent le mauvais repo** (matching amont croisé) ; seuls ~1 407 passent l'heuristique de cohérence, et la vérité-terrain ne peut venir que de l'exécution (gates RED/GREEN empiriques). | **5** | 4 | **3** (~1 semaine) | **v48 EXÉCUTÉE (2026-08-22) : S2 PARTIEL** — P1 Kimsufi 1 143 transitions dédupliquées (413 full-fix + 730 ablations dont 279 à red_to non vide, 6 repos), gate ≥150 largement passé ; P2 : Bras B refit Python AUC 0,924 / Jaccard 0,688, Bras A zero-shot v41 AUC 0,499 / Jaccard 0,004 (hasard — périmètre JS/TS confirmé). DIVULGATIONS : baseline [persist] dégénérée (persist constant par construction ⇒ AUC baseline 0,5), AUC agrégé dominé par pandas (73 % des paires, 13 positifs ; hors pandas 0,51-0,79). Pas de serving Python. **DÉCIDÉ owner (22/08) : ni clôture ni P3 — amendement n°3 en cours** : le T2 (Jaccard) est cassé par construction (single-shot+ablation force persist=1 constant, Jaccard baseline 0,777 = artefact du déséquilibre de classe, même piège que DW-58). Protocole scellé : définir la baseline non-dégénérée (exclusion single-shot) et sceller son seuil AVANT tout recalcul — interdiction explicite de réutiliser le 0,884 « ablations seules » déjà observé comme clôture (grid-shopping post-hoc, piège DW-37). Voir `arm-v48-e5-transfer-verdict-2026-08-22.json` + amendement n°3 dans `window-v48-e5-swesmith-transfer-proposal.md` |
+| E3 | **Attribution/ablation contre-factuelle au hunk.** Ré-exécuter les tests en retirant un hunk à la fois sur le stock RED-GREEN déjà vérifié, zéro appel LLM, nouveau signal de blâme localisé (critique injectable dans une boucle d'agent). | **5** | **5** | **3** *(révisé de 5 — gates levées 22/08)* | **v49 EXÉCUTÉE (2026-08-22) : V2 PARTIEL** — C1 infra 1,0 (33/33 tickets, 132 hunks, mécanisme VALIDÉ), C2 cohérence 0,76 (4 épistasies pures + 3 dayjs flaky), C3 volume 76 paires causales (<100). 82 % des tests baseline blâmés. Trouvailles : épistasie réelle (15 % des tickets), flaky jest×4TZ identifié. Actif dans `w49/ablation-blame.jsonl` ; le mécanisme validé est porté à la campagne Python v48 (769 instances) pour la densité |
 
 **Note d'infra transverse (pas une expérimentation)** : factoriser la fonction
 d'appel LLM, dupliquée dans exactement 3 endroits confirmés (`w45_judge_run.py:42`,
@@ -192,8 +206,9 @@ Phase 2 (conditionnée aux résultats)
        c'est une nouvelle campagne, pas une lecture de données)
 
 Phase 3 (le plus cher, après tout le reste)
-  E3 ← gaté par la vérification du réemploi node_modules entre variantes d'ablation
-       (à faire avant de committer un budget — sinon Temps réel peut dépasser 5)
+  E3 ← gates levés et chiffrés (22/08) ; fenêtre v49 PROPOSÉE (33 tickets
+       gelés, exécution Kimsufi) — scellage owner attendu ; pivot naturel
+       après v46/A3 + v47/V3 (vérité par exécution, pas par embedding)
 ```
 
 Correction de séquence actée en contre-expertise : le brouillon initial gatait
