@@ -159,6 +159,49 @@ Le point 4 est ce qui empêche la faute trouvée en P13 de se rejouer : une port
 qu'aucun contrôle ne peut franchir ne discrimine rien, elle se contente de ne
 jamais dire oui.
 
+## Amendement n°3 — D4 était structurellement insatisfiable sur P14
+
+**Gelé le 2026-08-30 à 10:05, avant d'avoir lu la moindre statistique du rejeu
+P14.** Le rejeu est en cours (118/171) ; aucune de ses valeurs n'a été consultée
+pour écrire cette section, et les seuils ci-dessous viennent tous de chiffres
+**déjà publiés** sur P12.
+
+Le gate D4 de P12 exige un taux de positifs `y = 1` **entre 3 % et 15 %**. Cette
+bande a été calibrée sur une population dont **5 % des trajectoires échouaient**
+— celle que la règle `r/n ≥ 0,75` avait sélectionnée.
+
+P14 sélectionne **pour la variance de label** : 46 % d'échecs dans le gisement.
+Appliquer la bande de P12 ferait **échouer D4 précisément parce que P14 réussit
+ce pour quoi il a été conçu.**
+
+C'est le même défaut que celui trouvé hier sur G1 : *un gate doit prouver la
+fonction, pas la présence*, et un gate qui ne peut pas dire oui ne discrimine
+rien. Le corriger après avoir vu P14 échouer dessus aurait été un ajustement
+post-hoc ; le corriger maintenant, en le déclarant, est une correction de
+conception.
+
+### Ce qui change, et d'où viennent les seuils
+
+| gate | sur P12 | sur P14 | origine du seuil |
+|---|---|---|---|
+| D1 volume | ≥ 700 lignes, ≥ 70 instances | **inchangé** | intégrité, indépendant du corpus |
+| **D2 résolution ≥ 70 %** | population d'étude | **témoin de fidélité seul** (19 instances `r = n`) | déjà gelé, amendement n°1 |
+| **D2′ variance** | — | **≥ 60 % des instances d'étude à issue mixte** | déjà gelé, amendement n°1 |
+| **D4 taux `y = 1`** | gate, bande 3–15 % | **reporté, PLUS un gate** | la bande mesure une propriété que P14 inverse volontairement |
+| **D4′ paires aveugles** | — | **≥ 121** | **valeur publiée de P12**. P14 n'a de raison d'être que s'il en produit davantage |
+| D3 persist=0 ≥ 80 % | | **inchangé** | intégrité |
+| D5 intégrité ≥ 90 % | | **inchangé** | intégrité |
+
+**D4′ est le gate qui compte réellement**, et c'est un progrès sur D4 : la
+métrique ne consomme pas un taux marginal de positifs, elle consomme des
+**paires aveugles**. Gater sur la quantité réellement consommée plutôt que sur
+un proxy est ce que D4 aurait dû faire depuis le début.
+
+Le seuil 121 n'est pas choisi : c'est le nombre de paires aveugles de P12,
+publié dans `window-p13-verdict.md`. **Si P14 en produit moins, sa règle de
+sélection est fausse et le corpus ne vaut pas d'être fitté** — c'est exactement
+ce qu'un gate doit pouvoir dire.
+
 ## Hors périmètre
 
 - **Le modèle servi n'est pas touché.** Les deux corrections de disclosure
