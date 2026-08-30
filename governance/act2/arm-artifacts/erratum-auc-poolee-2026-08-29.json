@@ -1,0 +1,106 @@
+{
+ "erratum": "auc-poolee-loo-2026-08-29",
+ "direction": "negative",
+ "protocole": "governance/erratum-protocol.md",
+ "statut": "PROPOSE a l owner 2026-08-29",
+ "doc": "governance/act2/erratum-auc-poolee-loo-2026-08-29.md",
+ "reproduction": ".venv/bin/python scripts/act2/erratum_auc_poolee.py",
+ "artefact_de_mesure": {
+  "chemin": "data/landing/act2-pilot/night-harvest/py-p12/erratum-auc-poolee-2026-08-29.json",
+  "sha256": "bb5b8046d3bf8341dd81fe231f23c695f8deec0dc189ddd47e4d51b6d5d2a7ed"
+ },
+ "defaut": "AUC poolee en LOO : compare des points notes par des modeles differents (un par pli), dont l intercept depend du taux de positifs du train. Le decalage de niveau contamine les paires INTER-instances, qui pesent 99,3 % des paires. Plancher sous H0 mesure a 0,9484 (w46, LOO trajectoire) au lieu de 0,50.",
+ "controle_qui_le_revele": "permutation des labels DANS CHAQUE INSTANCE (taux de positifs par instance conserve). Une permutation GLOBALE ne le detecte pas : 0,5273 contre 0,9290 sur le meme corpus.",
+ "metrique_de_remplacement": "AUC INTRA — paires (positif, negatif) d une MEME instance. Nulle centree : 0,4781 a 0,5015. Correspond au produit : predict_transition rend une proba par test pour UNE instance.",
+ "mesures": {
+  "w46_loo_trajectoire": {
+   "poolee_observee": 0.9778,
+   "poolee_nulle": 0.9484,
+   "poolee_sd_au_dessus": 1.46,
+   "intra_observee": 0.8296,
+   "intra_nulle": 0.4256,
+   "intra_sd_au_dessus": 4.89
+  },
+  "w46_loo_instance": {
+   "poolee_observee": 0.9653,
+   "poolee_nulle": 0.929,
+   "poolee_sd_au_dessus": 1.43,
+   "poolee_nulle_max": 0.976,
+   "intra_observee": 0.9185,
+   "intra_nulle": 0.4781,
+   "intra_sd_au_dessus": 5.75
+  },
+  "p12_loo_instance": {
+   "poolee_observee": 0.5654,
+   "poolee_nulle": 0.524,
+   "poolee_sd_au_dessus": 0.61,
+   "intra_observee": 0.7843,
+   "intra_nulle": 0.5015,
+   "intra_sd_au_dessus": 3.54
+  }
+ },
+ "chiffres_corriges_intra_loo_instance": {
+  "w46": {
+   "complet": 0.9185,
+   "Ed": 0.8963,
+   "Et": 0.7852,
+   "persist": 0.7481,
+   "delta_complet_ic95": [
+    0.0488,
+    0.3547
+   ]
+  },
+  "p12": {
+   "complet": 0.7843,
+   "Ed": 0.8113,
+   "Et": 0.8333,
+   "persist": 0.7855,
+   "delta_complet_ic95": [
+    -0.0825,
+    0.1187
+   ]
+  }
+ },
+ "invalidation": [
+  {
+   "artefact": "governance/act2/arm-artifacts/arm-v41-transition-rejudg-verdict-2026-08-20.json",
+   "sha256": "7fd42a8b4d0c57fbd884725de5e0d975c321e3d85c6a9cc5e5fe048dffe55a0e",
+   "statut": "NIVEAU INVALIDE, verdict maintenu",
+   "portee": "T1_auc.modele=0.9931 est une AUC poolee. Corrige en 0.9185 INTRA. T1 reste franchi (delta +0.170 vs seuil +0.03)."
+  },
+  {
+   "artefact": "governance/act2/arm-artifacts/arm-v39-transition-verdict-2026-08-20.json",
+   "sha256": "6e9c222415bec5fda4f9f4f74b8e2e79c004fbf9632b6685d5cec0f23c0a7037",
+   "statut": "NIVEAU INVALIDE, verdict maintenu",
+   "portee": "meme defaut sur T1_auc.modele=0.9601 ; population de 152 paires non recalculee ici."
+  },
+  {
+   "artefact": "data/landing/act2-pilot/transition-model-served.npz",
+   "sha256": "3c4b5baae50c2c126649bef01f000b1c033627e1b5c73ce39fb563f0c2cee26f",
+   "statut": "INTACT — disclosure CORRIGEE le 2026-08-29",
+   "portee": "les poids ne sont pas en cause. La disclosure de predict_transition (scripts/mcp/ghost_server.py) porte desormais un champ `metrique` citant l'AUC INTRA 0.9185 contre sa nulle 0.478 (+5.75 sd) et Delta +0.170 IC95 [+0.049, +0.355], et signale que le 0.9931 historique etait une AUC poolee de plancher 0.9484. Portee ajoutee : 89 % des instances w46 n'ont aucune discrimination par test a faire."
+  },
+  {
+   "artefact": "governance/act2/arm-artifacts/arm-v46-e6-adversarial-verdict-2026-08-22.json",
+   "sha256": "0aa82c6b441fd6327ca3866e471ae3895e81e31edd468311f5cd41d22c170138",
+   "statut": "RELU — INTACT",
+   "portee": "balayage exhaustif des seuils sur les 250 cas geles : p_orig ET p_revert n'ont qu'UNE valeur distincte (0.000), donc flip_R = 0 pour TOUT seuil (A2 exige >= 0.35). Verdict A3 maintenu et desormais demontre independant du seuil. Le diagnostic d'A3 est fait en espace z BRUT (z_orig med -9.61, dz_revert med -0.153, moy -0.229, 2 cas sur 250 au-dessus de +1), donc hors de portee de tout defaut de calibration."
+  }
+ ],
+ "correctif_protocole": [
+  "AUC INTRA en metrique primaire ; poolee en second, etiquetee « discrimination entre instances ».",
+  "Controle negatif par permutation DANS le groupe de pli, pas seulement globale.",
+  "Rapporter le plancher de la nulle a cote de toute AUC ; ne jamais supposer 0,50.",
+  "Bootstrapper les IC par instance, pas par paire.",
+  "Declarer la puissance : l AUC INTRA repose sur les instances a issue mixte (8/70 en w46, 31/152 en P12)."
+ ],
+ "regle_transverse": "un gate doit prouver la FONCTION, pas la presence — 2e occurrence en 4 jours",
+ "relecture_a3": {
+  "fait": true,
+  "date": "2026-08-29",
+  "methode": "balayage exhaustif de tous les seuils observables sur cas_detail",
+  "meilleur_flip_R_tous_seuils": 0.0,
+  "grille_A2_exige": 0.35,
+  "verdict": "A3 MAINTENU, independance au seuil demontree"
+ }
+}

@@ -347,12 +347,32 @@ def predict_transition(diff_text: str, declared_tests: list, known_red: list,
             "model": {"kind": "transition-sequentielle", "preregs": ["1ffa1fff375678b6", "6928f0ab963e4490"],
                       "calibration": "isotonic-PAV-LOO" if "cal_x" in tm else "raw-sigmoid",
                       "threshold": tm["threshold"], "turn_assumed": turn,
+                      "metrique": ("AUC INTRA (paires de tests d'UNE MÊME instance) = 0.9185, "
+                                   "contre une nulle par permutation intra-instance à 0.478 "
+                                   "(+5.75 écarts-types) ; Δ +0.170 sur la baseline persist, "
+                                   "IC95 [+0.049, +0.355]. LOO par instance, w46."),
                       "disclosure": ("régime séquentiel : état rouge courant requis ; signal, jamais verdict. "
                                       "arm-v46 (2026-08-22, A3 EFFONDRÉ) : ce signal ne lit PAS l'effet "
                                       "sémantique du diff (sonde adversariale déterministe, flip_R=0/250) — "
                                       "il reflète des corrélats de surface (persist/turn/frac + embedding "
                                       "brut), pas une compréhension du patch. Traiter p_still_red comme un "
-                                      "prior faible, jamais comme une lecture du contenu du candidat.")},
+                                      "prior faible, jamais comme une lecture du contenu du candidat. "
+                                      "ERRATUM 2026-08-29 : le chiffre historiquement publié (AUC 0.9931) "
+                                      "était une AUC POOLÉE en LOO, dont le plancher sous labels permutés "
+                                      "dans l'instance vaut 0.9484 — elle ne distingue pas ce modèle d'un "
+                                      "modèle qui classerait seulement les tickets par risque. Le chiffre "
+                                      "valide est celui du champ `metrique` ci-dessus. Portée : sur w46, "
+                                      "89 % des instances n'ont AUCUNE discrimination par test à faire "
+                                      "(tous leurs tests déclarés partagent le même sort) ; la mesure "
+                                      "par test repose sur les 11 % restants, soit 8 instances — "
+                                      "TOUTES issues d'un SEUL dépôt (vuejs/core). Ce n'est pas une "
+                                      "concentration mais une propriété de construction : les autres "
+                                      "familles du corpus de référence n'ont aucun test déclaré rouge, "
+                                      "donc aucune paire, donc ni succès ni échec mesurés. Le support "
+                                      "entier de cette métrique est un dépôt, un langage, un type de "
+                                      "dépôt — rien n'y a jamais pu la réfuter. Aucune portée hors de "
+                                      "ce périmètre, en particulier aucune sur Python : campagne P13, "
+                                      "13 représentations, toutes à la nulle.")},
             "tests": rows}
 
 
