@@ -374,3 +374,109 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+# ---------------------------------------------------------------- LORO (P14)
+# Blocs des variantes couvertes. Le LORO exige un fit UNIQUE hors-depot, pas le
+# LOO imbrique des variantes : il n'est donc pas derivable mecaniquement de
+# n'importe quelle variante (V4 ajuste une PCA dans le pli, V5 une fusion
+# tardive, V12 une stratification). On couvre les deux familles ou la question
+# se pose reellement, et on le DIT.
+LORO_BLOCS = {
+    "V1": (["Ed", "Et", "cos", "scal"], "statique"),
+    "V2": (["Ed", "cos", "scal"], "statique"),
+    "V3": (["Et", "cos", "scal"], "statique"),
+    "V6": (["Ed", "Et", "cos", "persist"], "statique"),
+    "V11": (["Ed", "Et", "cos", "scal"], "conditionnel"),
+    "V14": (["Ed", "Et", "cos"], "conditionnel"),
+}
+
+# Precondition de LISIBILITE, gelee dans window-p14-variance-proposal.md le
+# 2026-08-29, AVANT le rejeu. Un depot retire qui n'apporte que 4 instances
+# rend une AUC dont l'intervalle avale l'ecart entre 0,50 et le seuil de 0,60 :
+# le critere y passe ou echoue par bruit. Mesure sur P12 : tobymao 69 paires /
+# 18 instances, python-pillow 26 / 6, iterative 26 / 4.
+LORO_MIN_INSTANCES = 10
+LORO_MIN_PAIRES = 30
+
+
+def loro(vid, corpus, B, y, D, M, seuil=0.60):
+    """Leave-one-repo-out : fit UNIQUE hors du depot retire, score sur lui,
+    AUC lue sur SA strate aveugle.
+
+    Ce n'est pas le LOO imbrique des variantes, et c'est declare — meme
+    protocole que `w48b_refit.py`, ou il etait deja descriptif.
+
+    Un depot non lisible est rendu « non evaluable » : ni succes ni echec. Les
+    deux seraient des affirmations que la donnee ne porte pas.
+    """
+    if vid not in LORO_BLOCS:
+        return {"couvert": False, "raison": "protocole non derivable pour cette variante"}
+    cles, famille = LORO_BLOCS[vid]
+    X = np.concatenate([B[k] for k in cles], axis=1)
+    inst = D["inst"]
+    # Le depot se lit dans le prefixe de l'identifiant SWE-bench (`repo__nom-NNN`).
+    # Sur w46 les instances synthetiques n'ont pas cette forme et rendent un
+    # pseudo-depot par test — sans effet sur le verdict (elles portent zero paire
+    # aveugle), mais a savoir avant de lire la ventilation de w46.
+    dep = np.array([str(i).split("__")[0] for i in inst])
+    out = {"couvert": True, "famille": famille, "seuil": seuil, "par_depot": {}}
+
+    for r in sorted(set(dep.tolist())):
+        te = dep == r
+        tr = ~te
+        pr = M.paires(y, inst, D["per"], D["test"], D["key"], "aveugle")
+        # paires aveugles PORTEES par ce depot
+        pr_r = pr[te[pr[:, 0]]] if len(pr) else pr
+        n_paires = len(pr_r)
+        n_inst = len({str(inst[a]) for a, _ in pr_r}) if n_paires else 0
+
+        if n_inst < LORO_MIN_INSTANCES or n_paires < LORO_MIN_PAIRES:
+            out["par_depot"][r] = {"lisible": False, "paires": n_paires,
+                                   "instances": n_inst, "auc": None}
+            continue
+        if y[tr].sum() == 0 or y[tr].sum() == tr.sum():
+            out["par_depot"][r] = {"lisible": False, "paires": n_paires,
+                                   "instances": n_inst, "auc": None,
+                                   "raison": "une seule classe hors depot"}
+            continue
+
+        if famille == "statique":
+            p = np.zeros(len(y))
+            p[te] = _fit(50.0, X[tr], y[tr], X[te])
+        else:
+            from sklearn.linear_model import LogisticRegression
+            Dm = []
+            for i in set(inst[tr].tolist()):
+                idx = np.where(inst == i)[0]
+                pos = idx[y[idx] == 1]; neg = idx[y[idx] == 0]
+                for a_ in pos:
+                    for b_ in neg:
+                        Dm.append(X[a_] - X[b_])
+            if len(Dm) < 4:
+                out["par_depot"][r] = {"lisible": False, "paires": n_paires,
+                                       "instances": n_inst, "auc": None,
+                                       "raison": "moins de 4 paires d'entrainement"}
+                continue
+            Dm = np.asarray(Dm)
+            Xp = np.vstack([Dm, -Dm]); yp = np.r_[np.ones(len(Dm)), np.zeros(len(Dm))]
+            clf = LogisticRegression(C=1.0, fit_intercept=False, solver="lbfgs",
+                                     max_iter=5000).fit(Xp, yp)
+            p = np.zeros(len(y))
+            p[te] = X[te] @ clf.coef_.ravel()
+
+        a = float((p[pr_r[:, 0]] > p[pr_r[:, 1]]).mean()
+                  + 0.5 * (p[pr_r[:, 0]] == p[pr_r[:, 1]]).mean())
+        out["par_depot"][r] = {"lisible": True, "paires": n_paires,
+                               "instances": n_inst, "auc": round(a, 4)}
+
+    lisibles = [v for v in out["par_depot"].values() if v["lisible"]]
+    out["n_lisibles"] = len(lisibles)
+    if len(lisibles) < 2:
+        # Clause non evaluable : JAMAIS retrogradee en silence vers un echec.
+        out["verdict"] = "NON EVALUABLE"
+    elif all(v["auc"] >= seuil for v in lisibles):
+        out["verdict"] = "SATISFAIT"
+    else:
+        out["verdict"] = "ECHOUE"
+    return out
