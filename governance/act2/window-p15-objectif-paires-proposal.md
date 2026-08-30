@@ -119,6 +119,55 @@ la forme du diff n'a pas fait apparaître le sens.
 autre ordre — exécuter, ou représenter l'effet du patch et non son texte — et
 n'appartient pas à cette fenêtre.
 
+## Résultat descriptif (2026-08-30, 09:58) — la prédiction scellée n'est pas tenue
+
+Hors grille, par construction : ces deux corpus décrivent, ils ne jugent pas.
+
+**Contrôle de non-régression : exact.** Après refactorisation de V11 en enveloppe
+d'un cœur paramétrable, V11 et V6 reproduisent leurs chiffres publiés au
+quatrième décimal sur les deux corpus — V11 ⊥ 0,9444 (w46) et 0,3884 (P12),
+V6 ⊥ 0,8519 et 0,4711.
+
+| | V11 (⊥) | **V14 (⊥)** | écart | ⊥⊥ V11 → V14 | informative V11 → V14 |
+|---|---|---|---|---|---|
+| w46 | 0,9444 | **0,9259** | −0,0185 = **1 paire sur 54** | 0,90 → 0,90 | 0,9383 → 0,9691 |
+| P12 | 0,3884 | **0,5041** | +0,1157 = 14 paires sur 121 | 0,40 → 0,5238 | 0,9582 → **0,4530** |
+
+**Sur w46, la prédiction « ≥ 0,9444 » n'est pas tenue.** Il faut le dire, et il
+faut dire aussi de combien : **une seule paire sur 54**, très à l'intérieur de
+l'IC95 [0,80 ; 1,00]. Traiter cet écart comme une réfutation serait aussi
+malhonnête que d'avoir traité un gain d'une paire comme un succès. La lecture
+juste est : **V11 et V14 sont indiscernables sur w46**.
+
+**Sur P12, la prédiction « ~0,50, la nulle » est tenue** : 0,5041.
+
+### L'erreur de mécanisme dans la fenêtre scellée
+
+La colonne qui compte n'est aucune des deux prédites. Sur P12, V14 **effondre la
+strate informative, de 0,9582 à 0,4530**.
+
+La cause est directe : sur cette strate, `persist` **seul** vaut 0,9059. Le
+retirer retire l'essentiel du signal. Le raisonnement que j'avais scellé —
+« `persist` est constant dans la paire, donc il s'annule et ne fait que consommer
+de la capacité » — **n'est vrai que sur la strate aveugle**. Le modèle
+conditionnel est entraîné sur **toutes** les paires intra-instance, informatives
+comprises, où `persist` ne s'annule pas et porte presque tout.
+
+J'ai généralisé à l'entraînement un argument qui ne valait qu'au scoring, et sur
+une sous-strate.
+
+### Ce que cela change
+
+**Les deux leviers ne se composent pas.** Le levier est l'objectif — V11 — et les
+scalaires restent. La combinaison n'apporte rien sur w46 et détruit la strate
+informative sur P12.
+
+**V14 sera tout de même évalué sur P14**, comme pré-enregistré : le calcul coûte
+quelques secondes, et refuser de jouer un test après avoir vu un descriptif
+défavorable serait la même faute de sélection, dans l'autre sens.
+
+L'attente honnête est désormais **S3**.
+
 ## Protocole
 
 1. Ajouter V14 à `p13_variants.py`, sans toucher aux treize autres.
