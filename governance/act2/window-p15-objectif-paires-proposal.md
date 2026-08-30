@@ -62,6 +62,32 @@ nulle du maximum de treize.
 succès attendu sur w46.** Une fenêtre qui ne prédit que ce qu'elle espère
 n'apprend rien.
 
+## Amendement n°1 — quel corpus juge, quel corpus décrit (2026-08-30, avant tout fit)
+
+La version scellée ce matin porte une incohérence que je lève avant de mesurer
+quoi que ce soit, pour ne pas choisir l'interprétation en voyant les chiffres.
+
+Le tableau de prédiction annonce des valeurs sur **w46 et P12**, tandis que le
+protocole dit d'évaluer **sur P14, jamais avant**. Les deux ne peuvent pas être
+vrais ensemble. Résolution :
+
+| corpus | statut | pourquoi |
+|---|---|---|
+| **P14** | **décisif** — c'est lui que la grille S1/S2/S3 juge | labels **jamais vus**. V14 y est bien une hypothèse unique, donc **K = 1** et une nulle à une variante |
+| w46, P12 | **descriptifs** — hors grille, jamais un verdict | leurs labels ont déjà été cherchés 13 fois. Y ajouter V14 en fait un **14ᵉ regard**, dont la barre honnête serait la nulle du max à K = 14, pas une nulle à K = 1 |
+
+**Les valeurs de V14 sur w46 et P12 ne peuvent donc rien conclure**, ni dans un
+sens ni dans l'autre. Elles servent à deux choses, et à rien d'autre :
+
+1. **Contrôle de non-régression du code** — si on repasse à V14 les blocs de V11
+   ou de V6, il doit rendre exactement leurs chiffres publiés.
+2. **Vérifier que la prédiction scellée n'était pas absurde** avant de dépenser
+   P14 dessus.
+
+C'est la même règle que celle qui a fondé la nulle du maximum en P13 : **la barre
+dépend du nombre de fois qu'on a regardé le corpus**, pas du nombre d'hypothèses
+qu'on déclare.
+
 ## Grille gelée
 
 | issue | condition | conséquence |

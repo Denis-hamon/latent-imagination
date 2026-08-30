@@ -29,8 +29,43 @@ D = ROOT / "data" / "landing" / "act2-pilot" / "night-harvest" / f"py-{CORPUS}"
 OUT = D / f"{CORPUS}-replay"
 
 
+# Code de sortie reserve : le transport est tombe, AUCUNE mesure n'a ete prise.
+# Distinct d'un echec de rejeu, qui lui est une donnee.
+EX_TRANSPORT = 75
+
+
 def cname(iid: str) -> str:
-    return "p12-" + re.sub(r"[^a-zA-Z0-9_.-]", "-", iid)
+    # Le prefixe suit le CORPUS. Il etait code en dur a "p12-" : les conteneurs
+    # de P14 naissaient sous le nom d'un autre corpus, et le nettoyage du pilote
+    # visait alors des noms qui n'existaient pas.
+    return f"{CORPUS}-" + re.sub(r"[^a-zA-Z0-9_.-]", "-", iid)
+
+
+def transport_ok() -> bool:
+    """Le transport est un SSH vers un hote distant, et il peut tomber seul.
+
+    `sh()` renvoie stdout+stderr fusionnes : quand ssh echoue, son message
+    d'erreur DEVIENT la valeur de retour. Tout test de la forme
+    `if x not in sh(...)` lit alors une panne de reseau comme une absence de
+    donnee. Mesure du 2026-08-30 : le capot du portable s'est ferme a 00:02:03
+    ('Clamshell Sleep'), et les 58 instances restantes ont ete brulees en 17
+    minutes, chacune journalisee « conteneur absent » — un message qui accuse
+    Docker pour une faute du reseau, et un run qui a fini par « termine ».
+    """
+    return "__ping__" in sh("echo __ping__", t=30)
+
+
+def attendre_transport(essais: int = 30, pause: int = 60) -> None:
+    """Bloque tant que le transport est absent. Ne rend jamais un echec de
+    transport comme un resultat : soit il revient, soit on sort en EX_TRANSPORT."""
+    for i in range(essais):
+        if transport_ok():
+            if i:
+                print(f"  transport revenu apres {i} tentative(s)", flush=True)
+            return
+        print(f"  TRANSPORT ABSENT ({i + 1}/{essais}) — attente {pause}s", flush=True)
+        time.sleep(pause)
+    raise SystemExit(EX_TRANSPORT)
 
 
 def load(iid: str) -> dict:
@@ -73,7 +108,10 @@ def container_up(s: dict, pull: bool = True) -> str:
     sh(f"docker rm -f {n} >/dev/null 2>&1; "
        f"docker run -d --name {n} {img} sleep infinity >/dev/null", t=1800)
     if n not in sh(f"docker ps --format '{{{{.Names}}}}'", t=120):
-        raise SystemExit(f"ÉCHEC : conteneur {n} absent")
+        # Avant d'accuser Docker, prouver que la question est arrivee jusqu'a lui.
+        attendre_transport()
+        if n not in sh(f"docker ps --format '{{{{.Names}}}}'", t=120):
+            raise SystemExit(f"ÉCHEC : conteneur {n} absent (transport verifie)")
     return n
 
 

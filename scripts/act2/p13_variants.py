@@ -201,7 +201,10 @@ def _V_repr(quoi):
 
 
 # ------------------------------------------------- vague 3 : objectif, population
-def V11_conditionnel(B, y, g, folds):
+def _conditionnel(B, y, g, folds, blocs_utilises):
+    """Coeur commun a V11 et V14. Extrait tel quel du corps de V11 : seule la
+    liste des blocs devient un parametre, la valeur par defaut de V11 reproduit
+    exactement ses chiffres publies."""
     """Logistique CONDITIONNELLE sur les différences intra-instance (Bradley-Terry).
 
     On mesure un classement DANS l'instance et on entraînait un pointwise poolé :
@@ -211,7 +214,7 @@ def V11_conditionnel(B, y, g, folds):
     disparaît par construction, exactement comme dans l'AUC⊥.
     """
     from sklearn.linear_model import LogisticRegression
-    X = np.concatenate([B["Ed"], B["Et"], B["cos"], B["scal"]], axis=1)
+    X = np.concatenate([B[k] for k in blocs_utilises], axis=1)
     p = np.zeros(len(y))
     for gg in folds:
         te = g == gg; tr = ~te
@@ -234,6 +237,31 @@ def V11_conditionnel(B, y, g, folds):
                                  max_iter=5000).fit(Xp, yp)
         p[te] = X[te] @ clf.coef_.ravel()      # score, pas une probabilité : l'AUC ne lit qu'un ordre
     return p
+
+
+def V11_conditionnel(B, y, g, folds):
+    """Logistique CONDITIONNELLE, representation COMPLETE — inchangee."""
+    return _conditionnel(B, y, g, folds, ["Ed", "Et", "cos", "scal"])
+
+
+def V14_conditionnel_sans_scalaires(B, y, g, folds):
+    """P15 — les DEUX leviers mesures, combines pour la premiere fois.
+
+    Levier 1, l'objectif : conditionnel intra-instance au lieu de ponctuel poole
+    (V11, 0,9444 contre 0,8333 pour le modele servi sur w46).
+
+    Levier 2, la representation : retrait des scalaires ponctuels. Mesure quatre
+    fois, sur deux corpus — `Ed` seul bat le modele complet (w46 0,8704 > 0,8333 ;
+    P12 0,5372 > 0,4793) et V6 sans frac ni turn bat V1 (+0,111 w46, +0,091 P12).
+
+    Le mecanisme n'est pas infere : sur la strate aveugle `persist` est CONSTANT
+    dans la paire, donc il s'annule dans la difference X[a] - X[b] et ne peut rien
+    classer, tout en consommant de la capacite au fit ; `frac` et `turn` y varient
+    sans porter d'information sur le sort du test.
+
+    Gelee dans window-p15-objectif-paires-proposal.md AVANT que P14 rende.
+    """
+    return _conditionnel(B, y, g, folds, ["Ed", "Et", "cos"])
 
 
 def V12_stratifie(B, y, g, folds):
@@ -281,6 +309,13 @@ VARIANTES.update({
     "V12": ("fit stratifié par persist", V12_stratifie),
     "V13": ("conjoint w46+P12 (DW-37)", V13_conjoint),
 })
+# Hors des treize gelees par P13 : hypothese UNIQUE de P15, jugee sur P14 seul.
+# Separee volontairement — la barre de P13 est la nulle du MAXIMUM de treize, et
+# V14 ne doit jamais y etre compte en douce.
+VARIANTES_P15 = {
+    "V14": ("P15 — conditionnel SANS scalaires ponctuels", V14_conditionnel_sans_scalaires),
+}
+VARIANTES.update(VARIANTES_P15)
 
 
 # ------------------------------------------------------------------ exécution
