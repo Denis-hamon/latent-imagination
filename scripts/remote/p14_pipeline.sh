@@ -12,19 +12,19 @@ LI_EMB_WORKERS=8 $P scripts/act2/p10_fit.py --corpus p14 >> "$L" 2>&1 || { say "
 
 say "2/5 les 13 variantes GELEES sur p14"
 $P scripts/act2/p13_variants.py --corpus p14 \
-   --variantes V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13 >> "$L" 2>&1
+   --variantes V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13 >> "$L" 2>&1 || { say "ECHEC etape"; exit 1; }
 
 say "3/5 V14 (P15, hypothese unique K=1)"
-$P scripts/act2/p13_variants.py --corpus p14 --variantes V14 >> "$L" 2>&1
+$P scripts/act2/p13_variants.py --corpus p14 --variantes V14 >> "$L" 2>&1 || { say "ECHEC etape"; exit 1; }
 
 say "4/5 nulle du maximum sur p14 (13 variantes, 100 perms, 12 workers)"
 $P scripts/act2/p13_nulle.py --corpus p14 \
    --variantes V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13 \
-   --perms 100 --workers 12 >> "$L" 2>&1
+   --perms 100 --workers 12 >> "$L" 2>&1 || { say "ECHEC etape"; exit 1; }
 
 say "5/5 nulle p12 — REPRISE des 40 tirages manquants"
 $P scripts/act2/p13_nulle.py --corpus p12 \
    --variantes V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12,V13 \
-   --perms 100 --workers 12 >> "$L" 2>&1
+   --perms 100 --workers 12 >> "$L" 2>&1 || { say "ECHEC etape"; exit 1; }
 
 say "PIPELINE TERMINE"

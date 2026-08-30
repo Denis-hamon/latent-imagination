@@ -338,6 +338,153 @@ dire non ne se réécrit pas ; on assume de passer outre, en le disant.
 positif, la question « ce résultat tient-il aussi sous D3 satisfait ? » reste
 entière et devra être instruite sur un corpus qui satisfait D3.
 
+## Contrôle inter-machines : la métrique poolée ne se reproduit pas, la strate aveugle si (2026-08-30, 12:47)
+
+Avant de jouer P14 sur `Kimsufi-standard`, `scripts/remote/controle_encodage.sh`
+a écarté les caches d'embeddings fabriqués sur le Mac, **ré-encodé P12
+intégralement sur le serveur**, puis refait tourner les deux bancs. Un seul
+ré-encodage, deux métriques lues dessus — donc une comparaison contrôlée, pas
+deux expériences.
+
+**La strate aveugle se reproduit à l'identique.** Les huit valeurs de V11 et V6
+— AUC⊥, AUC⊥⊥, strate informative, toutes paires — sont **identiques au 4e
+chiffre** aux valeurs publiées : V11 ⊥ 0,3884 / ⊥⊥ 0,40 / informative 0,9582 /
+toutes 0,7892 ; V6 ⊥ 0,4711 / ⊥⊥ 0,4762 / informative 0,9059 / toutes 0,777.
+
+**L'AUC poolée ne se reproduit pas.** Le même ré-encodage rend, pour `p10_fit`
+sur P12 :
+
+| bras | Mac (publié 29/08) | serveur (30/08) | écart |
+|---|---|---|---|
+| complet (1540 d) | 0,5654 | **0,5617** | −0,0037 |
+| Ed + scalaires | 0,5172 | **0,5093** | −0,0079 |
+| Et + scalaires | 0,7286 | 0,7309 | +0,0023 |
+| scalaires seuls | 0,8250 | 0,8252 | +0,0002 |
+| persist seul | 0,5244 | 0,5244 | 0 |
+| négatif globale | 0,6130 | 0,6132 | +0,0002 |
+| négatif intra-instance | 0,6617 | 0,6615 | −0,0002 |
+
+**La cause est identifiée et elle n'est pas un défaut de code.** Le fit épingle
+`OMP_NUM_THREADS=1` dans ses workers (`p10_fit.py:181`) et le bootstrap est semé
+(`seed=42`, `p10_fit.py:170`) : à `X` identique, le résultat serait identique.
+Ce qui diffère, c'est `X` — les embeddings jina, dont les composantes divergent
+au 4e chiffre entre les deux machines (builds torch/BLAS distincts). La suite
+est arithmétique : l'AUC poolée court sur **58 857 paires** dont 99,3 %
+inter-instances, où des milliers de scores quasi ex æquo basculent ; l'AUC⊥
+court sur **120 paires** de rang bien séparé, et absorbe la même perturbation
+sans bouger d'un chiffre. `persist seul` — le seul bras sans embedding — ne
+bouge pas du tout, ce qui ferme la boucle.
+
+**Ce que ça fait à l'erratum du 29/08.** Son artefact scellé
+(`erratum-auc-poolee-2026-08-29.json`) porte `poolee_observee = 0,5654` ; le
+serveur en rend 0,5617. Contre une nulle intra-instance de moyenne 0,5240 et
+d'écart-type 0,0677, la position passe de **+0,61 sd à +0,56 sd**. La conclusion
+de l'erratum est inchangée et se trouve **renforcée** : une métrique dont le
+chiffre de tête se déplace quand on change de BLAS n'est pas une métrique sur
+laquelle on conclut. L'artefact n'est pas réécrit — il consigne une mesure faite
+sur une machine donnée, et cette section dit laquelle.
+
+**Ce qu'il ne faut pas en conclure.** Que l'AUC⊥ serait « la bonne » métrique.
+Ce contrôle mesure sa **stabilité** sous une perturbation numérique, pas sa
+validité. Une métrique constante peut être constamment fausse. Le seul acquis
+est négatif et il porte sur l'autre : la poolée est trop fragile pour départager
+quoi que ce soit à ce niveau d'écart.
+
+**Portée du contrôle.** Il ne couvre pas les rejeux — aucun conteneur n'a été
+rejoué sur les deux machines — ni la nulle du maximum, dont les 100 tirages P12
+seront de provenance mixte (60 Mac, 40 serveur). Cette provenance mixte est
+acceptable pour la même raison mesurée ici, l'AUC⊥ étant invariante ; elle est
+consignée, pas tue.
+
+## Fit P14 : les cinq bras et les deux contrôles (2026-08-30, 12:47)
+
+Corpus construit sur le serveur de bout en bout : `X (1009, 1540)`, **168 plis**
+LOO par instance, 819 transitions, 389 positifs, **strate aveugle 809 paires**.
+
+| bras (AUC poolée — **non lisible**, cf. erratum) | P12 | P14 |
+|---|---|---|
+| complet (1540 d) | 0,5654 | 0,5930 |
+| Ed + scalaires | 0,5172 | 0,6401 |
+| Et + scalaires | 0,7286 | 0,6111 |
+| scalaires seuls | 0,8250 | **0,7163** |
+| persist seul | 0,5244 | 0,5227 |
+| négatif globale | 0,6130 | **0,5435** |
+| négatif intra-instance | **0,6617** | **0,5561** |
+
+Deux faits, tous deux sur **l'instrument** et aucun sur le modèle.
+
+**Le plancher a baissé, de 0,6617 à 0,5561.** C'est l'effet attendu de la règle
+de sélection : la contamination inter-instances de la poolée vient du décalage
+d'intercept entre plis, piloté par des taux de positifs très inégaux d'une
+instance à l'autre. À 38,6 % de positifs au lieu de 5 %, ces décalages se
+resserrent. Le banc fabrique moins d'AUC à partir de rien — c'est la thèse de la
+fenêtre, vérifiée sur le contrôle négatif et non sur le résultat.
+
+**Le raccourci trivial a faibli, de 0,8250 à 0,7163.** En P12, `persist/frac/turn`
+seuls classaient presque parfaitement : un corpus à 5 % d'échecs se prédit par le
+numéro de tour. Le raccourci est réduit, **pas éliminé** — 0,7163 reste le bras
+le plus haut, loin devant les trois bras à embeddings.
+
+**Ce que ça ne dit pas.** Rien sur la géométrie. Les trois bras à embeddings
+— 0,5930, 0,6401, 0,6111 — sont à moins de 0,09 au-dessus du plancher
+intra-instance, et `persist seul` (0,5227) est **sous** ce plancher. Sur une
+métrique que l'erratum déclare invalide, et dont la section précédente vient de
+montrer qu'elle bouge de 0,008 en changeant de machine, ces écarts n'autorisent
+aucune conclusion. Le verdict R1/R2/R3 se lit sur l'AUC⊥ des 13 variantes
+gelées, et sur rien d'autre.
+
+## Vague 1 interrompue sur V7, et le script l'a lue comme un succès (2026-08-30, 13:52)
+
+**Le défaut, avant le résultat.** `p13_variants --variantes V1..V13` est mort sur
+**V7** en réclamant `_E-p14-hunkagg.npy`, absent : les représentations de la
+vague 2 (`corps`, `ast`, `hunks`) n'avaient jamais été construites pour P14.
+Le message d'erreur était explicite et disait quoi lancer. **Le pipeline ne l'a
+pas lu** — `scripts/remote/p14_pipeline.sh` ne testait le code de sortie que de
+sa première étape. Il a donc enchaîné sur V14, puis lancé la **nulle du maximum
+de treize variantes dont sept n'existaient pas**.
+
+C'est la même classe de défaut que les 58 instances perdues dans la nuit du 29
+au 30/08 : un échec qui se lit comme un succès. La nulle a été tuée à 13:51,
+douze minutes après son lancement ; aucun `nulle-partielle-p14.json` n'avait
+encore été écrit, donc **aucun artefact n'est pollué**.
+
+**Deux correctifs, pas un.** (a) Chaque étape des deux scripts lève désormais sur
+un code de sortie non nul. (b) `p14_pipeline2.sh` ajoute une **garde de
+dénombrement** : il compte les lignes de variante dans les journaux et refuse de
+lancer la nulle si elles ne sont pas treize. Un garde qui compte le résultat vaut
+mieux qu'un garde qui suppose que l'étape d'avant a réussi.
+
+### Les six variantes calculées, toutes à la nulle
+
+| variante | P12 ⊥ (121 paires) | **P14 ⊥ (809 paires)** | P14 ⊥⊥ |
+|---|---|---|---|
+| V1 complet 1540 d | 0,3802 | 0,4549 [0,3294 ; 0,5559] | 0,4932 |
+| V2 Ed + scalaires | 0,3636 | 0,5179 [0,3290 ; 0,6062] | 0,4822 |
+| V3 Et + scalaires | 0,5207 | 0,4969 [0,4212 ; 0,5659] | 0,5233 |
+| V4 PCA(Ed) + PCA(Et) | 0,4132 | 0,4561 [0,3326 ; 0,5613] | 0,5068 |
+| V5 fusion tardive 6 d | — | **0,5402** [0,3957 ; 0,6184] | 0,5315 |
+| V6 V1 sans frac ni turn | 0,4711 | 0,4549 [0,3453 ; 0,5711] | 0,5151 |
+
+Maximum provisoire **0,5402 (V5)**, intervalle enjambant 0,50. Les six
+intervalles enjambent 0,50.
+
+**Ce que ces six ne permettent pas.** Aucune lecture R1/R2/R3. La grille juge le
+**maximum des treize** contre la barre du maximum des treize ; un maximum sur six
+comparé à une barre sur treize serait conservateur, et comparé à une barre sur
+six ne serait plus le protocole pré-enregistré. On attend les sept manquantes.
+
+**Ce qu'elles confirment, en revanche**, et c'est indépendant de la grille : les
+strates triviales se sont effondrées. La strate informative passe de 0,9059 à
+**0,6485**, identique pour V1 à V6 — elle est dominée par `persist`, présent dans
+tous les modèles, donc quasi invariante par variante, exactement comme en P12 où
+V1, V2 et V4 rendaient un 0,9059 commun. Les paires « toutes » passent de
+0,75–0,79 à 0,54–0,59. Avec le plancher intra-instance à 0,5561 et le raccourci
+scalaire à 0,7163, cela fait **quatre mesures indépendantes** disant que la
+population P14 ne se prédit plus par le numéro de tour.
+
+**Reprise en cours** : `p13_features.py --corpus p14`, puis V7 à V13, puis la
+nulle du maximum, puis la reprise des 40 tirages P12. Chaque étape lève.
+
 ## Hors périmètre
 
 - **Le modèle servi n'est pas touché.** Les deux corrections de disclosure

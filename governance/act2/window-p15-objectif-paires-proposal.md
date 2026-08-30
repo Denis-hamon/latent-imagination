@@ -186,3 +186,35 @@ L'attente honnête est désormais **S3**.
   serait rejouer la circularité documentée dans `window-p13-verdict.md`.
 - **Aucune quatorzième variante de représentation.** Si S3 tombe, la réponse
   n'est pas une quinzième.
+
+## Résultat V14 sur P14 — S1 est exclu, l'issue établie est « S2 ou S3 » (2026-08-30, 13:49)
+
+Labels jamais vus, corpus P14 encodé de bout en bout sur le serveur :
+
+| strate | V14 sur P14 | rappel V14 sur P12 |
+|---|---|---|
+| **⊥ (aveugle)** | **0,5204** IC95 [0,3434 ; 0,6082] | 0,4530 |
+| ⊥⊥ (même test) | 0,5014 | — |
+| informative | 0,4864 | 0,4530 |
+| toutes | 0,5046 | — |
+
+**S1 est exclu, et il l'est sans la nulle.** La grille scellée exige une
+conjonction : franchir la nulle à une variante **ET** ≥ 0,65 en absolu. V14 rend
+0,5204. L'échec du seuil absolu suffit seul à clore S1, quel que soit le résultat
+de la nulle — c'est exactement le raisonnement que la revue externe avait tenu
+sur G1 en P13, et il s'applique ici à l'identique.
+
+**Ce qui reste indéterminé** : S2 exige de franchir la nulle à une variante, qui
+n'est pas encore calculée sur P14. L'issue établie est donc **« S2 ou S3 »**, et
+proposer S3 maintenant anticiperait sur une mesure que la fenêtre déclare
+elle-même décisive. L'attente reste S3 — l'IC enjambe 0,50 sur les quatre strates
+— mais une attente n'est pas un verdict.
+
+**Le mécanisme scellé était faux, et P14 le redit.** La fenêtre prédisait que
+retirer les scalaires ponctuels libérerait de la capacité sur la strate aveugle.
+Sur P12, V14 avait effondré la strate informative de 0,9582 à 0,4530 sans rien
+gagner ailleurs. Sur P14 le même effet se lit en plus net : la strate informative
+tombe de **0,6485 (V1–V6, tous scalaires inclus) à 0,4864**, soit exactement la
+nulle. Retirer `persist` ne redistribue pas de la capacité : cela supprime la
+seule chose que le modèle savait faire.
+
