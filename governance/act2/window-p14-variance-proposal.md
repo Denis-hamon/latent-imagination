@@ -202,6 +202,73 @@ publié dans `window-p13-verdict.md`. **Si P14 en produit moins, sa règle de
 sélection est fausse et le corpus ne vaut pas d'être fitté** — c'est exactement
 ce qu'un gate doit pouvoir dire.
 
+## Lecture partielle des gates (2026-08-30, 10:46, rejeu à 136/171)
+
+Lue **avant** la fin du rejeu, seuils déjà gelés et commités : cette lecture ne
+peut rien ajuster. Le fit reste interdit tant que le rejeu n'a pas rendu.
+
+| gate | valeur | seuil | |
+|---|---|---|---|
+| D1 volume | 779 lignes · 136 instances | ≥ 700 · ≥ 70 | OK |
+| D2 fidélité | **non lisible** — témoin pas encore rejoué (0/19) | ≥ 70 % | en attente |
+| D2′ variance | **77,0 %** d'instances à issue mixte (104/135) | ≥ 60 % | OK |
+| D3 persist=0 | **63,0 %** | ≥ 80 % | **NON** |
+| D4 taux y=1 | 40,2 % (313 positifs) | reporté | — |
+| D4′ paires aveugles | **771** | ≥ 121 | OK |
+| D5 intégrité | 92,9 % | ≥ 90 % | OK |
+
+### La projection scellée était fausse — et par le plafond
+
+P12 produisait **121** paires aveugles sur 154 instances. P14 en est à **771** sur
+136, sans avoir fini : **6,4×**, très au-dessus de la fourchette **[290 ; 530]**
+scellée le 2026-08-29.
+
+La cause est exactement ce que j'avais déclaré non mesurable. Le rendement
+observé :
+
+| bande d'échecs dans les blocs | rendement mesuré | source |
+|---|---|---|
+| 1 échec | 1,97 paire/instance | P12, n = 29 |
+| 2–3 échecs | 4,92 paire/instance | P12, n = 13 |
+| 4–8 échecs | **~7,4** paire/instance | **P14, mesuré pour la première fois** |
+
+La bande 4–8 comptait **zéro instance en P12**, exclue par construction par la
+règle `r/n ≥ 0,75`. Elle pèse 38 % de P14 et rend davantage que les deux bandes
+mesurées.
+
+**Le refus d'extrapoler était juste ; la fourchette ne l'était pas.** La revue
+adversariale craignait une chute vers ~250 et se trompait de sens ; mon propre
+plafond de 530 se trompait aussi. Une fourchette bornée des deux côtés sur une
+bande déclarée non mesurée reste une extrapolation — la seule écriture honnête
+aurait été un plancher, sans plafond.
+
+### D3 échoue, et n'est PAS déplacé
+
+D3 exige que ≥ 80 % des lignes portent un test qui n'était **pas déjà rouge**.
+P12 était à 93 % parce que ses trajectoires échouaient rarement. P14 sélectionne
+pour l'échec : ses tests sont rouges plus souvent, et D3 tombe mécaniquement.
+
+**C'est le même défaut structurel que D4, et je ne l'ai pas vu dans le même
+passage.** L'amendement n°3, gelé à 10:05, écrit noir sur blanc « D3 inchangé —
+intégrité, indépendant du corpus ». C'était faux : D3 dépend du corpus autant
+que D4.
+
+**D3 reste donc en échec.** Le corriger après l'avoir vu échouer serait
+exactement l'ajustement post-hoc condamné trois heures plus tôt dans ce même
+document. Un seuil ne se déplace pas parce qu'il vient de dire non.
+
+Il existe un argument sérieux pour le re-scoper, et il est écrit ici pour être
+jugé, pas appliqué : **la métrique se lit sur la strate aveugle, où `persist` est
+constant dans la paire**. Un taux marginal de `persist = 0` plus bas change la
+composition de cette strate sans l'invalider — D3 mesure une propriété que la
+métrique n'utilise pas directement. Si cet argument est retenu, il doit l'être
+par décision explicite du propriétaire, datée, et non par une réécriture
+silencieuse du seuil.
+
+**Autre écart à noter** : 66 tours non conformes contre 39 sur P12 — davantage de
+patchs qui ne s'appliquent pas, cohérent avec une population choisie parmi les
+trajectoires qui échouent.
+
 ## Hors périmètre
 
 - **Le modèle servi n'est pas touché.** Les deux corrections de disclosure
