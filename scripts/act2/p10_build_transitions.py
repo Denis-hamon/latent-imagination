@@ -10,19 +10,23 @@ ZÉRO appel LLM.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-B = ROOT / "data" / "landing" / "act2-pilot" / "night-harvest" / "py-p12"
-OUT = B / "p12-transitions.jsonl"
+# Meme fichier pour P12 et P14, pilote par variable d'environnement — comme
+# p12_replay.py et p12_gates.py. Dupliquer aurait fait diverger en silence.
+CORPUS = os.environ.get("LI_CORPUS", "p12")
+B = ROOT / "data" / "landing" / "act2-pilot" / "night-harvest" / f"py-{CORPUS}"
+OUT = B / f"{CORPUS}-transitions.jsonl"
 # solveur amont unique de la source SWE-rebench-openhands-trajectories
 MODELE = "Qwen3-Coder-480B-A35B-Instruct"
 
 
 def main() -> int:
-    sel = {x["instance_id"]: x for x in json.loads((B / "p12-selection.json").read_text())}
+    sel = {x["instance_id"]: x for x in json.loads((B / f"{CORPUS}-selection.json").read_text())}
     lignes = []
-    for f in sorted((B / "p12-replay").glob("*.json")):
+    for f in sorted((B / f"{CORPUS}-replay").glob("*.json")):
         d = json.loads(f.read_text())
         iid = d["instance_id"]
         decl = sorted(set(sel[iid]["FAIL_TO_PASS"]))
@@ -34,7 +38,7 @@ def main() -> int:
             for a, b in zip(ok, ok[1:]):
                 rf, rt = sorted(set(a["failed_all"])), sorted(set(b["failed_all"]))
                 lignes.append({
-                    "key": f"p12-{iid}-t{ti}-{a['turn']}>{b['turn']}",
+                    "key": f"{CORPUS}-{iid}-t{ti}-{a['turn']}>{b['turn']}",
                     "instance": iid,
                     "window": "p12",
                     "model": MODELE,
