@@ -69,7 +69,7 @@ def _task(graine):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", choices=("w46", "p12"), default="p12")
+    ap.add_argument("--corpus", choices=("w46", "p12", "p14"), default="p12")
     ap.add_argument("--variantes", required=True)
     ap.add_argument("--perms", type=int, default=200)
     ap.add_argument("--workers", type=int, default=6)

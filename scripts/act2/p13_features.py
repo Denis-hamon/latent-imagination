@@ -110,7 +110,7 @@ def split_patch_counts(diffs):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", choices=("w46", "p12"), default="p12")
+    ap.add_argument("--corpus", choices=("w46", "p12", "p14"), default="p12")
     a = ap.parse_args()
     P13.mkdir(parents=True, exist_ok=True)
     import p10_fit as F

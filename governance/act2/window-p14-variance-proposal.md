@@ -269,6 +269,75 @@ silencieuse du seuil.
 patchs qui ne s'appliquent pas, cohérent avec une population choisie parmi les
 trajectoires qui échouent.
 
+## Gates COMPLETS et décision du propriétaire (2026-08-30, 12:08)
+
+Rejeu terminé : **171/171 instances**, 304 trajectoires, 1120 tours retenus.
+
+| gate | valeur | seuil | |
+|---|---|---|---|
+| D1 volume | 1009 lignes · 171 instances | ≥ 700 · ≥ 70 | OK |
+| **D2 fidélité** | **84,4 %** sur le témoin (128 tours) | ≥ 70 % | **OK** |
+| D2′ variance | 78,8 % d'instances mixtes (119/151) | ≥ 60 % | OK |
+| D3 persist=0 | **63,9 %** | ≥ 80 % | **ÉCHEC** |
+| D4 taux y=1 | 38,6 % (389 positifs) | reporté | — |
+| D4′ paires aveugles | **809** | ≥ 121 | OK |
+| D5 intégrité | 92,1 % | ≥ 90 % | OK |
+
+### D2 valide la conception de P14, et il le fait par mesure
+
+Le témoin de fidélité résout à **84,4 %** pendant que la population d'étude est à
+**55,4 %** de tours verts. C'était l'argument d'ouverture de cette fenêtre — la
+fidélité du harnais et la sélection de population sont deux métiers, et les
+confondre avait coûté P12. Ce n'est plus une plaidoirie : les deux nombres sont
+séparés et disent chacun ce qu'ils doivent dire.
+
+### Composition de la strate réellement lue
+
+| | P12 | **P14** |
+|---|---|---|
+| paires aveugles `persist = 0` des deux côtés | 120 (99,2 %) | **629 (77,8 %)** |
+| paires aveugles `persist = 1` des deux côtés | 1 (0,8 %) | 180 (22,2 %) |
+| paires « même test, tours différents » (⊥⊥) | 105 | **365** |
+
+D3 mesure un taux **marginal** de 63,9 %. La strate que la métrique consomme est
+à **77,8 %** de `persist = 0`, et elle en contient **629 contre 120** — soit
+**5,2× plus** de paires que P12 n'en a jamais eu sur ce même sous-ensemble. Les
+180 paires `persist = 1` ne polluent rien : elles forment une seconde sous-strate
+aveugle que P12 n'avait pas (une seule paire).
+
+### Le LORO devient lisible pour la première fois de l'arc
+
+| dépôt | paires aveugles | instances | précondition gelée le 2026-08-29 |
+|---|---|---|---|
+| `python-pillow` | 463 | 23 | **LISIBLE** |
+| `tobymao` | 215 | 58 | **LISIBLE** |
+| `iterative` | 131 | 11 | **LISIBLE** |
+
+Les trois dépôts passent. La clause qui n'avait jamais pu dire oui — ni sur w46
+(6 instances), ni sur P12 (un seul dépôt lisible sur trois) — est enfin
+évaluable, et elle l'est sans qu'aucun de ses seuils ait bougé.
+
+### Décision — D3 reste ÉCHEC, le fit est autorisé
+
+**Arbitrage du propriétaire, 2026-08-30.** Le fit est autorisé. **D3 n'est pas
+déplacé, pas supprimé, pas re-scopé** : il reste écrit ÉCHEC ici et au ledger,
+définitivement.
+
+Motif de l'autorisation, et il est mesuré : D3 lit un taux marginal, pas la
+strate que la métrique consomme, et sur cette strate P14 apporte 5,2× plus de
+paires `persist = 0` que P12. Six gates sur sept passent, dont les deux qui
+portent la thèse de la fenêtre (D2 fidélité, D2′ variance).
+
+**Ce qui a été refusé** : superséder D3 par un gate sur la composition de la
+strate aveugle. L'argument serait juste sur le fond, mais construire un seuil
+après avoir vu le résultat qu'il doit valider est de l'ingénierie de seuil — la
+faute condamnée trois heures plus tôt dans ce même document. Un gate qui vient de
+dire non ne se réécrit pas ; on assume de passer outre, en le disant.
+
+**Ce que l'échec de D3 laisse ouvert** : si le fit sur P14 rend un résultat
+positif, la question « ce résultat tient-il aussi sous D3 satisfait ? » reste
+entière et devra être instruite sur un corpus qui satisfait D3.
+
 ## Hors périmètre
 
 - **Le modèle servi n'est pas touché.** Les deux corrections de disclosure

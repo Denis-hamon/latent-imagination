@@ -342,7 +342,7 @@ def main() -> int:
     import p13_metrics as M
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", choices=("w46", "p12"), required=True)
+    ap.add_argument("--corpus", choices=("w46", "p12", "p14"), required=True)
     ap.add_argument("--variantes", default=",".join(VARIANTES))
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)

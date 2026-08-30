@@ -34,7 +34,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 AP = ROOT / "data" / "landing" / "act2-pilot"
 SRC = {"w46": AP / "transitions" / "v39-transitions.jsonl",
-       "p12": AP / "night-harvest" / "py-p12" / "p12-transitions.jsonl"}
+       "p12": AP / "night-harvest" / "py-p12" / "p12-transitions.jsonl",
+       "p14": AP / "night-harvest" / "py-p14" / "p14-transitions.jsonl"}
 P10 = AP / "night-harvest" / "py-p12" / "p10"
 
 STRATES = ("toutes", "aveugle", "aveugle_meme_test", "informative")

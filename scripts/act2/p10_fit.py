@@ -47,12 +47,15 @@ NH = AP / "night-harvest"
 SOURCES = {
     "w46": AP / "transitions" / "v39-transitions.jsonl",
     "p12": NH / "py-p12" / "p12-transitions.jsonl",
+    "p14": NH / "py-p14" / "p14-transitions.jsonl",
 }
 OUT = NH / "py-p12" / "p10"
 CACHES = [AP / "w48" / "emb-cache.npz", NH / "py-p3" / "p4" / "emb-cache-p4.npz",
           NH / "py-p3" / "p6" / "emb-cache-p6.npz", OUT / "emb-cache-p10.npz"]
 C = 50.0
-EMB_WORKERS, EMB_BATCH = 4, 8
+# 4 workers d'encodage saturaient le swap (660 Mo chacun sur 3 Go) : le debit
+# tombait a 8 textes par quart d'heure. Mesure du 2026-08-29, 2 workers rendent 80/min.
+EMB_WORKERS, EMB_BATCH = int(os.environ.get("LI_EMB_WORKERS", "2")), 8
 FIT_WORKERS = 6
 _W: dict = {}
 
@@ -213,7 +216,7 @@ def calibre_dans_le_pli(p_raw, y, groups, folds):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", choices=("w46", "p12"), required=True)
+    ap.add_argument("--corpus", choices=("w46", "p12", "p14"), required=True)
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
 
