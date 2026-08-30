@@ -570,6 +570,68 @@ du maximum, R3 s'il la franchit. La barre décide, et elle seule.
 mécanisme est explicitement « il faut du JS/TS en entraînement pour prédire du
 Python ». La question ouverte par l'échec de D3 reste entière par-dessus.
 
+## Le garde d'épinglage des fils ne gardait rien — 5,5× de calcul perdu (2026-08-30, 19:56)
+
+**Le défaut.** `p13_nulle._init` posait `OMP_NUM_THREADS=1`,
+`OPENBLAS_NUM_THREADS=1`, `MKL_NUM_THREADS=1` dans l'*initializer* du pool,
+c'est-à-dire **après** que `numpy` et OpenBLAS aient été chargés par le
+processus parent. OpenBLAS lit ces variables **au chargement de la
+bibliothèque**, jamais ensuite. Les quinze workers tournaient donc à **seize
+fils chacun** sur des matrices 1009 × 1540 — assez petites pour que la
+synchronisation des fils coûte plus cher que le calcul lui-même.
+
+**Mesuré, avec les deux côtés du contrôle :**
+
+| condition | V1 sur P14 | AUC⊥ rendue |
+|---|---|---|
+| mono-fil, épinglé dans l'environnement (MiscV2) | **158 s** | 0,4549 |
+| multi-fil, 16 fils (Kimsufi) | **866 s** | 0,4549 |
+
+**Le résultat est identique, le temps est 5,5× plus long.** Le compteur système
+mentait dans le même sens : `ps` montrait 104 % de CPU par worker, ce qui donnait
+l'illusion d'un cœur bien employé, alors que seize fils passaient l'essentiel de
+leur temps à se synchroniser. Conséquence directe : en **2 h 56**, quinze workers
+n'avaient pas terminé **un seul** des cent tirages.
+
+**Le correctif** est dans l'environnement du lancement, avant tout import Python
+(`scripts/remote/nulle_p14.sh`). Vérifié après relance : **1 fil par worker,
+99,9 % de CPU**, charge retombée de 222 à 78 puis vers 15.
+
+**Ce que ça ne change pas** : aucun résultat. Le nombre de fils modifie l'ordre
+des réductions BLAS, donc les derniers bits, pas le classement — V1 rend 0,4549
+des deux côtés. Les 60 tirages de la nulle P12 calculés sur le Mac l'ont été dans
+le régime multi-fil : ils sont lents, pas faux, et cette provenance est écrite.
+
+### Troisième garde de la journée qui n'était pas en vigueur
+
+C'est un motif, pas une coïncidence :
+
+| garde | ce qu'il promettait | ce qu'il faisait |
+|---|---|---|
+| `p14_pipeline.sh` | arrêter la chaîne sur un échec | ne testait le code de sortie que de l'étape 1 |
+| `p13_variants.loro()` | évaluer le critère LORO de R2 | écrit, jamais appelé — ni CLI ni `main()` |
+| `p13_nulle._init` | épingler les fils BLAS à 1 | posé après le chargement d'OpenBLAS |
+
+Les trois sont du **code écrit pour être sûr, qui n'était pas en vigueur**. Aucun
+ne levait, aucun ne se voyait à la lecture. La leçon opérationnelle est la même
+que celle de `feedback_gate_must_prove_function` : un garde doit être vérifié par
+une mesure qui échouerait s'il ne marchait pas — ici, compter les fils, compter
+les variantes, lire le code de sortie.
+
+### Seconde machine : MiscV2, validée par contrôle positif
+
+`145.239.65.205` (`ns3086367`, 8 cœurs, 31 Go) héberge la pile de dev Acre —
+huit conteneurs. Elle est engagée à **6 workers en `nice -n 19`**, deux cœurs
+laissés à Acre, venv **strictement aligné** sur Kimsufi (Python 3.13.7,
+numpy 2.5.2, scikit-learn 1.9.0, scipy 1.18.1) pour que les deux moitiés de la
+nulle sortent du même estimateur.
+
+Contrôle positif avant engagement : V7, V11 et V1 rejouées sur MiscV2 rendent
+**exactement** les valeurs de Kimsufi, IC compris (V7 ⊥ 0,576 / V11 ⊥ 0,534 /
+V1 ⊥ 0,4549). Partition par plage — Kimsufi `k ∈ [0, 71)`, MiscV2 `k ∈ [71, 100)`
+— pour que les deux machines ne rejouent jamais le même tirage ; checkpoints et
+rapports suffixés, fusion faite à la main après.
+
 ## Hors périmètre
 
 - **Le modèle servi n'est pas touché.** Les deux corrections de disclosure

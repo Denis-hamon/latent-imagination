@@ -73,7 +73,24 @@ def main() -> int:
     ap.add_argument("--variantes", required=True)
     ap.add_argument("--perms", type=int, default=200)
     ap.add_argument("--workers", type=int, default=6)
+    # PARTITION DES TIRAGES SUR PLUSIEURS MACHINES. Les graines sont
+    # deterministes (7000 + k) : deux machines qui prennent des restes disjoints
+    # modulo M ne rejouent jamais le meme tirage. Le defaut (modulo 1, reste 0)
+    # est EXACTEMENT le comportement d'avant — aucun run existant ne change.
+    # `--suffixe` isole le checkpoint et le rapport de chaque machine ; la fusion
+    # est faite a la main, apres, par `p13_nulle_fusion.py`.
+    ap.add_argument("--modulo", type=int, default=1)
+    ap.add_argument("--restes", default="0")
+    ap.add_argument("--suffixe", default="")
+    # PARTITION PAR PLAGE. `ex.map` consomme les graines dans l'ordre : donner a
+    # la seconde machine la QUEUE de la liste (k eleve) evite de refaire ce que
+    # la premiere a deja produit, la ou un modulo les entrelacerait.
+    ap.add_argument("--k-min", type=int, default=0)
+    ap.add_argument("--k-max", type=int, default=None)
     a = ap.parse_args()
+    restes = {int(r) for r in a.restes.split(",") if r.strip() != ""}
+    assert a.modulo >= 1 and restes <= set(range(a.modulo)), \
+        f"restes {sorted(restes)} hors de range({a.modulo})"
     OUT.mkdir(parents=True, exist_ok=True)
     vids = [v.strip() for v in a.variantes.split(",") if v.strip()]
     K_DECLARE = 13   # taille de la liste GELÉE par la fenêtre, pas du sous-ensemble joué
@@ -83,7 +100,7 @@ def main() -> int:
     # tue repartait de zero. Les graines etant deterministes (7000 + k), on
     # recharge ce qui est fait et on ne rejoue que les manquantes.
     res = []
-    ckpt = OUT / f"nulle-partielle-{a.corpus}.json"
+    ckpt = OUT / f"nulle-partielle-{a.corpus}{a.suffixe}.json"
     if ckpt.exists():
         vieux = json.loads(ckpt.read_text()).get("tirages", [])
         # On ne garde que les tirages qui portent EXACTEMENT les variantes jouees :
@@ -92,7 +109,16 @@ def main() -> int:
         if res:
             print(f"  reprise : {len(res)} tirage(s) deja faits sur {a.perms}", flush=True)
     faites = {t["graine"] for t in res}
-    a_faire = [7000 + k for k in range(a.perms) if 7000 + k not in faites]
+    kmax = a.perms if a.k_max is None else a.k_max
+    a_faire = [7000 + k for k in range(a.perms)
+               if 7000 + k not in faites and k % a.modulo in restes
+               and a.k_min <= k < kmax]
+    if a.k_min or a.k_max is not None:
+        print(f"  plage : k dans [{a.k_min}, {kmax}) — {len(a_faire)} tirage(s) "
+              f"pour cette machine sur {a.perms}", flush=True)
+    if a.modulo > 1:
+        print(f"  partition : restes {sorted(restes)} modulo {a.modulo} — "
+              f"{len(a_faire)} tirage(s) pour cette machine sur {a.perms}", flush=True)
 
     with cf.ProcessPoolExecutor(max_workers=a.workers, initializer=_init,
                                 initargs=(a.corpus, vids)) as ex:
@@ -101,11 +127,11 @@ def main() -> int:
                 res.append(r)
             if i % 10 == 0:
                 m = np.array([x["max"] for x in res])
-                print(f"  {i}/{a.perms} · max courant : moyenne {m.mean():.4f} "
+                print(f"  {i}/{len(a_faire) + len(res)} · max courant : moyenne {m.mean():.4f} "
                       f"p95 {np.percentile(m, 95):.4f}", flush=True)
                 # checkpoint : ces runs durent des heures et ont ete tues plusieurs
                 # fois aujourd'hui ; sans reprise on repart de zero a chaque fois.
-                (OUT / f"nulle-partielle-{a.corpus}.json").write_text(
+                ckpt.write_text(
                     json.dumps({"n": len(res), "tirages": res}, ensure_ascii=False))
 
     mx = np.array([r["max"] for r in res])
@@ -129,7 +155,7 @@ def main() -> int:
                                 "p95": round(float(np.nanpercentile(par[v], 95)), 4),
                                 "max": round(float(np.nanmax(par[v])), 4)} for v in vids},
            "tirages": res}
-    f = OUT / f"nulle-du-max-{a.corpus}.json"
+    f = OUT / f"nulle-du-max-{a.corpus}{a.suffixe}.json"
     f.write_text(json.dumps(rap, ensure_ascii=False, indent=1))
     print(f"\nnulle du MAX sur {len(res)} permutations, {len(vids)} variantes jouées")
     for v in vids:
