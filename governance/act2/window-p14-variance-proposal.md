@@ -485,6 +485,91 @@ population P14 ne se prédit plus par le numéro de tour.
 **Reprise en cours** : `p13_features.py --corpus p14`, puis V7 à V13, puis la
 nulle du maximum, puis la reprise des 40 tirages P12. Chaque étape lève.
 
+## Les treize variantes, le LORO, et R2 exclu avant la nulle (2026-08-30, 16:00)
+
+### Les treize, sur la strate aveugle de P14 (809 paires)
+
+| variante | ⊥ | IC95 | ⊥⊥ |
+|---|---|---|---|
+| V1 complet 1540 d | 0,4549 | [0,3294 ; 0,5559] | 0,4932 |
+| V2 Ed + scalaires | 0,5179 | [0,3290 ; 0,6062] | 0,4822 |
+| V3 Et + scalaires | 0,4969 | [0,4212 ; 0,5659] | 0,5233 |
+| V4 PCA(Ed) + PCA(Et) | 0,4561 | [0,3326 ; 0,5613] | 0,5068 |
+| V5 fusion tardive 6 d | 0,5402 | [0,3957 ; 0,6184] | 0,5315 |
+| V6 V1 sans frac ni turn | 0,4549 | [0,3453 ; 0,5711] | 0,5151 |
+| V7 cos test↔hunk | 0,5760 | [0,4432 ; 0,6421] | 0,5260 |
+| V8 Et → corps du test | 0,5624 | [0,3584 ; 0,6577] | 0,5068 |
+| V9 Ed → diff AST-normalisé | 0,3758 | [0,2980 ; 0,5317] | 0,4712 |
+| V10 AST + corps du test | 0,5080 | [0,3330 ; 0,5927] | 0,4959 |
+| V11 logistique conditionnelle | 0,5340 | [0,3540 ; 0,6175] | 0,4767 |
+| V12 fit stratifié par persist | 0,4104 | [0,3192 ; 0,5467] | 0,4904 |
+| **V13 conjoint w46+P14 (DW-37)** | **0,6897** | **[0,5106 ; 0,7590]** | **0,5973** |
+
+**V13 est le maximum, et c'est la seule des treize dont l'IC exclue 0,50.** Son
+mécanisme est disclosé et sans fuite : w46 est **toujours** en entraînement, avec
+une indicatrice de corpus, et l'évaluation ne porte que sur P14 ; le LOO par
+instance de P14 est préservé. Ajouter le corpus JS/TS à l'entraînement fait
+passer la strate aveugle Python de ~0,50 à 0,6897.
+
+Cet IC ne se lit pas seul : V13 est le **maximum de treize** représentations
+cherchées. C'est précisément l'objet de la barre du maximum, qui tourne.
+
+### LORO — lisible sur les trois dépôts, et aucune variante ne le satisfait
+
+Le correctif de sélection a rendu le critère évaluable : `iterative` 131 paires /
+11 instances, `python-pillow` 463 / 23, `tobymao` 215 / 58 — les trois au-dessus
+de la précondition gelée le 29/08 (≥ 10 instances **et** ≥ 30 paires). En P12 les
+trois étaient illisibles (69/18, 26/6, 26/4). **La précondition d'amendement n°1
+est validée par la mesure, pas par l'argument.**
+
+| variante | iterative | python-pillow | tobymao | dépôts ≥ 0,60 |
+|---|---|---|---|---|
+| V1 | 0,8397 | 0,6371 | 0,5209 | 2/3 |
+| V2 | 0,8397 | 0,6134 | 0,5581 | 2/3 |
+| V3 | 0,5649 | 0,6782 | 0,6093 | 2/3 |
+| V6 | 0,8397 | 0,5788 | 0,5302 | 1/3 |
+| V11 | 0,2519 | 0,5335 | 0,4558 | 0/3 |
+| V14 | 0,2366 | 0,4212 | 0,4698 | 0/3 |
+
+**Aucune variante couverte ne satisfait le critère sur les trois dépôts.**
+
+**Réserve à ne pas taire** : `iterative` rend **exactement 0,8397** pour V1, V2 et
+V6 — trois jeux de traits différents, quatre décimales identiques, sur 131 paires
+(0,8397 × 131 = 110 paires concordantes tout rond). Trois designs qui atterrissent
+sur le même 110/131 est un signe de classement dégénéré sur un petit ensemble
+très ex æquo, pas une performance. Ce chiffre n'est pas exploité ici.
+
+### Le code du LORO n'avait jamais été appelé
+
+`loro()` a été écrit dans `p13_variants.py` le 29/08 avec sa précondition, puis
+**jamais branché** : ni option CLI, ni appel dans `main()`. Le critère que R2
+exige était du code mort pendant vingt-quatre heures. Il est branché par
+`scripts/act2/p14_loro.py`, pilote **séparé** — la nulle du maximum importe
+`p13_variants`, et modifier ce module pendant qu'elle tourne changerait le banc
+sous ses pieds.
+
+### R2 est exclu, et il l'est sans la barre
+
+La grille gelée fait de R2 une **conjonction** : franchir la barre **ET** ≥ 0,65
+absolu **ET** LORO ≥ 0,60 sur chacun des trois dépôts.
+
+1. Une seule des treize atteint 0,65 : **V13**, à 0,6897. La deuxième est V7 à
+   0,5760. Toutes les autres échouent le seuil absolu, quelle que soit la barre.
+2. V13 n'est **pas couvert** par le LORO. `LORO_BLOCS` est gelé depuis le 29/08,
+   avant le rejeu, et exclut V4, V5, V12 et V13 parce qu'un fit unique hors-dépôt
+   n'y est pas le même objet — pour V13, « retirer un dépôt » est ambigu dès lors
+   que l'entraînement mêle deux corpus aux dépôts disjoints. Cette couverture
+   n'est **pas élargie après coup au vu du classement** : ce serait de
+   l'ingénierie de critère, la faute déjà refusée sur D3.
+3. Donc la conjonction de R2 ne peut être établie pour aucune variante.
+
+**Les issues possibles se réduisent à R1 et R3** — R1 si V13 reste sous la barre
+du maximum, R3 s'il la franchit. La barre décide, et elle seule.
+
+**Ce que R3 vaudrait** : une piste, rien de servi — et une piste dont le
+mécanisme est explicitement « il faut du JS/TS en entraînement pour prédire du
+Python ». La question ouverte par l'échec de D3 reste entière par-dessus.
+
 ## Hors périmètre
 
 - **Le modèle servi n'est pas touché.** Les deux corrections de disclosure
