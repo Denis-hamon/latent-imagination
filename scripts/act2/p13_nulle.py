@@ -78,10 +78,25 @@ def main() -> int:
     vids = [v.strip() for v in a.variantes.split(",") if v.strip()]
     K_DECLARE = 13   # taille de la liste GELÉE par la fenêtre, pas du sous-ensemble joué
 
+    # REPRISE REELLE. Le checkpoint etait ECRIT mais jamais RELU : le commentaire
+    # ci-dessous promettait une reprise que le code ne faisait pas, et chaque run
+    # tue repartait de zero. Les graines etant deterministes (7000 + k), on
+    # recharge ce qui est fait et on ne rejoue que les manquantes.
     res = []
+    ckpt = OUT / f"nulle-partielle-{a.corpus}.json"
+    if ckpt.exists():
+        vieux = json.loads(ckpt.read_text()).get("tirages", [])
+        # On ne garde que les tirages qui portent EXACTEMENT les variantes jouees :
+        # un checkpoint d'une autre liste n'est pas comparable.
+        res = [t for t in vieux if set(t.get("par_variante", {})) == set(vids)]
+        if res:
+            print(f"  reprise : {len(res)} tirage(s) deja faits sur {a.perms}", flush=True)
+    faites = {t["graine"] for t in res}
+    a_faire = [7000 + k for k in range(a.perms) if 7000 + k not in faites]
+
     with cf.ProcessPoolExecutor(max_workers=a.workers, initializer=_init,
                                 initargs=(a.corpus, vids)) as ex:
-        for i, r in enumerate(ex.map(_task, [7000 + k for k in range(a.perms)]), 1):
+        for i, r in enumerate(ex.map(_task, a_faire), len(res) + 1):
             if r:
                 res.append(r)
             if i % 10 == 0:

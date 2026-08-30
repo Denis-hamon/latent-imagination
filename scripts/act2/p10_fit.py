@@ -61,6 +61,45 @@ _W: dict = {}
 
 
 # ---------------------------------------------------------------- embeddings
+def garde_encodeur() -> None:
+    """Refuse de melanger deux espaces d'embedding dans un meme corpus.
+
+    Note : `p10_fit.py` epingle deja LI_ENCODER sur jina (ligne 40, setdefault),
+    donc le pipeline etait protege. Cette garde rend l'epinglage VERIFIABLE et
+    survit a un LI_ENCODER pose dans l'environnement, qui prendrait le pas sur
+    le setdefault sans que rien ne le dise.
+
+    Mesure du 2026-08-30 : les features publiees de P12 et w46 ont ete produites
+    avec jinaai/jina-embeddings-v2-base-code — verifie en comparant un vecteur du
+    cache a un encodage frais (cosinus 1.000207). Or le defaut du code est
+    microsoft/unixcoder-base. Encoder P14 avec ce defaut aurait place le nouveau
+    corpus dans un AUTRE espace que celui auquel on le compare, SANS QUE RIEN NE
+    LE SIGNALE — c'est exactement ce que le docstring de _embedder_family met en
+    garde (« espaces incompatibles »).
+
+    Le fichier `p10/encodeur.json` fige l'identite de l'encodeur du corpus. Tout
+    ecart leve, bruyamment, AVANT le premier encodage.
+    """
+    sys.path.insert(0, str(ROOT / "scripts" / "mcp"))
+    import ghost_server as gs
+    fiche = OUT / "encodeur.json"
+    courant = {"encodeur": gs.ENCODER, "famille": gs._embedder_family(gs.ENCODER)}
+    if fiche.exists():
+        brut = json.loads(fiche.read_text())
+        # Ne comparer QUE les deux cles qui portent l'identite : les cles de
+        # commentaire (prefixees par _) ne doivent pas faire echouer la garde.
+        attendu = {k: brut[k] for k in ("encodeur", "famille") if k in brut}
+        if attendu != courant:
+            raise SystemExit(
+                "ARRET : espace d'embedding incompatible.\n"
+                f"  corpus encode avec : {attendu}\n"
+                f"  encodeur courant   : {courant}\n"
+                "  Fixer LI_ENCODER a la valeur du corpus, ou repartir d'un cache neuf.")
+    else:
+        fiche.write_text(json.dumps(courant, ensure_ascii=False, indent=1))
+        print(f"  encodeur fige : {courant['encodeur']}", flush=True)
+
+
 def _emb_init():
     os.environ["OMP_NUM_THREADS"] = "2"
     os.environ["MKL_NUM_THREADS"] = "2"
@@ -250,6 +289,7 @@ def main() -> int:
                 Et.update(dict(zip(z["test_texts"].tolist(), z["test_vecs"])))
     todo_d = [x for x in uniq_d if x not in Ed]
     todo_t = [x for x in uniq_t if x not in Et]
+    garde_encodeur()
     print(f"diffs {len(uniq_d)} ({len(todo_d)} à encoder) ; "
           f"tests {len(uniq_t)} ({len(todo_t)} à encoder)", flush=True)
     if todo_d:
