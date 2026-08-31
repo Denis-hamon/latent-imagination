@@ -739,6 +739,97 @@ Lecture pré-déclarée, pour qu'elle ne soit pas construite sur le résultat :
 Cette mesure est **descriptive** et ne touche pas la grille R1/R2/R3 : le verdict
 R3 ci-dessus est acquis et ne sera pas relu à sa lumière.
 
+### Nulle de C2 : la règle pré-déclarée se déclenche, au fil du rasoir
+
+Cent permutations des labels de w46, refit sur w46 seul, notation des paires
+aveugles de P14 — les labels de P14 ne sont jamais touchés, donc la strate
+aveugle est fixe d'un tirage à l'autre.
+
+| | valeur |
+|---|---|
+| **C2 observé** | **0,6440** |
+| moyenne de la nulle | 0,4903 |
+| écart-type | **0,0871** |
+| **p95** | **0,6381** |
+| max des 100 tirages | **0,7515** |
+| tirages ≥ observé | **4/100** |
+| p empirique | **0,0495** |
+
+**La règle déclarée d'avance dit « transfert mesuré ». Elle se déclenche par
+0,0059.** Je l'applique parce qu'elle était écrite avant le tirage, et que
+déplacer le poteau maintenant serait l'image en miroir de l'ingénierie de seuil
+refusée deux fois dans cette fenêtre. Mais le lecteur doit voir la marge :
+
+- l'écart au seuil, **0,006**, est plus petit que la granularité de la nulle —
+  déplacer un seul tirage sur cent déplace le p95 ;
+- `p = 0,0495` contre un seuil de 0,05 : quatre tirages sur cent atteignent ou
+  dépassent l'observé ;
+- la nulle a un **écart-type de 0,0871** et un **maximum de 0,7515**, très
+  au-dessus de l'observé. Un fit sur 747 lignes dont 30 positives est instable ;
+  sa nulle l'est autant.
+
+**Ce qui est acquis malgré la marge** : le mécanisme, lui, est propre. C2 n'a
+aucun fit Python, donc l'effet de taille ne s'y applique pas ; sur la strate
+aveugle `persist` est constant, donc le classement ne peut venir que de la
+géométrie apprise sur du JS/TS. C'est le seul dispositif de toute la campagne
+dont le signal ne s'explique ni par le raccourci trivial, ni par la
+régularisation.
+
+**Ce qui n'est pas acquis** : que ce signal soit robuste. Une différence de 0,006
+sur une nulle d'écart-type 0,087 ne porte pas une décision de service.
+
+### Raffinement de la précision, déclaré avant d'être joué
+
+La marge est de l'ordre de l'erreur de Monte-Carlo à 100 tirages. **Je passe à
+1 000 tirages** — même statistique, même seuil, même dispositif : seul le nombre
+de tirages change, donc c'est une décision sur la **précision de l'estimateur**,
+pas sur le critère.
+
+| issue à 1 000 tirages | conclusion |
+|---|---|
+| C2 = 0,6440 reste **au-dessus** du p95 | le transfert tient à la précision supérieure. Ouvre une fenêtre de décision |
+| C2 passe **sous** le p95 | le déclenchement à 100 tirages était du bruit de Monte-Carlo. Pas de transfert établi |
+
+Le résultat à 1 000 remplace celui à 100 **pour cause de précision**, et pour
+aucune autre raison. Les deux sont publiés.
+
+### Résultat à 1 000 tirages : le déclenchement n'était pas du bruit
+
+| | 100 tirages | **1 000 tirages** |
+|---|---|---|
+| moyenne de la nulle | 0,4903 | 0,4856 |
+| écart-type | 0,0871 | 0,0896 |
+| **p95** | 0,6381 | **0,6378** |
+| p99 | 0,6769 | 0,6897 |
+| max | 0,7515 | 0,7812 |
+| tirages ≥ observé | 4/100 | **44/1000** |
+| **p empirique** | 0,0495 | **0,0450** |
+
+Les deux estimations coïncident au troisième chiffre : le p95 passe de 0,6381 à
+0,6378. **Le déclenchement n'était pas une fluctuation de Monte-Carlo** — il
+était déjà stable à cent tirages.
+
+> ## **Transfert inter-langage : MESURÉ, à p = 0,045**
+
+Un modèle ajusté sur **747 lignes de JS/TS, sans une seule ligne Python**, ordonne
+les paires aveugles de Python mieux que 95,5 % des modèles ajustés sur les mêmes
+lignes à labels permutés.
+
+**Ce que ça vaut, et il faut le dire dans la même phrase.** C'est un test unique
+au seuil conventionnel, avec une marge de **0,006** sur une nulle d'écart-type
+**0,090**, reposant sur **30 exemples positifs**. Le p99 de cette nulle vaut
+0,6897 — soit, au chiffre près, la valeur de V13 : un modèle entraîné sur du
+JS/TS à labels aléatoires atteint le score de V13 une fois sur cent. C'est
+l'échelle à laquelle il faut lire tout ce qui précède.
+
+**Ce que ça ne autorise pas** : une décision de service. p = 0,045 sur 30
+positifs n'est pas une base pour promettre quoi que ce soit à un utilisateur.
+
+**Ce que ça oriente**, en revanche, et c'est le seul enseignement actionnable de
+la campagne : le signal transférable existe et il va **dans le sens du
+regroupement des corpus, pas de leur séparation**. Une architecture à un modèle
+par langage retirerait précisément les lignes qui portent ce signal.
+
 ### Ce qui reste ouvert, et qui ne se referme pas ici
 
 - **D3 était en échec** (63,9 % contre 80 % exigés). La question écrite le 30/08
