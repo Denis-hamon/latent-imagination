@@ -8,6 +8,13 @@
 #  - le rejeu s'arrete sur code 75 = transport perdu (lecon des 58 instances
 #    perdues dans la nuit du 29) ; il est idempotent, on relance et il reprend.
 export LI_CORPUS=p16
+# LI_HOST=local : l orchestrateur tourne SUR le serveur, `sh` execute en local
+# au lieu de traverser un ssh qui n existe pas ici. Premier lancement du 31/08
+# arrete par 30 « TRANSPORT ABSENT » : le rejeu avait toujours ete pilote depuis
+# le Mac, et le pousser sur Kimsufi sans ce reglage faisait sshifier Kimsufi vers
+# un alias defini seulement dans le ~/.ssh/config du Mac. Le Mac sort maintenant
+# completement de la boucle, et son couvercle avec.
+export LI_HOST=local
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 cd "$HOME/latent-imagination" || exit 1
 L="$HOME/latent-imagination/p16-rejeu.log"
