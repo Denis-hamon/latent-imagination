@@ -218,3 +218,38 @@ tombe de **0,6485 (V1–V6, tous scalaires inclus) à 0,4864**, soit exactement 
 nulle. Retirer `persist` ne redistribue pas de la capacité : cela supprime la
 seule chose que le modèle savait faire.
 
+## VERDICT — S3 (2026-08-31)
+
+La nulle à **une variante** de V14 sur P14, cent permutations intra-instance,
+`K = 1` comme pré-enregistré :
+
+| | valeur |
+|---|---|
+| moyenne de la nulle | 0,4982 |
+| écart-type | 0,0503 |
+| **barre (p95, K=1)** | **0,5730** |
+| max des 100 tirages | 0,6112 |
+| **V14 observé** | **0,5204** |
+
+| clause | V14 |
+|---|---|
+| S1 — franchit la nulle **ET** ≥ 0,65 | **non** : 0,5204 < 0,65, exclu sans la nulle |
+| S2 — franchit la nulle | **non** : 0,5204 < 0,5730 |
+
+> ## **S3 — l'objectif ne suffit pas non plus. Le plafond est ailleurs.**
+
+L'attente honnête écrite le 30/08 était S3 ; elle est confirmée par la mesure et
+non par l'argument. Les deux clauses tombent séparément, ce qui rend le verdict
+robuste : même une barre plus basse ne sauverait pas le seuil absolu, et même un
+seuil absolu plus bas ne sauverait pas la barre.
+
+**Le mécanisme scellé était faux, et P14 le confirme une seconde fois.** La
+fenêtre prédisait que retirer les scalaires ponctuels libérerait de la capacité
+sur la strate aveugle. Mesuré : la strate informative tombe de 0,6485 (variantes
+avec scalaires) à 0,4864 — exactement la nulle — sans que la strate aveugle gagne
+quoi que ce soit. Retirer `persist` ne redistribue pas de la capacité : cela
+supprime la seule chose que le modèle savait faire.
+
+**Ce que S3 ferme.** La fenêtre interdisait d'avance toute quatorzième variante
+de représentation si S3 tombait. Cette interdiction s'applique : la réponse au
+plafond n'est pas une représentation de plus.

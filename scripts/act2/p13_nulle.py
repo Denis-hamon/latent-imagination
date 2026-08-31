@@ -87,13 +87,18 @@ def main() -> int:
     # la premiere a deja produit, la ou un modulo les entrelacerait.
     ap.add_argument("--k-min", type=int, default=0)
     ap.add_argument("--k-max", type=int, default=None)
+    # K DECLARE PAR LA FENETRE, pas par la ligne de commande jouee. P13/P14
+    # cherchent 13 representations, donc K=13. P15 pre-enregistre UNE hypothese
+    # unique, donc K=1 : lui appliquer une correction a 13 serait se penaliser
+    # d'une recherche qu'on n'a pas faite.
+    ap.add_argument("--k-declare", type=int, default=13)
     a = ap.parse_args()
     restes = {int(r) for r in a.restes.split(",") if r.strip() != ""}
     assert a.modulo >= 1 and restes <= set(range(a.modulo)), \
         f"restes {sorted(restes)} hors de range({a.modulo})"
     OUT.mkdir(parents=True, exist_ok=True)
     vids = [v.strip() for v in a.variantes.split(",") if v.strip()]
-    K_DECLARE = 13   # taille de la liste GELÉE par la fenêtre, pas du sous-ensemble joué
+    K_DECLARE = a.k_declare   # taille de la liste GELÉE par la fenêtre, pas du sous-ensemble joué
 
     # REPRISE REELLE. Le checkpoint etait ECRIT mais jamais RELU : le commentaire
     # ci-dessous promettait une reprise que le code ne faisait pas, et chaque run
@@ -162,7 +167,7 @@ def main() -> int:
         d = rap["par_variante"][v]
         print(f"  {v:4s} nulle {d['moyenne']:.4f} ± {d['ecart_type']:.4f}  p95 {d['p95']:.4f}  max {d['max']:.4f}")
     print(f"\n  BARRE EXACTE DU MAX (p95)      : {rap['barre_exacte_du_max_p95']:.4f}")
-    print(f"  barre Bonferroni K=13 (conserv.) : {rap['barre_bonferroni_conservatrice']:.4f}")
+    print(f"  barre Bonferroni K={K_DECLARE} (conserv.) : {rap['barre_bonferroni_conservatrice']:.4f}")
     print(f"\nécrit : {f}\nsha256 : {hashlib.sha256(f.read_bytes()).hexdigest()}")
     return 0
 

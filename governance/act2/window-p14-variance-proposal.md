@@ -632,6 +632,121 @@ V1 ⊥ 0,4549). Partition par plage — Kimsufi `k ∈ [0, 71)`, MiscV2 `k ∈ [
 — pour que les deux machines ne rejouent jamais le même tirage ; checkpoints et
 rapports suffixés, fusion faite à la main après.
 
+## VERDICT — R3 (2026-08-31)
+
+### La barre, mesurée sur 100 tirages
+
+Nulle du maximum des treize, permutation **intra-instance**, jeu de paires
+recalculé à chaque tirage. Cent tirages, partitionnés sans recouvrement :
+Kimsufi `k ∈ [0, 71)` (graines 7000–7070), MiscV2 `k ∈ [71, 100)` (7071–7099).
+
+| | valeur |
+|---|---|
+| moyenne de la nulle | 0,5511 |
+| écart-type | 0,0318 |
+| p50 / p90 | 0,5503 / 0,5947 |
+| **barre exacte (p95)** | **0,6079** |
+| p99 | 0,6306 |
+| **max des 100 tirages** | **0,6408** |
+
+**V13 = 0,6897 dépasse la distribution nulle entière.** Zéro tirage sur cent ne
+l'atteint — le plus haut culmine à 0,6408, soit 0,05 en dessous. L'observé est à
+**+4,36 écarts-types** de la moyenne de la nulle ; p empirique **0,0099**.
+
+Ce n'est pas un franchissement de justesse. La barre est franchie avec la marge
+maximale qu'un test à 100 tirages peut rendre.
+
+### Application de la grille GELÉE
+
+| clause de R2 | V13 |
+|---|---|
+| franchit la barre du maximum | **oui** — 0,6897 > 0,6079, au-delà du max des tirages |
+| ≥ 0,65 en absolu | **oui** — 0,6897 |
+| LORO ≥ 0,60 sur chacun des 3 dépôts | **non dérivable** — V13 hors `LORO_BLOCS`, couverture gelée le 29/08 |
+
+R3 est défini comme « franchit la barre **sans** le LORO ou le seuil absolu ».
+C'est exactement le cas.
+
+> ## **R3 — INDÉCIDABLE. Piste, rien de servi.**
+
+Ce verdict était **dérivable dès hier 16:00**, avant la barre : R2 exigeait le
+LORO, une seule variante atteignait 0,65, et cette variante n'était pas couverte.
+Les issues possibles étaient R1 ou R3. La barre a tranché entre les deux, et
+elle a tranché nettement.
+
+### G3 n'est pas confirmé — et ce n'est pas non plus un renversement
+
+P13 concluait « G3 » : en Python, aucune représentation ne bat sa nulle sur la
+strate aveugle. **Sur P14, une la bat, et largement.** Le corpus corrigé pour la
+variance a fait apparaître un signal que le corpus P12 ne pouvait pas montrer.
+
+Mais la variante qui le porte n'est pas une représentation Python : c'est celle
+qui **met du JS/TS dans l'entraînement**. Les douze variantes purement Python
+restent sous la barre — la plus haute, V7, plafonne à 0,5760 contre 0,6079.
+
+**Formulation exacte de ce qui est établi** : aucune représentation des données
+Python ne bat sa nulle ; un entraînement qui inclut du JS/TS la bat.
+
+### La barre ne discrimine pas l'hypothèse intéressante — mesuré
+
+C'est la réserve la plus importante de cette fenêtre, et elle vient d'un contrôle
+lancé **avant** de connaître la barre.
+
+| | AUC⊥ | contre la barre 0,6079 |
+|---|---|---|
+| **C0** V13, vrais labels w46 | **0,6897** | franchit, au-delà du max des tirages |
+| **C2** w46 **seul**, zéro Python en entraînement | **0,6440** | **franchit** |
+| **C1** w46 à labels **permutés** + P14 (5 graines) | 0,5735 · 0,5958 · 0,6242 · 0,6255 · 0,6514 — moy. **0,6141** | **franchit en moyenne, 3 graines sur 5** |
+| meilleure variante purement Python (V7) | 0,5760 | ne franchit pas |
+
+La nulle pré-enregistrée permute les labels **de P14**. Elle répond donc à « ce
+score est-il meilleur que le hasard pour ordonner les paires aveugles de P14 ? ».
+Elle **ne répond pas** à « le contenu JS/TS transfère-t-il ? » — et C1 montre que
+la question est réelle : détruire entièrement le sens des labels JS/TS laisse
+encore franchir la barre.
+
+Autrement dit : **franchir cette barre-ci n'établit pas le transfert.** Une part
+substantielle du gain de V13 vient d'ajouter 747 lignes et une indicatrice de
+corpus à une régression en 1540 dimensions ajustée sur 1009 lignes — un effet de
+taille et de prior, pas de sens.
+
+### C2 est le seul résultat que l'effet de taille n'explique pas
+
+`C2` n'ajoute rien à un fit Python : **il n'y a pas de fit Python.** Le modèle est
+ajusté sur w46 seul et note les paires aveugles de P14, et il rend **0,6440**.
+Aucune régularisation ne peut expliquer ça, puisqu'il n'y a rien à régulariser.
+Sur la strate aveugle, `persist` est constant par construction : ce 0,6440 ne
+peut venir que de la géométrie `Ed`/`Et`/`cos` apprise sur du JS/TS.
+
+**Deux réserves, immédiatement.** L'IC est énorme — [0,3692 ; 0,7966] — parce que
+c'est un fit unique sans LOO. Et **C2 n'a pas de nulle** : la barre de 0,6079 est
+celle du maximum de treize variantes ajustées sur P14, pas celle d'un modèle
+ajusté hors corpus. La comparer à C2 est indicatif, pas concluant.
+
+### Prochaine mesure, déclarée AVANT d'être jouée
+
+**Nulle de C2** : permuter les labels de w46, refit sur w46 seul, noter P14, cent
+fois. C'est C1 débarrassé des lignes Python, donc le seul dispositif qui isole le
+**contenu** JS/TS de tout le reste.
+
+Lecture pré-déclarée, pour qu'elle ne soit pas construite sur le résultat :
+
+| issue | conclusion |
+|---|---|
+| C2 = 0,6440 **au-dessus** du p95 de sa nulle | le transfert inter-langage est un fait mesuré. Ouvre une fenêtre de décision |
+| C2 **sous** ce p95 | il n'y a pas de transfert. Tout le signal de V13 est un effet de taille et de prior, et R3 se referme sur rien |
+
+Cette mesure est **descriptive** et ne touche pas la grille R1/R2/R3 : le verdict
+R3 ci-dessus est acquis et ne sera pas relu à sa lumière.
+
+### Ce qui reste ouvert, et qui ne se referme pas ici
+
+- **D3 était en échec** (63,9 % contre 80 % exigés). La question écrite le 30/08
+  reste entière : ce résultat tient-il sur un corpus qui satisfait D3 ?
+- **V13 n'a pas de LORO.** On ne sait pas s'il tient dépôt par dépôt.
+- **Aucune variante couverte ne satisfait le LORO** sur les trois dépôts, la
+  meilleure étant à 2/3.
+
 ## Hors périmètre
 
 - **Le modèle servi n'est pas touché.** Les deux corrections de disclosure
