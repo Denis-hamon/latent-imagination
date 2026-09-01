@@ -38,9 +38,19 @@ MAX_STATES = 5
 
 
 def sh(cmd: str, t: int = 900) -> str:
-    argv = (["bash", "-lc", cmd] if HOST == "local"
-            else ["ssh", "-o", "ConnectTimeout=15", HOST, cmd])
-    r = subprocess.run(argv, capture_output=True, timeout=t)
+    """La commande passe par STDIN, jamais par argv.
+
+    Linux plafonne UN argument d'`execve` a 128 Ko (`MAX_ARG_STRLEN`), quota
+    independant d'`ARG_MAX`. Le rejeu injecte des patchs encodes en base64 dans
+    la commande : six instances de P16 — starlette 1715 et 488, streamlink 5534
+    et 5645, tox 1960, pennylane 5851 — ont depasse ce plafond et rendu
+    `OSError: [Errno 7] Argument list too long`. `bash -s` lit le script sur
+    stdin : plus de plafond, et le meme comportement des deux cotes du
+    transport, local comme distant.
+    """
+    argv = (["bash", "-s"] if HOST == "local"
+            else ["ssh", "-o", "ConnectTimeout=15", HOST, "bash -s"])
+    r = subprocess.run(argv, input=cmd.encode(), capture_output=True, timeout=t)
     return (r.stdout + r.stderr).decode("utf-8", "replace")
 
 

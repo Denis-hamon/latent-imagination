@@ -42,9 +42,18 @@ def main() -> int:
     res_mesure, res_amont, accord = 0, 0, 0
     rangs = []   # position du 1er tour vert dans la trajectoire, normalisée
 
+    n_ecartees = 0
     for f in files:
         d = json.loads(f.read_text())
         iid = d["instance_id"]
+        # ECARTEE EN VOL : le rejeu a ouvert l'instance puis l'a rejetee (hors
+        # gabarit). L'enregistrement n'a pas de `trajectories` et n'entre dans
+        # aucun gate. P14 n'en avait aucune, ce chemin n'avait jamais servi et
+        # P16 est tombe sur une KeyError. On la COMPTE, on ne la tait pas : une
+        # instance ecartee en silence est une instance perdue sans trace.
+        if "trajectories" not in d:
+            n_ecartees += 1
+            continue
         insts.add(iid)
         n_instables += len(d.get("instables") or [])
         decl = set(SEL[iid]["FAIL_TO_PASS"])
@@ -134,6 +143,8 @@ def main() -> int:
           f" · population d'étude {len([i for i in insts if i in ETUDE])}/{len(ETUDE)}")
     print(f"  tours écartés : {n_non_conf} non conformes · {n_non_parse} non parsés · "
           f"{n_non_obs} test déclaré non observé  (sur {total_tours})")
+    if n_ecartees:
+        print(f"  instances écartées EN VOL (hors gabarit, sans trajectoire) : {n_ecartees}")
     print(f"  parents instables (double passe) : {n_instables}")
     print()
     print(f"D1 volume        {n} paires test×tour · {len(insts)} instances"

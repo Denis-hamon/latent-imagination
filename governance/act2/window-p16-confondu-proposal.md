@@ -108,6 +108,118 @@ Trois gardes se sont révélés inopérants le 30/08 et leur vérification est
 - **Elle n'ouvre pas le bras JS/TS.** Volet 2 du plan, conditionnel à un
   adaptateur Multi-SWE-bench, fenêtre séparée.
 
+## Perte de rejeu — déclarée AVANT la lecture des gates (2026-09-01, 09:40)
+
+Le rejeu rend **117 des 120 instances mesurées, 4 échecs**, tous du côté donnée
+et aucun du côté transport. Cause identifiée : la suite de tests de ces instances
+dépasse les 900 s d'un appel `sh`. Ce n'est pas un défaut de harnais — l'erreur
+`Argument list too long` qui touchait six instances a été corrigée (commande
+passée par stdin, contrôlée sur 300 Ko) et a disparu.
+
+**Ventilation de la perte, lue avant tout gate et tout fit :**
+
+| bras | population d'étude prévue | mesurée | perte |
+|---|---|---|---|
+| framework | 38 | **36** | −2 (`starlette` 1715, 488) |
+| bibliothèque | 62 | **61** | −1 (`tox` 1960) |
+| témoin de fidélité | 20 | **19** | −1 (`pennylane` 5851) |
+
+**Décision, et son motif.** La campagne continue. La perte est de 3,3 %, et elle
+est **conservatrice pour la thèse à démontrer** : le bras framework — celui qui
+doit franchir sa barre pour rendre T1 — perd proportionnellement le plus
+(−5,3 % contre −1,6 %). Une perte qui pénalise l'hypothèse testée ne peut pas la
+fabriquer.
+
+**Ce qui n'est pas modifié** : aucun seuil, aucune règle, aucune grille. Le gate
+de puissance se lit sur les **paires aveugles réellement produites**, jamais sur
+la projection de 4,7 paires par instance qui a servi à le dimensionner.
+
+**Ce qui est refusé** : relever le timeout pour récupérer les deux `starlette`.
+Huit exécutions à plus de quinze minutes dépasseraient de toute façon le plafond
+de 7 200 s du processus enfant, et bricoler un plafond après avoir vu quelles
+instances il élimine serait de l'ingénierie de seuil.
+
+## Gates P16, et le défaut qu'ils révèlent (2026-09-01, 09:50)
+
+| gate | valeur | verdict |
+|---|---|---|
+| D1 volume | 1069 paires · 114 instances | **OK** (≥700 · ≥70) |
+| D2 fidélité (témoin) | **100,0 %** sur 123 tours | **OK** (≥70 %) |
+| D2′ variance | 73,4 % d'instances à issue mixte | **OK** (≥60 %) |
+| D3 persist=0 | 73,0 % | **NON** (≥80 %) |
+| D4 y=1 | 27,6 % (295 positifs) | reporté, plus un gate |
+| D4′ paires aveugles | **2019** | **OK** (≥121) |
+| **D5 intégrité** | **78,0 %** | **NON** (≥90 %) |
+
+D2 à **100 %** sur le témoin est le meilleur résultat de fidélité de la campagne
+(P14 : 84,4 %). Et 2019 paires aveugles est 2,5× le total de P14, 37× celui de
+w46. Mais **D5 échoue**, et sa décomposition est le fait important de cette
+lecture.
+
+### D5 n'échoue pas uniformément — il échoue dans un seul bras
+
+| dépôt | bras | tours gardés | tests déclarés non observés |
+|---|---|---|---|
+| `starlette` | framework | 98,3 % | 0 |
+| `tornado` | framework | 97,2 % | 0 |
+| `falcon` | framework | 95,8 % | 0 |
+| `textual` | framework | 94,6 % | 0 |
+| `tox` | biblio | 92,5 % | 0 |
+| `pennylane` | biblio | 83,0 % | 27 |
+| `streamlink` | biblio | 69,2 % | 3 |
+| **`wemake-python-styleguide`** | **biblio** | **6,7 %** | **89** |
+| **BRAS framework** | | **95,7 %** | **0** |
+| **BRAS bibliothèque** | | **66,7 %** | **119** |
+
+**Le bras qui doit échouer pour rendre T1 est celui dont la mesure est
+dégradée.** Un T1 lu tel quel ne distinguerait pas « les bibliothèques ne portent
+pas de signal » de « les bibliothèques ont été moins bien mesurées ». C'est
+exactement le confondu que cette fenêtre existe pour casser, réintroduit par le
+harnais.
+
+### Règle d'intégrité par dépôt — déclarée maintenant, appliquée aux DEUX bras
+
+> **Un dépôt qui retient moins de 50 % de ses tours est exclu comme NON MESURÉ,
+> quel que soit son bras.**
+
+Le seuil est fixé sur un principe — la moitié — et non sur la valeur qui
+arrangerait : appliqué aux huit dépôts, il n'en retire qu'un, `wemake` à 6,7 %,
+et laisse `streamlink` à 69,2 % dedans alors que c'est le suivant. Les 89 tests
+déclarés non observés de `wemake` viennent d'un désaccord de format
+d'identifiants pytest sur un greffon flake8 : ce ne sont pas des mesures
+négatives, ce sont des **absences de mesure**.
+
+Après exclusion :
+
+| bras | tours | gardés |
+|---|---|---|
+| framework | 324 | **95,7 %** |
+| bibliothèque | 400 | **82,3 %** |
+
+L'écart tombe de 29 à 13 points. Il ne disparaît pas.
+
+### Ce que ça impose à la lecture du verdict
+
+1. **D5 reste consigné en ÉCHEC** sur le corpus complet. On ne le recalcule pas
+   pour le faire passer.
+2. **Le taux de rétention par bras est publié à côté du verdict**, toujours.
+3. **Un T1 devra être qualifié** : si le bras framework franchit sa barre et pas
+   le bras bibliothèque, l'écart de rétention de 13 points reste une explication
+   concurrente non écartée. T1 ne pourra être servi sans une réplication sur des
+   dépôts de bibliothèque à rétention comparable.
+4. Ce que l'écart **ne peut pas** produire : chaque bras est jugé sur **sa
+   propre** nulle, calculée sur **ses** paires. Une nulle par permutation
+   s'auto-calibre sur la taille et le bruit du bras. La rétection n'offre donc
+   pas un T1 mécanique ; elle offre une explication concurrente, ce qui est
+   différent et se dit.
+
+### D3 échoue de nouveau, et pour la même raison qu'en P14
+
+73,0 % contre 80 % exigés (P14 : 63,9 %). Décision identique et pour le même
+motif : D3 lit un taux marginal, pas la strate que la métrique consomme, et
+cette strate compte ici **2019 paires**. D3 reste consigné en **ÉCHEC**, il n'est
+ni amendé ni supersédé, et la question qu'il laisse ouverte reste ouverte.
+
 ## Vérification
 
 - **Sélection** : recoupement avec P14 **nul**. Si un dépôt de P14 réapparaît, le
